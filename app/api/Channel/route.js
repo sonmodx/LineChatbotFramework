@@ -15,17 +15,33 @@ export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
+    const search = searchParams.get('search') || '';
+    const orderBy = searchParams.get('orderBy') || 'name';
+    const orderDirection = searchParams.get('orderDirection') === 'desc' ? -1 : 1;
+    const pageNumber = parseInt(searchParams.get('pageNumber')) || 1;
+    const pageSize = parseInt(searchParams.get('pageSize')) || 10;
 
     if (id) {
-      // Get a specific channel
       const channel = await Channel.findById(id);
       if (!channel) {
         return new Response(JSON.stringify({ message: 'Channel not found.' }), { status: 404 });
       }
       return new Response(JSON.stringify(channel), { status: 200 });
     } else {
-      // Get all channels
-      const channels = await Channel.find({});
+      const filter = search
+        ? {
+            $or: [
+              { name: { $regex: search, $options: 'i' } },
+              { description: { $regex: search, $options: 'i' } }
+            ]
+          }
+        : {};
+
+      const channels = await Channel.find(filter)
+        .sort({ [orderBy]: orderDirection })
+        .skip((pageNumber - 1) * pageSize)
+        .limit(pageSize);
+
       return new Response(JSON.stringify(channels), { status: 200 });
     }
   } catch (error) {
