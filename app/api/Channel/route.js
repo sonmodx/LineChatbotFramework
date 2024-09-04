@@ -73,6 +73,8 @@ export async function POST(req) {
       status,
       user_id: new mongoose.Types.ObjectId(user_id),
       channel_id,
+      channel_secret,
+      channel_access_token
     });
 
     const savedChannel = await newChannel.save();
