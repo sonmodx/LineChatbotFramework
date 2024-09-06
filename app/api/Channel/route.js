@@ -32,7 +32,18 @@ export async function GET(req) {
           status: 404,
         });
       }
-      return new Response(JSON.stringify(channel), { status: 200 });
+      return new Response(
+        JSON.stringify({
+          status: {
+            code: 200,
+            description: "OK",
+          },
+          Channel: channel,
+        }),
+        {
+          status: 200,
+        }
+      );
     } else {
       const filter = {
         ...(user_id && { user_id: new mongoose.Types.ObjectId(user_id) }),
@@ -49,7 +60,19 @@ export async function GET(req) {
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
 
-      return new Response(JSON.stringify(channels), { status: 200 });
+      return new Response(
+        JSON.stringify({
+          status: {
+            code: 200,
+            description: "OK",
+          },
+          Channel: channels,
+          Total: channels.length,
+        }),
+        {
+          status: 200,
+        }
+      );
     }
   } catch (error) {
     console.error(error);
@@ -93,7 +116,16 @@ export async function POST(req) {
     });
 
     const savedChannel = await newChannel.save();
-    return new Response(JSON.stringify(savedChannel), { status: 201 });
+    return new Response(
+      JSON.stringify({
+        status: {
+          code: 200,
+          description: "Success create channel!!",
+        },
+        Channel: savedChannel,
+      }),
+      { status: 201 }
+    );
   } catch (error) {
     console.error(error);
     return new Response(JSON.stringify({ message: "Internal server error." }), {
@@ -116,6 +148,10 @@ export async function PUT(req) {
     const body = await req.json();
     const { id, ...updateData } = body;
 
+    // Check if ID is provided
+    // Check if channel exists
+    // can't change user id
+    
     if (!id) {
       return new Response(
         JSON.stringify({ message: "Please provide channel ID." }),
@@ -133,7 +169,13 @@ export async function PUT(req) {
       });
     }
 
-    return new Response(JSON.stringify(updatedChannel), { status: 200 });
+    return new Response(JSON.stringify({
+      status: {
+        code: 200,
+        description: "Success update channel!!",
+      },
+      Channel: updatedChannel,
+    }), { status: 200 });
   } catch (error) {
     console.error(error);
     return new Response(JSON.stringify({ message: "Internal server error." }), {
