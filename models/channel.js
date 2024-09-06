@@ -27,6 +27,14 @@ const channelSchema = new Schema(
       type: String,
       required: true,
     },
+    channel_secret: {
+      type: String,
+      required: true,
+    },
+    channel_access_token: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );
