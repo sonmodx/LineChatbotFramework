@@ -37,6 +37,7 @@ export const authOptions = {
   callbacks: {
     jwt: async ({ token, user }) => {
       user && (token.user = user);
+
       return Promise.resolve(token);
     },
     session: async ({ session, token }) => {
