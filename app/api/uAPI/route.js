@@ -102,9 +102,10 @@ export async function POST(req) {
       api_params,
       api_headers,
       api_body,
+      keywords,
     } = await req.json();
 
-    if (!name || !method_type || !api_endpoint || !channel_id) {
+    if (!name || !method_type || !api_endpoint || !channel_id || !keywords) {
       return new Response(JSON.stringify({ message: "API not found." }), {
         status: 404,
       });
@@ -119,6 +120,7 @@ export async function POST(req) {
       api_params,
       api_headers,
       api_body,
+      keywords,
     });
     const savedAPI = await newAPI.save();
     return new Response(

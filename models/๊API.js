@@ -26,11 +26,11 @@ const channelSchema = new Schema(
     api_params: [{
         key: {
             type: String,
-            required: true,
+            required: false,
         },
         value: {
             type: String,
-            required: true,
+            required: false,
         },
         description: {
             type: String,
@@ -40,11 +40,11 @@ const channelSchema = new Schema(
     api_headers: [{
         key: {
             type: String,
-            required: true,
+            required: false,
         },
         value: {
             type: String,
-            required: true,
+            required: false,
         },
         description: {
             type: String,
@@ -54,11 +54,11 @@ const channelSchema = new Schema(
     api_body: [{
         key: {
             type: String,
-            required: true,
+            required: false,
         },
         content_type: {
             type: String,
-            required: true,
+            required: false,
         },
         content: {
             type: String,
@@ -81,7 +81,7 @@ const channelSchema = new Schema(
     },
     keywords: [{
         type: String,
-        required: false,
+        required: true,
     }],
   },
   { timestamps: true }
