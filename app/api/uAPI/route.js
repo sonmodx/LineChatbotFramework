@@ -185,9 +185,11 @@ export async function PUT(req) {
       api_params,
       api_headers,
       api_body,
+      api_auth,
+      keywords,
     } = await req.json();
 
-    if (!name || !method_type || !api_endpoint || !channel_id) {
+    if (!name || !method_type || !api_endpoint || !channel_id || !keywords) {
       return new Response(JSON.stringify({ message: "API not found." }), {
         status: 404,
       });
@@ -198,10 +200,12 @@ export async function PUT(req) {
       method_type,
       description,
       api_endpoint,
-      channel_id: new mongoose.Types.ObjectId(user_id),
+      channel_id: new mongoose.Types.ObjectId(channel_id),
       api_params,
       api_headers,
       api_body,
+      api_auth,
+      keywords,
     }, {
       new: true,
     });
