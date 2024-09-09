@@ -55,6 +55,8 @@ export async function GET(req) {
         }),
       };
 
+      const totalChannels = await Channel.countDocuments(filter);
+
       const channels = await Channel.find(filter)
         .sort({ [orderBy]: orderDirection })
         .skip((pageNumber - 1) * pageSize)
@@ -67,7 +69,7 @@ export async function GET(req) {
             description: "OK",
           },
           Channel: channels,
-          Total: channels.length,
+          Total: totalChannels,
         }),
         {
           status: 200,
@@ -94,10 +96,11 @@ export async function POST(req) {
 
   try {
     const body = await req.json();
-    const { name, description, webhook_url, status, user_id, channel_id } =
+    const { name, description, webhook_url, status, user_id, channel_id,channel_secret,
+      channel_access_token, } =
       body;
 
-    if (!name || !webhook_url || !status || !user_id || !channel_id) {
+    if (!name || !webhook_url || !status || !user_id || !channel_id || !channel_secret || !channel_access_token) {
       return new Response(
         JSON.stringify({ message: "Please provide all required fields." }),
         { status: 400 }

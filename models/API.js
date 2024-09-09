@@ -1,6 +1,6 @@
 import mongoose, { Schema, models } from "mongoose";
 
-const channelSchema = new Schema(
+const APISchema = new Schema(
   {
     name: {
       type: String,
@@ -26,11 +26,11 @@ const channelSchema = new Schema(
     api_params: [{
         key: {
             type: String,
-            required: true,
+            required: false,
         },
         value: {
             type: String,
-            required: true,
+            required: false,
         },
         description: {
             type: String,
@@ -40,11 +40,11 @@ const channelSchema = new Schema(
     api_headers: [{
         key: {
             type: String,
-            required: true,
+            required: false,
         },
         value: {
             type: String,
-            required: true,
+            required: false,
         },
         description: {
             type: String,
@@ -54,11 +54,11 @@ const channelSchema = new Schema(
     api_body: [{
         key: {
             type: String,
-            required: true,
+            required: false,
         },
         content_type: {
             type: String,
-            required: true,
+            required: false,
         },
         content: {
             type: String,
@@ -79,13 +79,13 @@ const channelSchema = new Schema(
             required: false,
         },
     },
-    keywords: [{
-        type: String,
-        required: false,
-    }],
+    keywords: {
+        type: [String],
+        required: true,
+    },
   },
   { timestamps: true }
 );
 
-const Channel = models.Channel || mongoose.model("Channel", channelSchema);
-export default Channel;
+const API = models.API || mongoose.model("API", APISchema);
+export default API;
