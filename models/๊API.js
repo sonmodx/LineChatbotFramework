@@ -1,6 +1,6 @@
 import mongoose, { Schema, models } from "mongoose";
 
-const channelSchema = new Schema(
+const APISchema = new Schema(
   {
     name: {
       type: String,
@@ -87,5 +87,5 @@ const channelSchema = new Schema(
   { timestamps: true }
 );
 
-const Channel = models.Channel || mongoose.model("Channel", channelSchema);
-export default Channel;
+const API = models.API || mongoose.model("API", APISchema);
+export default API;
