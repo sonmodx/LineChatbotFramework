@@ -10,29 +10,38 @@ import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { Box, IconButton, TablePagination } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { useSession } from "next-auth/react";
 
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
+function createData(name, description, webhook_url, status, edit) {
+  return { name, description, webhook_url, status, edit };
 }
 
-const rows = [
-  createData("Bot1", "description", "https://mywebhook.com/webhook", "active"),
-  createData("Bot2", "description", "https://mywebhook.com/webhook", "active"),
-  createData(
-    "Bot3",
-    "description",
-    "https://mywebhook.com/webhook",
-    "inactive"
-  ),
-  createData("Bot4", "description", "https://mywebhook.com/webhook", "active"),
-  createData("Bot5", "description", "https://mywebhook.com/webhook", "active"),
-  createData("Bot6", "description", "https://mywebhook.com/webhook", "active"),
-];
-
 export default function ChannelTable() {
+  const { data: session } = useSession(authOptions);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [channels, setChannels] = useState([]);
+
+  const rows = channels?.map((channel) =>
+    createData(
+      channel?.name,
+      channel?.description,
+      channel?.webhook_url,
+      channel?.status
+    )
+  );
+
+  const emptyRows =
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+
+  const visibleRows = useMemo(
+    () => [...rows].slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [page, rowsPerPage, rows]
+  );
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -42,13 +51,25 @@ export default function ChannelTable() {
     setPage(0);
   };
 
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+  const getAllChannels = async () => {
+    try {
+      const res = await axios.get(
+        `/api/Channel?user_id=${session?.user?._id}&pageNumber=${page}&pageSize=${rowsPerPage}`
+      );
+      if (res.status === 200) {
+        const data = res.data;
+        setChannels(data.Channel);
+        console.log("Channel data:", data);
+      }
+    } catch (error) {
+      console.error("Error when get channels:", error);
+    }
+  };
 
-  const visibleRows = useMemo(
-    () => [...rows].slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [page, rowsPerPage]
-  );
+  useEffect(() => {
+    getAllChannels();
+  }, [session]);
+
   return (
     <>
       <TableContainer component={Paper}>
@@ -76,9 +97,9 @@ export default function ChannelTable() {
                     {row.name}
                   </Box>
                 </TableCell>
-                <TableCell>{row.calories}</TableCell>
-                <TableCell>{row.fat}</TableCell>
-                <TableCell>{row.carbs}</TableCell>
+                <TableCell>{row.description}</TableCell>
+                <TableCell>{row.webhook_url}</TableCell>
+                <TableCell>{row.status}</TableCell>
                 <TableCell width={120}>
                   <IconButton>
                     <EditOutlinedIcon />
