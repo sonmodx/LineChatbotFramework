@@ -168,47 +168,57 @@ export async function PUT(req) {
   await connectMongoDB();
 
   try {
-    const { id } = await req.json();
-    const api = await API.findById(id);
-    if (!api) {
+    const body = await req.json();
+    const { id, ...updateData } = body;
+    if (!id) {
       return new Response(JSON.stringify({ message: "API not found." }), {
         status: 404,
       });
     }
 
-    const {
-      name,
-      method_type,
-      description,
-      api_endpoint,
-      channel_id,
-      api_params,
-      api_headers,
-      api_body,
-      api_auth,
-      keywords,
-    } = await req.json();
+    // const {
+    //   name,
+    //   method_type,
+    //   description,
+    //   api_endpoint,
+    //   channel_id,
+    //   api_params,
+    //   api_headers,
+    //   api_body,
+    //   api_auth,
+    //   keywords,
+    // } = await req.json();
 
-    if (!name || !method_type || !api_endpoint || !channel_id || !keywords) {
-      return new Response(JSON.stringify({ message: "API not found." }), {
-        status: 404,
-      });
-    }
+    // if (!name || !method_type || !api_endpoint || !channel_id || !keywords) {
+    //   return new Response(JSON.stringify({ message: "API not found." }), {
+    //     status: 404,
+    //   });
+    // }
 
-    const updatedAPI = await API.findByIdAndUpdate(id, {
-      name,
-      method_type,
-      description,
-      api_endpoint,
-      channel_id: new mongoose.Types.ObjectId(channel_id),
-      api_params,
-      api_headers,
-      api_body,
-      api_auth,
-      keywords,
-    }, {
+    // const updatedAPI = await API.findByIdAndUpdate(id, {
+    //   name,
+    //   method_type,
+    //   description,
+    //   api_endpoint,
+    //   channel_id: new mongoose.Types.ObjectId(channel_id),
+    //   api_params,
+    //   api_headers,
+    //   api_body,
+    //   api_auth,
+    //   keywords,
+    // }, {
+    //   new: true,
+    // });
+
+    const updatedAPI = await API.findByIdAndUpdate(id, updateData, {
       new: true,
     });
+
+    if (!updatedAPI) {
+      return new Response(JSON.stringify({ message: "API not found." }), {
+        status: 404,
+      });
+    }
 
     return new Response(
       JSON.stringify({
