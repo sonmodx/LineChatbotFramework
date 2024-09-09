@@ -55,6 +55,8 @@ export async function GET(req) {
         }),
       };
 
+      const totalChannels = await Channel.countDocuments(filter);
+
       const channels = await Channel.find(filter)
         .sort({ [orderBy]: orderDirection })
         .skip((pageNumber - 1) * pageSize)
@@ -67,7 +69,7 @@ export async function GET(req) {
             description: "OK",
           },
           Channel: channels,
-          Total: channels.length,
+          Total: totalChannels,
         }),
         {
           status: 200,

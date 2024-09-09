@@ -28,7 +28,7 @@ export async function GET(req) {
     if (id) {
       const api = await API.findById(id);
       if (!api) {
-        return new Response(JSON.stringify({ message: "Channel not found." }), {
+        return new Response(JSON.stringify({ message: "API not found." }), {
           status: 404,
         });
       }
@@ -56,7 +56,10 @@ export async function GET(req) {
           ],
         }),
       };
-      const apis = await Channel.find(filter)
+
+      const totalAPIs = await API.countDocuments(filter);
+
+      const apis = await API.find(filter)
         .sort({ [orderBy]: orderDirection })
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
@@ -67,7 +70,7 @@ export async function GET(req) {
             description: "OK",
           },
           API: apis,
-          Total: apis.length,
+          Total: totalAPIs,
         }),
         {
           status: 200,
@@ -252,10 +255,10 @@ export async function DELETE(req) {
   await connectMongoDB();
 
   try {
-    const { id } = await req.json();
-    const api = await API.findById(id);
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
 
-    if (!api) {
+    if (!id) {
       return new Response(JSON.stringify({ message: "API not found." }), {
         status: 404,
       });
