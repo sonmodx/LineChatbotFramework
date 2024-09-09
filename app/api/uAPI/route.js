@@ -102,6 +102,7 @@ export async function POST(req) {
       api_params,
       api_headers,
       api_body,
+      api_auth,
       keywords,
     } = await req.json();
 
@@ -120,6 +121,7 @@ export async function POST(req) {
       api_params,
       api_headers,
       api_body,
+      api_auth,
       keywords,
     });
     const savedAPI = await newAPI.save();
