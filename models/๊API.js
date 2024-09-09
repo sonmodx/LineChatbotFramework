@@ -79,10 +79,10 @@ const channelSchema = new Schema(
             required: false,
         },
     },
-    keywords: [{
-        type: String,
+    keywords: {
+        type: [String],
         required: true,
-    }],
+    },
   },
   { timestamps: true }
 );
