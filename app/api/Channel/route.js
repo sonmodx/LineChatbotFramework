@@ -94,10 +94,11 @@ export async function POST(req) {
 
   try {
     const body = await req.json();
-    const { name, description, webhook_url, status, user_id, channel_id } =
+    const { name, description, webhook_url, status, user_id, channel_id,channel_secret,
+      channel_access_token, } =
       body;
 
-    if (!name || !webhook_url || !status || !user_id || !channel_id) {
+    if (!name || !webhook_url || !status || !user_id || !channel_id || !channel_secret || !channel_access_token) {
       return new Response(
         JSON.stringify({ message: "Please provide all required fields." }),
         { status: 400 }
