@@ -1,7 +1,8 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { connectMongoDB } from "@/lib/mongodb";
-import API from "@/models/API"
+import API from "@/models/API";
+import Channel from "@/models/channel";
 import mongoose from "mongoose";
 
 export async function GET(req) {
@@ -28,10 +29,24 @@ export async function GET(req) {
     if (id) {
       const api = await API.findById(id);
       if (!api) {
+        return new Response(JSON.stringify({ message: "API not found." }), {
+          status: 404,
+        });
+      }
+
+      const existingChannel = await Channel.findById(api.channel_id.toString());
+      if (!existingChannel) {
         return new Response(JSON.stringify({ message: "Channel not found." }), {
           status: 404,
         });
       }
+      if (session.user._id && session.user._id !== existingChannel.user_id) {
+        return new Response(
+          JSON.stringify({ message: "No access this Channel" }),
+          { status: 400 }
+        );
+      }
+
       return new Response(
         JSON.stringify({
           status: {
@@ -45,6 +60,20 @@ export async function GET(req) {
         }
       );
     } else {
+      const existingChannel = await Channel.findById(channel_id);
+      console.log("existingChannel", existingChannel);
+      if (!existingChannel) {
+        return new Response(JSON.stringify({ message: "Channel not found." }), {
+          status: 404,
+        });
+      }
+      if (session.user._id && session.user._id !== existingChannel.user_id.toString()) {
+        return new Response(
+          JSON.stringify({ message: "No access this Channel" }),
+          { status: 400 }
+        );
+      }
+
       const filter = {
         ...(channel_id && {
           channel_id: new mongoose.Types.ObjectId(channel_id),
@@ -56,7 +85,10 @@ export async function GET(req) {
           ],
         }),
       };
-      const apis = await Channel.find(filter)
+
+      const totalAPIs = await API.countDocuments(filter);
+
+      const apis = await API.find(filter)
         .sort({ [orderBy]: orderDirection })
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
@@ -67,7 +99,7 @@ export async function GET(req) {
             description: "OK",
           },
           API: apis,
-          Total: apis.length,
+          Total: totalAPIs,
         }),
         {
           status: 200,
@@ -105,7 +137,8 @@ export async function POST(req) {
       api_auth,
       keywords,
     } = await req.json();
-    console.log(name,
+    console.log(
+      name,
       method_type,
       description,
       api_endpoint,
@@ -114,12 +147,26 @@ export async function POST(req) {
       api_headers,
       api_body,
       api_auth,
-      keywords);
+      keywords
+    );
 
     if (!name || !method_type || !api_endpoint || !channel_id || !keywords) {
       return new Response(JSON.stringify({ message: "API not found." }), {
         status: 404,
       });
+    }
+
+    const existingChannel = await Channel.findById(channel_id);
+    if (!existingChannel) {
+      return new Response(JSON.stringify({ message: "Channel not found." }), {
+        status: 404,
+      });
+    }
+    if (session.user._id && session.user._id !== existingChannel.user_id) {
+      return new Response(
+        JSON.stringify({ message: "No access this Channel" }),
+        { status: 400 }
+      );
     }
 
     const newAPI = new API({
@@ -137,15 +184,15 @@ export async function POST(req) {
     console.log("newAPI", newAPI);
     const savedAPI = await newAPI.save();
     return new Response(
-        JSON.stringify({
-          status: {
-            code: 200,
-            description: "Success create channel!!",
-          },
-          API: savedAPI,
-        }),
-        { status: 201 }
-      );
+      JSON.stringify({
+        status: {
+          code: 200,
+          description: "Success create channel!!",
+        },
+        API: savedAPI,
+      }),
+      { status: 201 }
+    );
   } catch (error) {
     return new Response(
       JSON.stringify({
@@ -169,50 +216,65 @@ export async function PUT(req) {
 
   try {
     const body = await req.json();
-    const { id, ...updateData } = body;
+    const {
+      id,
+      name,
+      method_type,
+      description,
+      api_endpoint,
+      channel_id,
+      api_params,
+      api_headers,
+      api_body,
+      api_auth,
+      keywords,
+    } = body;
+
     if (!id) {
       return new Response(JSON.stringify({ message: "API not found." }), {
         status: 404,
       });
     }
 
-    // const {
-    //   name,
-    //   method_type,
-    //   description,
-    //   api_endpoint,
-    //   channel_id,
-    //   api_params,
-    //   api_headers,
-    //   api_body,
-    //   api_auth,
-    //   keywords,
-    // } = await req.json();
+    const existingAPI = await API.findById(id);
+    if (!existingAPI) {
+      return new Response(JSON.stringify({ message: "API not found." }), {
+        status: 404,
+      });
+    }
 
-    // if (!name || !method_type || !api_endpoint || !channel_id || !keywords) {
-    //   return new Response(JSON.stringify({ message: "API not found." }), {
-    //     status: 404,
-    //   });
-    // }
+    const existingChannel = await Channel.findById(
+      existingAPI.channel_id.toString()
+    );
 
-    // const updatedAPI = await API.findByIdAndUpdate(id, {
-    //   name,
-    //   method_type,
-    //   description,
-    //   api_endpoint,
-    //   channel_id: new mongoose.Types.ObjectId(channel_id),
-    //   api_params,
-    //   api_headers,
-    //   api_body,
-    //   api_auth,
-    //   keywords,
-    // }, {
-    //   new: true,
-    // });
-
-    const updatedAPI = await API.findByIdAndUpdate(id, updateData, {
-      new: true,
-    });
+    if (!existingChannel) {
+      return new Response(JSON.stringify({ message: "Channel not found." }), {
+        status: 404,
+      });
+    }
+    if (session.user._id && session.user._id !== existingChannel.user_id) {
+      return new Response(
+        JSON.stringify({ message: "No access this Channel" }),
+        { status: 400 }
+      );
+    }
+    const updatedAPI = await API.findByIdAndUpdate(
+      id,
+      {
+        name,
+        method_type,
+        description,
+        api_endpoint,
+        api_params,
+        api_headers,
+        api_body,
+        api_auth,
+        keywords,
+      },
+      {
+        new: true,
+      }
+    );
 
     if (!updatedAPI) {
       return new Response(JSON.stringify({ message: "API not found." }), {
@@ -230,7 +292,6 @@ export async function PUT(req) {
       }),
       { status: 200 }
     );
-
   } catch (error) {
     return new Response(
       JSON.stringify({
@@ -252,22 +313,35 @@ export async function DELETE(req) {
   await connectMongoDB();
 
   try {
-    const { id } = await req.json();
-    const api = await API.findById(id);
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
 
-    if (!api) {
+    if (!id) {
       return new Response(JSON.stringify({ message: "API not found." }), {
         status: 404,
       });
     }
 
-    const deletedAPI = await API.findByIdAndDelete(id);
-
-    if (!deletedAPI) {
+    const existingAPI = await API.findById(id);
+    if (!existingAPI) {
       return new Response(JSON.stringify({ message: "API not found." }), {
         status: 404,
       });
     }
+    const existingChannel = await Channel.findById(existingAPI.channel_id.toString());
+    if (!existingChannel) {
+      return new Response(JSON.stringify({ message: "Channel not found." }), {
+        status: 404,
+      });
+    }
+    if (session.user._id && session.user._id !== existingChannel.user_id) {
+      return new Response(
+        JSON.stringify({ message: "No access this Channel" }),
+        { status: 400 }
+      );
+    }
+
+    await API.findByIdAndDelete(id);
 
     return new Response(
       JSON.stringify({
@@ -278,12 +352,12 @@ export async function DELETE(req) {
       }),
       { status: 200 }
     );
-    } catch (error) {
+  } catch (error) {
     return new Response(
       JSON.stringify({
         message: "An error occurred while deleting the API.",
       }),
       { status: 500 }
     );
-    }
+  }
 }
