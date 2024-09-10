@@ -129,7 +129,6 @@ export async function POST(req) {
     if (
       !name ||
       !webhook_url ||
-      !status ||
       !channel_id ||
       !channel_secret ||
       !channel_access_token
@@ -207,7 +206,10 @@ export async function PUT(req) {
         status: 404,
       });
     }
-    if (session.user._id && session.user._id.toString() !== existingChannel.user_id.toString()) {
+    if (
+      session.user._id &&
+      session.user._id.toString() !== existingChannel.user_id.toString()
+    ) {
       return new Response(
         JSON.stringify({ message: "No access this Channel" }),
         { status: 400 }
@@ -274,14 +276,17 @@ export async function DELETE(req) {
         status: 404,
       });
     }
-    if (session.user._id && session.user._id.toString() !== existingChannel.user_id.toString()) {
+    if (
+      session.user._id &&
+      session.user._id.toString() !== existingChannel.user_id.toString()
+    ) {
       return new Response(
         JSON.stringify({ message: "No access this Channel" }),
         { status: 400 }
       );
     }
 
-    await Channel.findByIdAndDelete(id);
+    await Channel.findByIdAndDelete(id.toString());
 
     return new Response(
       JSON.stringify({ message: "Channel deleted successfully." }),
