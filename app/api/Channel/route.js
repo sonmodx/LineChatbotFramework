@@ -11,13 +11,12 @@ export async function GET(req) {
       status: 401,
     });
   }
-
   await connectMongoDB();
 
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
-    const user_id = searchParams.get("user_id");
+    // const user_id = searchParams.get("user_id");
     const search = searchParams.get("search") || "";
     const orderBy = searchParams.get("orderBy") || "name";
     const orderDirection =
@@ -32,6 +31,19 @@ export async function GET(req) {
           status: 404,
         });
       }
+
+      if (channel.user_id.toString() !== session.user._id.toString()) {
+        return new Response(
+          JSON.stringify({
+            message:
+              "Unauthorized: You do not have permission to access this channel.",
+          }),
+          {
+            status: 403, // Forbidden status code
+          }
+        );
+      }
+
       return new Response(
         JSON.stringify({
           status: {
@@ -45,8 +57,16 @@ export async function GET(req) {
         }
       );
     } else {
+      if (!session.user._id) {
+        return new Response(
+          JSON.stringify({ message: "the user hasn't access to it." }),
+          { status: 400 }
+        );
+      }
       const filter = {
-        ...(user_id && { user_id: new mongoose.Types.ObjectId(user_id) }),
+        ...(session.user._id && {
+          user_id: new mongoose.Types.ObjectId(session.user._id),
+        }),
         ...(search && {
           $or: [
             { name: { $regex: search, $options: "i" } },
@@ -96,11 +116,24 @@ export async function POST(req) {
 
   try {
     const body = await req.json();
-    const { name, description, webhook_url, status, user_id, channel_id,channel_secret,
-      channel_access_token, } =
-      body;
+    const {
+      name,
+      description,
+      webhook_url,
+      status,
+      channel_id,
+      channel_secret,
+      channel_access_token,
+    } = body;
 
-    if (!name || !webhook_url || !status || !user_id || !channel_id || !channel_secret || !channel_access_token) {
+    if (
+      !name ||
+      !webhook_url ||
+      !status ||
+      !channel_id ||
+      !channel_secret ||
+      !channel_access_token
+    ) {
       return new Response(
         JSON.stringify({ message: "Please provide all required fields." }),
         { status: 400 }
@@ -112,7 +145,7 @@ export async function POST(req) {
       description,
       webhook_url,
       status,
-      user_id: new mongoose.Types.ObjectId(user_id),
+      user_id: new mongoose.Types.ObjectId(session.user._id),
       channel_id,
       channel_secret,
       channel_access_token,
@@ -149,12 +182,17 @@ export async function PUT(req) {
 
   try {
     const body = await req.json();
-    const { id, ...updateData } = body;
+    const {
+      id,
+      name,
+      description,
+      webhook_url,
+      status,
+      channel_id,
+      channel_secret,
+      channel_access_token,
+    } = body;
 
-    // Check if ID is provided
-    // Check if channel exists
-    // can't change user id
-    
     if (!id) {
       return new Response(
         JSON.stringify({ message: "Please provide channel ID." }),
@@ -162,23 +200,44 @@ export async function PUT(req) {
       );
     }
 
-    const updatedChannel = await Channel.findByIdAndUpdate(id, updateData, {
-      new: true,
-    });
-
-    if (!updatedChannel) {
+    // check if the channel exists and the user has access to it
+    const existingChannel = await Channel.findById(id);
+    if (!existingChannel) {
       return new Response(JSON.stringify({ message: "Channel not found." }), {
         status: 404,
       });
     }
+    if (session.user._id && session.user._id !== existingChannel.user_id) {
+      return new Response(
+        JSON.stringify({ message: "No access this Channel" }),
+        { status: 400 }
+      );
+    }
 
-    return new Response(JSON.stringify({
-      status: {
-        code: 200,
-        description: "Success update channel!!",
-      },
-      Channel: updatedChannel,
-    }), { status: 200 });
+    const updateData = {
+      name,
+      description,
+      webhook_url,
+      status,
+      channel_id,
+      channel_secret,
+      channel_access_token,
+    };
+
+    const updatedChannel = await Channel.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
+
+    return new Response(
+      JSON.stringify({
+        status: {
+          code: 200,
+          description: "Success update channel!!",
+        },
+        Channel: updatedChannel,
+      }),
+      { status: 200 }
+    );
   } catch (error) {
     console.error(error);
     return new Response(JSON.stringify({ message: "Internal server error." }), {
@@ -208,13 +267,21 @@ export async function DELETE(req) {
       );
     }
 
-    const deletedChannel = await Channel.findByIdAndDelete(id);
-
-    if (!deletedChannel) {
+    // check if the channel exists and the user has access to it
+    const existingChannel = await Channel.findById(id);
+    if (!existingChannel) {
       return new Response(JSON.stringify({ message: "Channel not found." }), {
         status: 404,
       });
     }
+    if (session.user._id && session.user._id !== existingChannel.user_id) {
+      return new Response(
+        JSON.stringify({ message: "No access this Channel" }),
+        { status: 400 }
+      );
+    }
+
+    await Channel.findByIdAndDelete(id);
 
     return new Response(
       JSON.stringify({ message: "Channel deleted successfully." }),
