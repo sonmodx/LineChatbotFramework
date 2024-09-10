@@ -207,7 +207,7 @@ export async function PUT(req) {
         status: 404,
       });
     }
-    if (session.user._id && session.user._id !== existingChannel.user_id) {
+    if (session.user._id && session.user._id.toString() !== existingChannel.user_id.toString()) {
       return new Response(
         JSON.stringify({ message: "No access this Channel" }),
         { status: 400 }
@@ -274,7 +274,7 @@ export async function DELETE(req) {
         status: 404,
       });
     }
-    if (session.user._id && session.user._id !== existingChannel.user_id) {
+    if (session.user._id && session.user._id.toString() !== existingChannel.user_id.toString()) {
       return new Response(
         JSON.stringify({ message: "No access this Channel" }),
         { status: 400 }
