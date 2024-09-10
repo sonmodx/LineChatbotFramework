@@ -129,7 +129,6 @@ export async function POST(req) {
     if (
       !name ||
       !webhook_url ||
-      !status ||
       !channel_id ||
       !channel_secret ||
       !channel_access_token
