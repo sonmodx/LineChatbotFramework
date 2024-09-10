@@ -157,12 +157,13 @@ export async function POST(req) {
     }
 
     const existingChannel = await Channel.findById(channel_id);
+    console.log("existingChannel", existingChannel);
     if (!existingChannel) {
       return new Response(JSON.stringify({ message: "Channel not found." }), {
         status: 404,
       });
     }
-    if (session.user._id && session.user._id !== existingChannel.user_id) {
+    if (session.user._id && session.user._id.toString() !== existingChannel.user_id.toString()) {
       return new Response(
         JSON.stringify({ message: "No access this Channel" }),
         { status: 400 }
