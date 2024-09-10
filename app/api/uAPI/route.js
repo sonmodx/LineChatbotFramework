@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { connectMongoDB } from "@/lib/mongodb";
 import API from "@/models/API";
+import Channel from "@/models/channel";
 import mongoose from "mongoose";
 
 export async function GET(req) {
@@ -60,12 +61,13 @@ export async function GET(req) {
       );
     } else {
       const existingChannel = await Channel.findById(channel_id);
+      console.log("existingChannel", existingChannel);
       if (!existingChannel) {
         return new Response(JSON.stringify({ message: "Channel not found." }), {
           status: 404,
         });
       }
-      if (session.user._id && session.user._id !== existingChannel.user_id) {
+      if (session.user._id && session.user._id !== existingChannel.user_id.toString()) {
         return new Response(
           JSON.stringify({ message: "No access this Channel" }),
           { status: 400 }
