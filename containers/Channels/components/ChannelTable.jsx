@@ -25,6 +25,7 @@ import { useSession } from "next-auth/react";
 import { Popper } from "@mui/base";
 import PopperItem from "@/components/PopperItem";
 import Loading from "@/components/Loading";
+import { useRouter } from "next/navigation";
 
 function createData(name, description, webhook_url, status, channel_id) {
   return { name, description, webhook_url, status, channel_id };
@@ -40,6 +41,7 @@ export default function ChannelTable() {
   const [total, setTotal] = useState();
   const [isOpenSnackbar, setIsOpenSnackbar] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   // const rows = channels?.map((channel) =>
   //   createData(
@@ -160,10 +162,16 @@ export default function ChannelTable() {
                 </TableCell>
                 <TableCell>{row.description}</TableCell>
                 <TableCell>{row.webhook_url}</TableCell>
-                <TableCell>{row.status}</TableCell>
+                <TableCell>
+                  {row.status === "true" ? "active" : "inactive"}
+                </TableCell>
                 <TableCell width={120}>
                   <IconButton>
-                    <EditOutlinedIcon />
+                    <EditOutlinedIcon
+                      onClick={() =>
+                        router.push(`/channels/edit?channelId=${row._id}`)
+                      }
+                    />
                   </IconButton>
                   <IconButton
                     onClick={(e) => handleClick(e, row._id)}

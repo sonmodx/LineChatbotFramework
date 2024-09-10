@@ -3,8 +3,10 @@
 import {
   Box,
   Button,
+  Checkbox,
   Container,
   FormControl,
+  FormControlLabel,
   FormHelperText,
   Stack,
   TextField,
@@ -18,7 +20,9 @@ export default function ChannelCreate() {
   const [channelName, setChannelName] = useState();
   const [channelSecret, setChannelSecret] = useState();
   const [channelAccessToken, setChannelAccessToken] = useState();
+  const [description, setDescription] = useState();
   const [isError, setIsError] = useState(false);
+  const [isActive, setIsActive] = useState(true);
   const router = useRouter();
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,13 +34,14 @@ export default function ChannelCreate() {
       }
       const body = {
         name: channelName,
-        description: "Create new channel", //No field description
+        description: description, //No field description
         webhook_url: "https://mywebhook.com/webhook",
-        status: true, //No field status
+        status: isActive, //No field status
         channel_id: channelId,
         channel_secret: channelSecret,
         channel_access_token: channelAccessToken,
       };
+      console.log(body);
       const res = await axios.post("/api/Channel/", body, {
         headers: { "Content-Type": "application/json" },
       });
@@ -45,7 +50,7 @@ export default function ChannelCreate() {
         console.log("Successful created new channel!");
       }
     } catch (error) {
-      console.error("Error can not create new channel:", error);
+      console.error("Error create new channel failed:", error);
     }
   };
   return (
@@ -117,12 +122,35 @@ export default function ChannelCreate() {
                 </FormHelperText>
               )}
             </FormControl>
+            <FormControl fullWidth>
+              <TextField
+                onChange={(e) => setDescription(e.target.value)}
+                value={description}
+                name="description"
+                label="Description"
+                fullWidth
+              />
+            </FormControl>
+
             <TextField
               name="webhook-api"
               label="Webhook API"
               fullWidth
               disabled
               defaultValue="https://mywebhook.com/webhook"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  defaultChecked
+                  value
+                  checked={isActive}
+                  onChange={(e) => {
+                    setIsActive(e.target.checked);
+                  }}
+                />
+              }
+              label="Status"
             />
           </Stack>
           <Stack direction="row" sx={{ mt: 4, justifyContent: "flex-end" }}>
