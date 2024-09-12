@@ -137,18 +137,6 @@ export async function POST(req) {
       api_auth,
       keywords,
     } = await req.json();
-    console.log(
-      name,
-      method_type,
-      description,
-      api_endpoint,
-      channel_id,
-      api_params,
-      api_headers,
-      api_body,
-      api_auth,
-      keywords
-    );
 
     if (!name || !method_type || !api_endpoint || !channel_id || !keywords) {
       return new Response(JSON.stringify({ message: "API not found." }), {
@@ -182,7 +170,6 @@ export async function POST(req) {
       api_auth,
       keywords,
     });
-    console.log("newAPI", newAPI);
     const savedAPI = await newAPI.save();
     return new Response(
       JSON.stringify({
@@ -223,7 +210,6 @@ export async function PUT(req) {
       method_type,
       description,
       api_endpoint,
-      channel_id,
       api_params,
       api_headers,
       api_body,
