@@ -295,7 +295,7 @@ export async function DELETE(req) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
-    const existingLineUser = await LineUser.findbyId(id);
+    const existingLineUser = await LineUser.findById(id);
     if (!existingLineUser) {
       return new Response(JSON.stringify({ message: "User not found." }), {
         status: 404,
