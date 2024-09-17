@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from 'next/image';
 import Link from "next/link";
 import {
   Button,
@@ -37,7 +38,7 @@ const FullHeightContainer = styled(Container)(({ theme }) => ({
 }));
 
 const ContentBox = styled(Box)(({ theme }) => ({
-  backgroundColor: "#F8F8F8", // Background color for the box
+  backgroundColor: "#FFFFFF", // Background color for the box
   borderRadius: "0.5rem", // Optional border radius
   boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Optional shadow for depth
   padding: theme.spacing(4), // Adjust padding as needed
@@ -60,6 +61,12 @@ export default function RegisterForm() {
     // Validate form fields
     if (!name || !email || !password || !confirmPassword) {
       setError("All fields are required.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
       return;
     }
 
@@ -103,7 +110,7 @@ export default function RegisterForm() {
       // Handle registration response
       if (res.ok) {
         // Registration successful
-        router.push("/login"); // Navigate to the login page
+        router.push("/"); // Navigate to the login page
       } else {
         // Parse error response from the server
         const errorData = await res.json();
@@ -121,11 +128,13 @@ export default function RegisterForm() {
         <Grid item xs={12} md={6}>
           <ContentBox>
             <Box sx={{ textAlign: "center", mb: 5 }}>
-              <img
-                src="https://cdn.discordapp.com/attachments/1268217881657737236/1272507012432920598/copy.png?ex=66e4c141&is=66e36fc1&hm=e9f52b52addefbd74e97b4817bf8eb51df6423e903434c61f059077c507600d7&"
-                alt="logo"
-                style={{ width: "185px" }}
-              />
+            <Image
+  src="/images/logo.png" // Relative path to the image in the public folder
+  alt="logo"
+  width={185} // Provide the width and height
+  height={100}
+  priority={true} // If this is an important image
+/>
               <Typography variant="h4" sx={{ mt: 1, mb: 5, pb: 1 }}>
                 Join FRONTEND FRAMEWORK
               </Typography>
