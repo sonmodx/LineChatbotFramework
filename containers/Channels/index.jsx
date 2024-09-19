@@ -13,6 +13,7 @@ export default function Channels() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          marginTop: 5,
         }}
       >
         <Typography variant="h3" sx={{ py: 1, fontWeight: "bolder" }}>
