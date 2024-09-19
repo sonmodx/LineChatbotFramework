@@ -14,6 +14,7 @@ import {
   Box,
   Button,
   IconButton,
+  Link,
   Snackbar,
   TablePagination,
   Typography,
@@ -40,7 +41,7 @@ export default function ChannelTable() {
   const [selectChannelId, setSelectChannelId] = useState();
   const [total, setTotal] = useState();
   const [isOpenSnackbar, setIsOpenSnackbar] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   // const rows = channels?.map((channel) =>
@@ -126,7 +127,7 @@ export default function ChannelTable() {
 
   if (isLoading) return <Loading />;
 
-  if (channels.length === 0)
+  if (channels?.length === 0)
     return (
       <Typography variant="h4" textAlign="center" sx={{ color: "grey" }}>
         No channel
@@ -156,8 +157,13 @@ export default function ChannelTable() {
               >
                 <TableCell component="th" scope="row">
                   <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Person2OutlinedIcon sx={{ mr: 2 }} />
-                    {row.name}
+                    <Link
+                      href={`/channels/detail?id=${row._id}&channelName=${row.name}`}
+                      underline="hover"
+                    >
+                      <Person2OutlinedIcon sx={{ mr: 1 }} />
+                      {row.name}
+                    </Link>
                   </Box>
                 </TableCell>
                 <TableCell>{row.description}</TableCell>
