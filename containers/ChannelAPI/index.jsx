@@ -35,9 +35,9 @@ export default function ChannelAPI({ listTitle, channelId }) {
   const handleDeleteApi = async (selectId) => {
     try {
       console.log(selectId);
-      const res = await axios.delete(`/api/Channel?id=${selectId}`);
+      const res = await axios.delete(`/api/uAPI?id=${selectId}`);
       if (res.status === 200) {
-        getAllChannels();
+        getAllApis();
         setAnchorEl(null);
         console.log("API deleted successfully.");
         setIsOpenSnackbar(true);
@@ -82,7 +82,7 @@ export default function ChannelAPI({ listTitle, channelId }) {
           "Create date",
           "",
         ]}
-        bodyColumns={[]}
+        bodyColumns={["method_type", "description", "updatedAt", "createdAt"]}
         canSetting={true}
         statusState={[]}
         callbackGetData={getAllApis}

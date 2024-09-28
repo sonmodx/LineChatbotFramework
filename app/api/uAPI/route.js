@@ -67,7 +67,10 @@ export async function GET(req) {
           status: 404,
         });
       }
-      if (session.user._id && session.user._id !== existingChannel.user_id.toString()) {
+      if (
+        session.user._id &&
+        session.user._id !== existingChannel.user_id.toString()
+      ) {
         return new Response(
           JSON.stringify({ message: "No access this Channel" }),
           { status: 400 }
@@ -116,6 +119,7 @@ export async function GET(req) {
 
 export async function POST(req) {
   const session = await getServerSession(authOptions);
+  console.log(session);
   if (!session) {
     return new Response(JSON.stringify({ message: "Unauthorized" }), {
       status: 401,
@@ -151,7 +155,10 @@ export async function POST(req) {
         status: 404,
       });
     }
-    if (session.user._id && session.user._id.toString() !== existingChannel.user_id.toString()) {
+    if (
+      session.user._id &&
+      session.user._id.toString() !== existingChannel.user_id.toString()
+    ) {
       return new Response(
         JSON.stringify({ message: "No access this Channel" }),
         { status: 400 }
@@ -239,7 +246,10 @@ export async function PUT(req) {
         status: 404,
       });
     }
-    if (session.user._id && session.user._id.toString() !== existingChannel.user_id.toString()) {
+    if (
+      session.user._id &&
+      session.user._id.toString() !== existingChannel.user_id.toString()
+    ) {
       return new Response(
         JSON.stringify({ message: "No access this Channel" }),
         { status: 400 }
@@ -315,13 +325,18 @@ export async function DELETE(req) {
         status: 404,
       });
     }
-    const existingChannel = await Channel.findById(existingAPI.channel_id.toString());
+    const existingChannel = await Channel.findById(
+      existingAPI.channel_id.toString()
+    );
     if (!existingChannel) {
       return new Response(JSON.stringify({ message: "Channel not found." }), {
         status: 404,
       });
     }
-    if (session.user._id && session.user._id.toString() !== existingChannel.user_id.toString()) {
+    if (
+      session.user._id &&
+      session.user._id.toString() !== existingChannel.user_id.toString()
+    ) {
       return new Response(
         JSON.stringify({ message: "No access this Channel" }),
         { status: 400 }
