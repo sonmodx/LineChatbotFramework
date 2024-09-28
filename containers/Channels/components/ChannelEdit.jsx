@@ -31,7 +31,6 @@ export default function ChannelEdit() {
   const [isLoading, setIsLoading] = useState(false);
 
   const channelIdParams = searchParams.get("channelId");
-  console.log(channel);
 
   const getChannelByID = async () => {
     try {
@@ -231,8 +230,7 @@ export default function ChannelEdit() {
               <FormControlLabel
                 control={
                   <Checkbox
-                    defaultChecked={Boolean(channel?.status)}
-                    checked={Boolean(channel?.status)}
+                    checked={channel?.status === "true" ? true : false}
                     onChange={(e) => {
                       setChannel((prev) => ({
                         ...prev,
