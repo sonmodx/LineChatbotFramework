@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
-const MessageSchema = new mongoose.Schema({
+
+const ActionSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -16,12 +17,12 @@ const MessageSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Channel',
   },
-  text_message: {
-    type: [String],
-    required: true,
+  api_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'API',
   },
-  list_user: {
-    type: [String],
+  message: {
+    type: [mongoose.Schema.Types.Mixed],// any type
     required: true,
   },
   keyword: {
@@ -30,5 +31,5 @@ const MessageSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-const Message = mongoose.models.Message || mongoose.model('Message', MessageSchema);
-export default Message;
+const Action = mongoose.models.Action || mongoose.model('Action', ActionSchema);
+export default Action;

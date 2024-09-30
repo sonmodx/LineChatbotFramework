@@ -61,13 +61,15 @@ export async function GET(req) {
       );
     } else {
       const existingChannel = await Channel.findById(channel_id);
-      console.log("existingChannel", existingChannel);
       if (!existingChannel) {
         return new Response(JSON.stringify({ message: "Channel not found." }), {
           status: 404,
         });
       }
-      if (session.user._id && session.user._id !== existingChannel.user_id.toString()) {
+      if (
+        session.user._id &&
+        session.user._id !== existingChannel.user_id.toString()
+      ) {
         return new Response(
           JSON.stringify({ message: "No access this Channel" }),
           { status: 400 }
@@ -92,13 +94,20 @@ export async function GET(req) {
         .sort({ [orderBy]: orderDirection })
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
+
+      const formattedapis = apis.map((api) => ({
+        ...api._doc,
+        createdAt: formatDate(new Date(api.createdAt)),
+        updatedAt: formatDate(new Date(api.updatedAt)),
+      }));
+
       return new Response(
         JSON.stringify({
           status: {
             code: 200,
             description: "OK",
           },
-          API: apis,
+          API: formattedapis,
           Total: totalAPIs,
         }),
         {
@@ -151,7 +160,10 @@ export async function POST(req) {
         status: 404,
       });
     }
-    if (session.user._id && session.user._id.toString() !== existingChannel.user_id.toString()) {
+    if (
+      session.user._id &&
+      session.user._id.toString() !== existingChannel.user_id.toString()
+    ) {
       return new Response(
         JSON.stringify({ message: "No access this Channel" }),
         { status: 400 }
@@ -239,7 +251,10 @@ export async function PUT(req) {
         status: 404,
       });
     }
-    if (session.user._id && session.user._id.toString() !== existingChannel.user_id.toString()) {
+    if (
+      session.user._id &&
+      session.user._id.toString() !== existingChannel.user_id.toString()
+    ) {
       return new Response(
         JSON.stringify({ message: "No access this Channel" }),
         { status: 400 }
@@ -315,13 +330,18 @@ export async function DELETE(req) {
         status: 404,
       });
     }
-    const existingChannel = await Channel.findById(existingAPI.channel_id.toString());
+    const existingChannel = await Channel.findById(
+      existingAPI.channel_id.toString()
+    );
     if (!existingChannel) {
       return new Response(JSON.stringify({ message: "Channel not found." }), {
         status: 404,
       });
     }
-    if (session.user._id && session.user._id.toString() !== existingChannel.user_id.toString()) {
+    if (
+      session.user._id &&
+      session.user._id.toString() !== existingChannel.user_id.toString()
+    ) {
       return new Response(
         JSON.stringify({ message: "No access this Channel" }),
         { status: 400 }
@@ -348,3 +368,41 @@ export async function DELETE(req) {
     );
   }
 }
+
+const formatDate = (date) => {
+  // Helper function to pad numbers with leading zeros
+  const pad = (num) => (num < 10 ? "0" + num : num);
+  const utcOffset = 7 * 60 * 60 * 1000;
+  const offsetTime = new Date(date.getTime() + utcOffset);
+  // Extracting the individual components of the date
+  const day = pad(offsetTime.getUTCDate());
+  const month = pad(offsetTime.getUTCMonth() + 1); // Months are zero-indexed
+  const year = offsetTime.getUTCFullYear();
+  const hours = pad(offsetTime.getUTCHours());
+  const minutes = pad(offsetTime.getUTCMinutes());
+  const seconds = pad(offsetTime.getUTCSeconds());
+
+  // Formatting date to dd mm yyyy hh:mm:ss
+  return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+};
+
+// const apisWithFormattedDates = apis.map((api) => {
+//   // Create a new object to hold the converted dates
+
+//   // List all date fields that need to be converted
+//   const dateFields = ["createdAt", "updatedAt", "someOtherDateField"];
+
+//   // Iterate over each date field and convert it if it exists
+//   dateFields.forEach((field) => {
+//     if (api[field]) {
+//       console.log(`Converting ${field}:`, api[field]);
+//       const date = new Date(api[field]);
+//       const offsetTime = new Date(date.getTime() + utcOffset);
+//       console.log(`Converted ${field}:`, offsetTime);
+//       api[field] = formatDate(offsetTime);
+//       console.log(`Formatted ${field}:`, api[field]);
+//     }
+//   });
+
+//   return api;
+// });
