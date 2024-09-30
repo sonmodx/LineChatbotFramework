@@ -34,8 +34,21 @@ export const authOptions = {
       },
     }),
   ],
+  callbacks: {
+    jwt: async ({ token, user }) => {
+      user && (token.user = user);
+
+      return Promise.resolve(token);
+    },
+    session: async ({ session, token }) => {
+      session.user._id = token.user._id;
+      console.log("session", session);
+      return Promise.resolve(session);
+    },
+  },
   session: {
     strategy: "jwt",
+    maxAge: 7 * 24 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
@@ -46,3 +59,5 @@ export const authOptions = {
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
+
+// export default authOptions;
