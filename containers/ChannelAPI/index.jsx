@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import CustomTable from "../../components/CustomTable";
 import { useState } from "react";
 import axios from "axios";
+import { useSession } from "next-auth/react";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export default function ChannelAPI({ listTitle, channelId }) {
   const router = useRouter();
@@ -12,7 +14,10 @@ export default function ChannelAPI({ listTitle, channelId }) {
   const [total, setTotal] = useState();
   const [isOpenSnackbar, setIsOpenSnackbar] = useState(false);
   const [anchorEl, setAnchorEl] = useState();
-  const getAllApis = async (session, page, rowsPerPage) => {
+  const { data: session } = useSession(authOptions);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const getAllApis = async () => {
     try {
       setIsLoading(true);
       const res = await axios.get(
@@ -97,6 +102,11 @@ export default function ChannelAPI({ listTitle, channelId }) {
         setAnchorEl={setAnchorEl}
         isOpenSnackbar={isOpenSnackbar}
         setIsOpenSnackbar={setIsOpenSnackbar}
+        session={session}
+        page={page}
+        setPage={setPage}
+        rowsPerPage={rowsPerPage}
+        setRowsPerPage={setRowsPerPage}
       />
     </Container>
   );
