@@ -4,6 +4,7 @@ import { connectMongoDB } from "@/lib/mongodb";
 import API from "@/models/API";
 import Channel from "@/models/channel";
 import mongoose from "mongoose";
+import { formatDate } from "@/lib/utils";
 
 export async function GET(req) {
   const session = await getServerSession(authOptions);
@@ -61,7 +62,6 @@ export async function GET(req) {
       );
     } else {
       const existingChannel = await Channel.findById(channel_id);
-      console.log("existingChannel", existingChannel);
       if (!existingChannel) {
         return new Response(JSON.stringify({ message: "Channel not found." }), {
           status: 404,
@@ -95,13 +95,20 @@ export async function GET(req) {
         .sort({ [orderBy]: orderDirection })
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
+
+      const formattedapis = apis.map((api) => ({
+        ...api._doc,
+        createdAt: formatDate(new Date(api.createdAt)),
+        updatedAt: formatDate(new Date(api.updatedAt)),
+      }));
+
       return new Response(
         JSON.stringify({
           status: {
             code: 200,
             description: "OK",
           },
-          API: apis,
+          API: formattedapis,
           Total: totalAPIs,
         }),
         {
