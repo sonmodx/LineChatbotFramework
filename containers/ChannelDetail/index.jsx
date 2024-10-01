@@ -1,9 +1,19 @@
 "use client";
-import { Box, Container, Tab, Tabs, Typography } from "@mui/material";
-import { useRef, useState } from "react";
+import { Box, Container, Tab, Tabs, Typography, Button } from "@mui/material";
+
+import { useState } from "react";
+import ChannelAPI from "../ChannelAPI";
+
+function ManageShowTable({ tab, id }) {
+  const listTitle = ["Action", "User", "API", "Log"];
+  if (tab === 2) {
+    return <ChannelAPI listTitle={listTitle[tab]} channelId={id} />;
+  }
+  return <Box>Empty Component</Box>;
+}
 
 export default function ChannelDetail({ id, channelName }) {
-  const [selectTab, setSelectTab] = useState("0");
+  const [selectTab, setSelectTab] = useState(0);
 
   const listTab = [
     { id: 0, label: "action" },
@@ -18,8 +28,10 @@ export default function ChannelDetail({ id, channelName }) {
         {channelName}
       </Typography>
       <Tabs
-        onChange={(event, value) => {
+        value={selectTab}
+        onChange={(_, value) => {
           setSelectTab(value);
+          console.log(value);
         }}
       >
         {listTab?.map((tab) => (
@@ -37,6 +49,8 @@ export default function ChannelDetail({ id, channelName }) {
           />
         ))}
       </Tabs>
+
+      <ManageShowTable tab={selectTab} id={id} />
     </Container>
   );
 }

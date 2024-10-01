@@ -231,8 +231,7 @@ export default function ChannelEdit() {
               <FormControlLabel
                 control={
                   <Checkbox
-                    defaultChecked={Boolean(channel?.status)}
-                    checked={Boolean(channel?.status)}
+                    checked={channel?.status === "true" ? true : false}
                     onChange={(e) => {
                       setChannel((prev) => ({
                         ...prev,
