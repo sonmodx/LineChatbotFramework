@@ -105,8 +105,8 @@ export async function POST(req) {
       type,
       description,
       channel_id,
-      text_message,
-      list_user,
+      api_id,
+      message,
       keyword,
     } = await req.json();
 
@@ -115,8 +115,8 @@ export async function POST(req) {
         !name ||
         !type ||
         !channel_id ||
-        !text_message ||
-        !list_user ||
+        !api_id ||
+        !message ||
         !keyword
       ) {
         return new Response(
@@ -137,15 +137,12 @@ export async function POST(req) {
         type,
         description,
         channel_id: mongoose.Types.ObjectId(channel_id),
-        text_message,
-        list_user,
+        api_id: mongoose.Types.ObjectId(api_id),
+        message,
         keyword,
       });
 
       const savedAction = await newAction.save();
-
-      // sent request to webhook for working with message
-      /////////////////////////////////////////////////
 
       return new Response(
         JSON.stringify({
@@ -209,8 +206,8 @@ export async function PUT(req) {
       type,
       description,
       channel_id,
-      text_message,
-      list_user,
+      api_id,
+      message,
       keyword,
     } = await req.json();
 
@@ -230,15 +227,19 @@ export async function PUT(req) {
       });
     }
 
-    action.name = name;
-    action.type = type;
-    action.description = description;
-    action.channel_id = channel_id;
-    action.text_message = text_message;
-    action.list_user = list_user;
-    action.keyword = keyword;
+    const updateData = {
+      name,
+      type,
+      description,
+      channel_id: mongoose.Types.ObjectId(channel_id),
+      api_id: mongoose.Types.ObjectId(api_id),
+      message,
+      keyword,
+    };
 
-    const updatedAction = await Action.save();
+    const updatedAction = await Action.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
 
     return new Response(
       JSON.stringify({
