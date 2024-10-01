@@ -204,7 +204,7 @@ export default function CustomTable({
 
       <Snackbar
         open={isOpenSnackbar}
-        autoHideDuration={6000}
+        autoHideDuration={4000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
