@@ -16,7 +16,6 @@ export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
-    // const user_id = searchParams.get("user_id");
     const search = searchParams.get("search") || "";
     const orderBy = searchParams.get("orderBy") || "name";
     const orderDirection =
@@ -124,6 +123,7 @@ export async function POST(req) {
       channel_id,
       channel_secret,
       channel_access_token,
+      destination,
     } = body;
 
     if (
@@ -131,7 +131,8 @@ export async function POST(req) {
       !webhook_url ||
       !channel_id ||
       !channel_secret ||
-      !channel_access_token
+      !channel_access_token ||
+      !destination
     ) {
       return new Response(
         JSON.stringify({ message: "Please provide all required fields." }),
@@ -148,6 +149,7 @@ export async function POST(req) {
       channel_id,
       channel_secret,
       channel_access_token,
+      destination,
     });
 
     const savedChannel = await newChannel.save();
@@ -190,6 +192,7 @@ export async function PUT(req) {
       channel_id,
       channel_secret,
       channel_access_token,
+      destination,
     } = body;
 
     if (!id) {
@@ -224,6 +227,7 @@ export async function PUT(req) {
       channel_id,
       channel_secret,
       channel_access_token,
+      destination,
     };
 
     const updatedChannel = await Channel.findByIdAndUpdate(id, updateData, {
