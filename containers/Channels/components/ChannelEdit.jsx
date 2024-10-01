@@ -31,6 +31,7 @@ export default function ChannelEdit() {
   const [isLoading, setIsLoading] = useState(false);
 
   const channelIdParams = searchParams.get("channelId");
+  console.log(channel);
 
   const getChannelByID = async () => {
     try {
