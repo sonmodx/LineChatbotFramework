@@ -132,7 +132,6 @@ export default function RegisterForm() {
         <Grid item xs={12} md={6}>
           <ContentBox>
             <Box sx={{ textAlign: "center", mb: 5 }}>
-<<<<<<< HEAD
             <Image
   src="/images/logo.png" // Relative path to the image in the public folder
   alt="logo"
@@ -140,13 +139,6 @@ export default function RegisterForm() {
   height={100}
   priority={true} // If this is an important image
 />
-=======
-              {/* <img
-                src="https://cdn.discordapp.com/attachments/1268217881657737236/1272507012432920598/copy.png?ex=66e4c141&is=66e36fc1&hm=e9f52b52addefbd74e97b4817bf8eb51df6423e903434c61f059077c507600d7&"
-                alt="logo"
-                style={{ width: "185px" }}
-              /> */}
->>>>>>> d99db8e94801793596fe282be7d6edaddb9ac04d
               <Typography variant="h4" sx={{ mt: 1, mb: 5, pb: 1 }}>
                 Join FRONTEND FRAMEWORK
               </Typography>
