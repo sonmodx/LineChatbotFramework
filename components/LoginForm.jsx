@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import Image from "next/image";
 import { signIn } from "next-auth/react";
 import Image from 'next/image';
 import { useRouter } from "next/navigation";
@@ -85,13 +86,11 @@ export default function LoginForm() {
         <Grid item xs={12} md={6}>
           <ContentBox>
             <Box sx={{ textAlign: "center", mb: 5 }}>
-            <Image
-  src="/images/logo.png" // Relative path to the image in the public folder
-  alt="logo"
-  width={185} // Provide the width and height
-  height={100}
-  priority={true} // If this is an important image
-/>
+              <img
+                src="https://cdn.discordapp.com/attachments/1268217881657737236/1272507012432920598/copy.png?ex=66e4c141&is=66e36fc1&hm=e9f52b52addefbd74e97b4817bf8eb51df6423e903434c61f059077c507600d7&"
+                alt="logo"
+                style={{ width: "185px" }}
+              />
               <Typography variant="h4" sx={{ mt: 1, mb: 5, pb: 1 }}>
                 FRONTEND FRAMEWORK
               </Typography>
@@ -142,7 +141,7 @@ export default function LoginForm() {
             <Box
               sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}
             >
-              <Typography>Do not have an account?</Typography>
+              <Typography>Don't have an account?</Typography>
               <Link href="/register" passHref>
                 <Button variant="outlined" color="blue">
                   Register

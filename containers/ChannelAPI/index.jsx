@@ -7,57 +7,53 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export default function Channels() {
+export default function ChannelAPI({ listTitle, channelId }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [channels, setChannels] = useState([]);
+  const [apis, setApis] = useState([]);
   const [total, setTotal] = useState();
   const [isOpenSnackbar, setIsOpenSnackbar] = useState(false);
   const [anchorEl, setAnchorEl] = useState();
   const { data: session } = useSession(authOptions);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const getAllChannels = async () => {
+  const getAllApis = async () => {
     try {
       setIsLoading(true);
       const res = await axios.get(
-        `/api/Channel?user_id=${session?.user?._id}&pageNumber=${
+        `/api/uAPI?channel_id=${channelId}&pageNumber=${
           page + 1
         }&pageSize=${rowsPerPage}`
       );
       if (res.status === 200) {
         const data = res.data;
-        setChannels(data.Channel);
+        setApis(data.API);
         setTotal(data.Total);
-        console.log("Channel data:", data);
+        console.log("APIs data:", data);
       }
       setIsLoading(false);
     } catch (error) {
-      console.error("Error when get channels:", error);
+      console.error("Error when get apis:", error);
     }
   };
 
-  const handleDeleteChannel = async (selectId) => {
+  const handleDeleteApi = async (selectId) => {
     try {
       console.log(selectId);
-      const res = await axios.delete(`/api/Channel?id=${selectId}`);
+      const res = await axios.delete(`/api/uAPI?id=${selectId}`);
       if (res.status === 200) {
-        getAllChannels();
+        getAllApis();
         setAnchorEl(null);
-        console.log("Channel deleted successfully.");
+        console.log("API deleted successfully.");
         setIsOpenSnackbar(true);
       }
     } catch (error) {
-      console.error("Error delete channel failed:", error);
+      console.error("Error delete API failed:", error);
     }
   };
 
-  const handleEditChannel = (id) => {
-    router.push(`/channels/edit?channelId=${id}`);
-  };
-
-  const handleHeaderLink = (row) => {
-    return `/channels/detail?id=${row._id}&channelName=${row.name}`;
+  const handleEditApi = (id) => {
+    router.push(`/api/edit?channelId=${id}`);
   };
 
   return (
@@ -68,32 +64,40 @@ export default function Channels() {
           justifyContent: "space-between",
           alignItems: "center",
           marginTop: 5,
+          px: 2,
         }}
       >
-        <Typography variant="h3" sx={{ py: 1, fontWeight: "bolder" }}>
-          List Channel
+        <Typography variant="h4" sx={{ py: 1, fontWeight: "bolder" }}>
+          List {listTitle}
         </Typography>
         <Button
           variant="contained"
-          size="large"
-          onClick={() => router.push("/channels/create")}
+          size="medium"
+          onClick={() => router.push("/api/create")}
         >
           Create
         </Button>
       </Box>
       <CustomTable
-        headerColumns={["Channel", "Description", "webhook", "status", ""]}
-        bodyColumns={["description", "webhook_url"]}
+        headerColumns={[
+          "Reply",
+          "Type",
+          "Description",
+          "Update date",
+          "Create date",
+          "",
+        ]}
+        bodyColumns={["method_type", "description", "updatedAt", "createdAt"]}
         canSetting={true}
-        statusState={["inactive", "active"]}
-        callbackGetData={getAllChannels}
-        callbackEditData={handleEditChannel}
-        callbackDeleteData={handleDeleteChannel}
+        statusState={[]}
+        callbackGetData={getAllApis}
+        callbackEditData={handleEditApi}
+        callbackDeleteData={handleDeleteApi}
         isLoading={isLoading}
         total={total}
-        data={channels}
+        data={apis}
         headerCell={"name"}
-        headerLink={handleHeaderLink}
+        headerLink={""}
         anchorEl={anchorEl}
         setAnchorEl={setAnchorEl}
         isOpenSnackbar={isOpenSnackbar}

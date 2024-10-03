@@ -3,20 +3,20 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import mongoose from "mongoose";
 import Channel from "@/models/channel";
 import { connectMongoDB } from "@/lib/mongodb";
+import API from "@/models/API";
+import LineUser from "@/models/LineUser";
+import { formatResponse } from "@/lib/utils";
 
 export async function GET(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      status: 401,
-    });
+    return formatResponse(401, { message: "Unauthorized" });
   }
   await connectMongoDB();
 
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
-    // const user_id = searchParams.get("user_id");
     const search = searchParams.get("search") || "";
     const orderBy = searchParams.get("orderBy") || "name";
     const orderDirection =
@@ -27,41 +27,22 @@ export async function GET(req) {
     if (id) {
       const channel = await Channel.findById(id);
       if (!channel) {
-        return new Response(JSON.stringify({ message: "Channel not found." }), {
-          status: 404,
-        });
+        return formatResponse(404, { message: "Channel not found." });
       }
 
       if (channel.user_id.toString() !== session.user._id.toString()) {
-        return new Response(
-          JSON.stringify({
-            message:
-              "Unauthorized: You do not have permission to access this channel.",
-          }),
-          {
-            status: 403, // Forbidden status code
-          }
-        );
+        return formatResponse(403, {
+          message: "Unauthorized: You do not have permission to access this channel.",
+        });
       }
 
-      return new Response(
-        JSON.stringify({
-          status: {
-            code: 200,
-            description: "OK",
-          },
-          Channel: channel,
-        }),
-        {
-          status: 200,
-        }
-      );
+
+      return formatResponse(200, { Channel: channel });
     } else {
       if (!session.user._id) {
-        return new Response(
-          JSON.stringify({ message: "the user hasn't access to it." }),
-          { status: 400 }
-        );
+        return formatResponse(400, {
+          message: "Missing required fields.",
+        });
       }
       const filter = {
         ...(session.user._id && {
@@ -82,34 +63,22 @@ export async function GET(req) {
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
 
-      return new Response(
-        JSON.stringify({
-          status: {
-            code: 200,
-            description: "OK",
-          },
-          Channel: channels,
-          Total: totalChannels,
-        }),
-        {
-          status: 200,
-        }
-      );
+
+      return formatResponse(200, {
+        Channel: channels,
+        Total: totalChannels,
+      });
     }
   } catch (error) {
     console.error(error);
-    return new Response(JSON.stringify({ message: "Internal server error." }), {
-      status: 500,
-    });
+    return formatResponse(500, { message: "Internal server error." });
   }
 }
 
 export async function POST(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      status: 401,
-    });
+    return formatResponse(401, { message: "Unauthorized" });
   }
 
   await connectMongoDB();
@@ -124,20 +93,20 @@ export async function POST(req) {
       channel_id,
       channel_secret,
       channel_access_token,
+      destination,
     } = body;
 
     if (
       !name ||
       !webhook_url ||
-      !status ||
       !channel_id ||
       !channel_secret ||
-      !channel_access_token
+      !channel_access_token ||
+      !destination
     ) {
-      return new Response(
-        JSON.stringify({ message: "Please provide all required fields." }),
-        { status: 400 }
-      );
+      return formatResponse(400, {
+        message: "Please provide all required fields.",
+      });
     }
 
     const newChannel = new Channel({
@@ -149,33 +118,21 @@ export async function POST(req) {
       channel_id,
       channel_secret,
       channel_access_token,
+      destination,
     });
 
     const savedChannel = await newChannel.save();
-    return new Response(
-      JSON.stringify({
-        status: {
-          code: 200,
-          description: "Success create channel!!",
-        },
-        Channel: savedChannel,
-      }),
-      { status: 201 }
-    );
+    return formatResponse(201, { Channel: savedChannel });
   } catch (error) {
     console.error(error);
-    return new Response(JSON.stringify({ message: "Internal server error." }), {
-      status: 500,
-    });
+    return formatResponse(500, { message: "Internal server error." });
   }
 }
 
 export async function PUT(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      status: 401,
-    });
+    return formatResponse(401, { message: "Unauthorized" });
   }
 
   await connectMongoDB();
@@ -191,27 +148,25 @@ export async function PUT(req) {
       channel_id,
       channel_secret,
       channel_access_token,
+      destination,
     } = body;
 
     if (!id) {
-      return new Response(
-        JSON.stringify({ message: "Please provide channel ID." }),
-        { status: 400 }
-      );
+      return formatResponse(400, { message: "Please provide channel ID." });
     }
 
     // check if the channel exists and the user has access to it
     const existingChannel = await Channel.findById(id);
     if (!existingChannel) {
-      return new Response(JSON.stringify({ message: "Channel not found." }), {
-        status: 404,
-      });
+      return formatResponse(404, { message: "Channel not found." });
     }
-    if (session.user._id && session.user._id !== existingChannel.user_id) {
-      return new Response(
-        JSON.stringify({ message: "No access this Channel" }),
-        { status: 400 }
-      );
+    if (
+      session.user._id &&
+      session.user._id.toString() !== existingChannel.user_id.toString()
+    ) {
+      return formatResponse(400, {
+        message: "No access this Channel",
+      });
     }
 
     const updateData = {
@@ -222,36 +177,24 @@ export async function PUT(req) {
       channel_id,
       channel_secret,
       channel_access_token,
+      destination,
     };
 
     const updatedChannel = await Channel.findByIdAndUpdate(id, updateData, {
       new: true,
     });
 
-    return new Response(
-      JSON.stringify({
-        status: {
-          code: 200,
-          description: "Success update channel!!",
-        },
-        Channel: updatedChannel,
-      }),
-      { status: 200 }
-    );
+    return formatResponse(200, { Channel: updatedChannel });
   } catch (error) {
     console.error(error);
-    return new Response(JSON.stringify({ message: "Internal server error." }), {
-      status: 500,
-    });
+    return formatResponse(500, { message: "Internal server error." });
   }
 }
 
 export async function DELETE(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      status: 401,
-    });
+    return formatResponse(401, { message: "Unauthorized" });
   }
 
   await connectMongoDB();
@@ -261,36 +204,32 @@ export async function DELETE(req) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return new Response(
-        JSON.stringify({ message: "Please provide channel ID." }),
-        { status: 400 }
-      );
+      return formatResponse(400, { message: "Please provide channel ID." });
     }
 
     // check if the channel exists and the user has access to it
     const existingChannel = await Channel.findById(id);
     if (!existingChannel) {
-      return new Response(JSON.stringify({ message: "Channel not found." }), {
-        status: 404,
+      return formatResponse(404, { message: "Channel not found." });
+    }
+    if (
+      session.user._id &&
+      session.user._id.toString() !== existingChannel.user_id.toString()
+    ) {
+      return formatResponse(400, {
+        message: "No access this Channel",
       });
     }
-    if (session.user._id && session.user._id !== existingChannel.user_id) {
-      return new Response(
-        JSON.stringify({ message: "No access this Channel" }),
-        { status: 400 }
-      );
-    }
 
-    await Channel.findByIdAndDelete(id);
 
-    return new Response(
-      JSON.stringify({ message: "Channel deleted successfully." }),
-      { status: 200 }
-    );
+    // delete all related data
+    await API.deleteMany({ channel_id: new mongoose.Types.ObjectId(id) });
+    await LineUser.deleteMany({ channel_id: new mongoose.Types.ObjectId(id) });
+    await Channel.findByIdAndDelete(id.toString());
+
+    return formatResponse(200, { message: "Channel deleted successfully." });
   } catch (error) {
     console.error(error);
-    return new Response(JSON.stringify({ message: "Internal server error." }), {
-      status: 500,
-    });
+    return formatResponse(500, { message: "Internal server error." });
   }
 }

@@ -26,12 +26,17 @@ const channelSchema = new Schema(
     channel_id: {
       type: String,
       required: true,
+      unique: true,
     },
     channel_secret: {
       type: String,
       required: true,
     },
     channel_access_token: {
+      type: String,
+      required: true,
+    },
+    destination: {
       type: String,
       required: true,
     },
