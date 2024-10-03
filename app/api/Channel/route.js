@@ -5,6 +5,7 @@ import Channel from "@/models/channel";
 import { connectMongoDB } from "@/lib/mongodb";
 import API from "@/models/API";
 import LineUser from "@/models/LineUser";
+import Action from "@/models/action";
 import { formatResponse } from "@/lib/utils";
 
 export async function GET(req) {
@@ -220,11 +221,11 @@ export async function DELETE(req) {
         message: "No access this Channel",
       });
     }
-
-
+    
     // delete all related data
     await API.deleteMany({ channel_id: new mongoose.Types.ObjectId(id) });
     await LineUser.deleteMany({ channel_id: new mongoose.Types.ObjectId(id) });
+    await Action.deleteMany({ channel_id: new mongoose.Types.ObjectId(id) });
     await Channel.findByIdAndDelete(id.toString());
 
     return formatResponse(200, { message: "Channel deleted successfully." });
