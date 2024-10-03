@@ -27,6 +27,9 @@ export async function GET(req) {
 
     if (id) {
       const Line_User = await LineUser.findById(id);
+      if (!Line_User) {
+        return formatResponse(404, { message: "User not found." });
+      }
       const channel = await Channel.findById(Line_User.channel_id.toString());
       if (!channel) {
         return formatResponse(404, { message: "Channel not found." });
@@ -39,27 +42,43 @@ export async function GET(req) {
       }
 
       return formatResponse(200, { user: Line_User });
-    }
-    const channels = await Channel.findbyId(channel_id);
-    if (!channels) {
-      return formatResponse(404, { message: "Channel not found." });
-    }
-    if (
-      session.user._id &&
-      session.user._id.toString() !== channels.user_id.toString()
-    ) {
-      return formatResponse(400, { message: "No access this Channel" });
-    }
+    } else {
+      console.log("get !!!!!");
+      const channels = await Channel.findById(channel_id);
+      console.log("channels", channels);
+      if (!channels) {
+        return formatResponse(404, { message: "Channel not found." });
+      }
+      if (
+        session.user._id &&
+        session.user._id.toString() !== channels.user_id.toString()
+      ) {
+        return formatResponse(400, { message: "No access this Channel" });
+      }
 
-    const Line_Users = await LineUser.find({
-      name: { $regex: search, $options: "i" },
-    })
-      .sort({ [orderBy]: orderDirection })
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize);
+      const filter = {
+        ...(channel_id && {
+          channel_id: new mongoose.Types.ObjectId(channel_id),
+        }),
+        ...(search && {
+          $or: [
+            { name: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } },
+          ],
+        }),
+      };
 
-    return formatResponse(200, { user: Line_Users });
+      const totalLine_Users = await LineUser.countDocuments(filter);
+
+      const Line_Users = await LineUser.find(filter)
+        .sort({ [orderBy]: orderDirection })
+        .skip((pageNumber - 1) * pageSize)
+        .limit(pageSize);
+
+      return formatResponse(200, { user: Line_Users, Total: totalLine_Users });
+    }
   } catch (error) {
+    console.log(error);
     return formatResponse(500, { message: error.message });
   }
 }
@@ -108,7 +127,9 @@ export async function POST(req) {
     }
 
     if (!_id || !name || !display_name) {
-      return formatResponse(400, { message: "Please provide name and display_name" });
+      return formatResponse(400, {
+        message: "Please provide name and display_name",
+      });
     }
 
     const Line_User = new LineUser({
