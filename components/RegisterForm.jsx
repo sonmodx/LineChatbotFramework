@@ -38,11 +38,7 @@ const FullHeightContainer = styled(Container)(({ theme }) => ({
 }));
 
 const ContentBox = styled(Box)(({ theme }) => ({
-<<<<<<< Updated upstream
   backgroundColor: "#FFFFFF", // Background color for the box
-=======
-  backgroundColor: "#FFFFFF",
->>>>>>> Stashed changes
   borderRadius: "0.5rem", // Optional border radius
   boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)", // Optional shadow for depth
   padding: theme.spacing(4), // Adjust padding as needed
