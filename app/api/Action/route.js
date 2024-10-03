@@ -3,14 +3,13 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { connectMongoDB } from "@/lib/mongodb";
 import mongoose from "mongoose";
 import Action from "@/models/action";
+import { formatResponse } from "@/lib/utils";
 
 // method get
 export async function GET(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      status: 401,
-    });
+    return formatResponse(401, { message: "Unauthorized" });
   }
   await connectMongoDB();
 
@@ -27,37 +26,15 @@ export async function GET(req) {
     if (id) {
       const action = await Action.findById(id);
       if (!action) {
-        return new Response(JSON.stringify({ message: "Message not found." }), {
-          status: 404,
-        });
+        return formatResponse(404, { message: "Message not found." });
       }
 
-      return new Response(
-        JSON.stringify({
-          status: {
-            code: 200,
-            description: "OK",
-          },
-          Action: action,
-        }),
-        {
-          status: 200,
-        }
-      );
+      return formatResponse(200, { Action: action });
     } else {
       if (!session.user._id) {
-        return new Response(
-          JSON.stringify({
-            status: {
-              code: 400,
-              description: "Bad Request",
-            },
-            message: "Missing required fields.",
-          }),
-          {
-            status: 400,
-          }
-        );
+        return formatResponse(400, {
+          message: "Missing required fields.",
+        });
       }
 
       const actions = await Action.find({
@@ -68,23 +45,10 @@ export async function GET(req) {
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
 
-      return new Response(
-        JSON.stringify({
-          status: {
-            code: 200,
-            description: "OK",
-          },
-          Actions: actions,
-        }),
-        {
-          status: 200,
-        }
-      );
+      return formatResponse(200, { Actions: actions });
     }
   } catch (error) {
-    return new Response(JSON.stringify({ message: error.message }), {
-      status: 500,
-    });
+    return formatResponse(500, { message: error.message });
   }
 }
 
@@ -92,9 +56,7 @@ export async function GET(req) {
 export async function POST(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      status: 401,
-    });
+    return formatResponse(401, { message: "Unauthorized" });
   }
   await connectMongoDB();
 
@@ -119,18 +81,7 @@ export async function POST(req) {
         !message ||
         !keyword
       ) {
-        return new Response(
-          JSON.stringify({
-            status: {
-              code: 400,
-              description: "Bad Request",
-            },
-            message: "Missing required fields.",
-          }),
-          {
-            status: 400,
-          }
-        );
+        return formatResponse(400, { message: "Missing required fields." });
       }
       const newAction = new Action({
         name,
@@ -144,18 +95,7 @@ export async function POST(req) {
 
       const savedAction = await newAction.save();
 
-      return new Response(
-        JSON.stringify({
-          status: {
-            code: 201,
-            description: "Created",
-          },
-          Action: savedAction,
-        }),
-        {
-          status: 201,
-        }
-      );
+      return formatResponse(201, { Action: savedAction });
     } else if (action_type === "broadcast message") {
       // code for broadcast message
     } else if (action_type === "push message") {
@@ -169,23 +109,10 @@ export async function POST(req) {
     } else if (action_type === "rich menu") {
       // code for rich menu
     } else {
-      return new Response(
-        JSON.stringify({
-          status: {
-            code: 400,
-            description: "Bad Request",
-          },
-          message: "Invalid action type.",
-        }),
-        {
-          status: 400,
-        }
-      );
+      return formatResponse(400, { message: "Invalid action type." });
     }
   } catch (error) {
-    return new Response(JSON.stringify({ message: error.message }), {
-      status: 500,
-    });
+    return formatResponse(500, { message: error.message });
   }
 }
 
@@ -193,9 +120,7 @@ export async function POST(req) {
 export async function PUT(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      status: 401,
-    });
+    return formatResponse(401, { message: "Unauthorized" });
   }
   await connectMongoDB();
 
@@ -213,18 +138,14 @@ export async function PUT(req) {
 
     const action = await Action.findById(id);
     if (!action) {
-      return new Response(JSON.stringify({ message: "Message not found." }), {
-        status: 404,
-      });
+      return formatResponse(404, { message: "Message not found." });
     }
 
     if (
       session.user._id &&
       session.user._id.toString() !== message.list_user.toString()
     ) {
-      return new Response(JSON.stringify({ message: "Unauthorized" }), {
-        status: 401,
-      });
+      return formatResponse(401, { message: "Unauthorized" });
     }
 
     const updateData = {
@@ -241,22 +162,9 @@ export async function PUT(req) {
       new: true,
     });
 
-    return new Response(
-      JSON.stringify({
-        status: {
-          code: 200,
-          description: "OK",
-        },
-        Action: updatedAction,
-      }),
-      {
-        status: 200,
-      }
-    );
+    return formatResponse(200, { Action: updatedAction });
   } catch (error) {
-    return new Response(JSON.stringify({ message: error.message }), {
-      status: 500,
-    });
+    return formatResponse(500, { message: error.message });
   }
 }
 
@@ -264,9 +172,7 @@ export async function PUT(req) {
 export async function DELETE(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      status: 401,
-    });
+    return formatResponse(401, { message: "Unauthorized" });
   }
   await connectMongoDB();
 
@@ -275,36 +181,20 @@ export async function DELETE(req) {
 
     const action = await Action.findById(id);
     if (!action) {
-      return new Response(JSON.stringify({ message: "Message not found." }), {
-        status: 404,
-      });
+      return formatResponse(404, { message: "Message not found." });
     }
 
     if (
       session.user._id &&
       session.user._id.toString() !== message.list_user.toString()
     ) {
-      return new Response(JSON.stringify({ message: "Unauthorized" }), {
-        status: 401,
-      });
+      return formatResponse(401, { message: "Unauthorized" });
     }
 
     await action.delete();
 
-    return new Response(
-      JSON.stringify({
-        status: {
-          code: 200,
-          description: "OK",
-        },
-      }),
-      {
-        status: 200,
-      }
-    );
+    return formatResponse(200, { message: "Message deleted." });
   } catch (error) {
-    return new Response(JSON.stringify({ message: error.message }), {
-      status: 500,
-    });
+    return formatResponse(500, { message: error.message });
   }
 }

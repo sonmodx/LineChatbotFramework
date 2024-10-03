@@ -85,12 +85,12 @@ export default function LoginForm() {
         <Grid item xs={12} md={6}>
           <ContentBox>
             <Box sx={{ textAlign: "center", mb: 5 }}>
-              <Image
+              {/* <Image
                 src="https://cdn.discordapp.com/attachments/1268217881657737236/1272507012432920598/copy.png?ex=66e4c141&is=66e36fc1&hm=e9f52b52addefbd74e97b4817bf8eb51df6423e903434c61f059077c507600d7&"
                 alt="logo"
                 width={185}
                 height={185}
-              />
+              /> */}
               <Typography variant="h4" sx={{ mt: 1, mb: 5, pb: 1 }}>
                 FRONTEND FRAMEWORK
               </Typography>
