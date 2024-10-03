@@ -40,7 +40,7 @@ export async function GET(req) {
 
       return formatResponse(200, { user: Line_User });
     }
-    const channels = await Channel.findbyId(channel_id);
+    const channels = await Channel.findById(channel_id);
     if (!channels) {
       return formatResponse(404, { message: "Channel not found." });
     }
@@ -108,7 +108,9 @@ export async function POST(req) {
     }
 
     if (!_id || !name || !display_name) {
-      return formatResponse(400, { message: "Please provide name and display_name" });
+      return formatResponse(400, {
+        message: "Please provide name and display_name",
+      });
     }
 
     const Line_User = new LineUser({

@@ -3,10 +3,13 @@ import { Box, Container, Tab, Tabs, Typography, Button } from "@mui/material";
 
 import { useState } from "react";
 import ChannelAPI from "../ChannelAPI";
+import ChannelUser from "../ChannelUser";
 
 function ManageShowTable({ tab, id }) {
   const listTitle = ["Action", "User", "API", "Log"];
-  if (tab === 2) {
+  if (tab === 1) {
+    return <ChannelUser listTitle={listTitle[tab]} channelId={id} />;
+  } else if (tab === 2) {
     return <ChannelAPI listTitle={listTitle[tab]} channelId={id} />;
   }
   return <Box>Empty Component</Box>;
