@@ -1,14 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    remotePatterns: [
+  async redirects() {
+    return [
       {
-        protocol: "https",
-        hostname: "cdn.discordapp.com",
-        port: "",
-        pathname: "/attachments/**",
+        source: "/",
+        destination: "/login",
+        permanent: false, // Set to true if you want a permanent redirect
       },
-    ],
+    ];
   },
 };
 

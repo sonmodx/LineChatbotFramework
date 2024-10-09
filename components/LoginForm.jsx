@@ -71,7 +71,7 @@ export default function LoginForm() {
         return;
       }
 
-      router.replace("dashboard");
+      router.replace("channels");
     } catch (error) {
       console.log(error);
       setError("An unexpected error occurred");
@@ -85,12 +85,12 @@ export default function LoginForm() {
         <Grid item xs={12} md={6}>
           <ContentBox>
             <Box sx={{ textAlign: "center", mb: 5 }}>
-              {/* <Image
-                src="https://cdn.discordapp.com/attachments/1268217881657737236/1272507012432920598/copy.png?ex=66e4c141&is=66e36fc1&hm=e9f52b52addefbd74e97b4817bf8eb51df6423e903434c61f059077c507600d7&"
+              <Image
+                src="/logo.png"
                 alt="logo"
                 width={185}
                 height={185}
-              /> */}
+              />
               <Typography variant="h4" sx={{ mt: 1, mb: 5, pb: 1 }}>
                 FRONTEND FRAMEWORK
               </Typography>
@@ -157,7 +157,7 @@ export default function LoginForm() {
                 We are more than just a frontend.
               </Typography>
               <Typography variant="body2">
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+              Our expertise goes beyond traditional design; we specialize in line middleware solutions that empower seamless integration and communication. If you would like to join us, we are committed to delivering innovative services that enhance efficiency and streamline processes. Our team is dedicated to understanding your needs and providing robust solutions that drive success.
               </Typography>
             </Box>
           </GradientBox>
