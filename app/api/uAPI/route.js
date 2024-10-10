@@ -143,7 +143,6 @@ export async function POST(req) {
 
     return formatResponse(201, { API: savedAPI });
   } catch (error) {
-
     return formatResponse(500, { message: "Internal server error." });
   }
 }

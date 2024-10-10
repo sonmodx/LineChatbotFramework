@@ -15,7 +15,7 @@ export default function ChannelUser({ listTitle, channelId }) {
   const { data: session } = useSession(authOptions);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const getAllApis = async () => {
+  const getAllUsers = async () => {
     try {
       setIsLoading(true);
       const res = await axios.get(
@@ -52,16 +52,16 @@ export default function ChannelUser({ listTitle, channelId }) {
       </Box>
       <CustomTable
         headerColumns={["User", "Role", "Description", "Group"]}
-        bodyColumns={["method_type", "description", "updatedAt"]}
+        bodyColumns={["tags", "description", "group"]}
         canSetting={false}
         statusState={[]}
-        callbackGetData={getAllApis}
+        callbackGetData={getAllUsers}
         callbackEditData={null}
         callbackDeleteData={null}
         isLoading={isLoading}
         total={total}
         data={users}
-        headerCell={""}
+        headerCell={"display_name"}
         headerLink={""}
         anchorEl={anchorEl}
         setAnchorEl={setAnchorEl}

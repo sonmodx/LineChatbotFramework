@@ -62,25 +62,11 @@ export async function POST(req) {
 
   try {
     const { action_type } = new URL(req.url);
-    const {
-      name,
-      type,
-      description,
-      channel_id,
-      api_id,
-      message,
-      keyword,
-    } = await req.json();
+    const { name, type, description, channel_id, api_id, message, keyword } =
+      await req.json();
 
     if (action_type === "reply message") {
-      if (
-        !name ||
-        !type ||
-        !channel_id ||
-        !api_id ||
-        !message ||
-        !keyword
-      ) {
+      if (!name || !type || !channel_id || !api_id || !message || !keyword) {
         return formatResponse(400, { message: "Missing required fields." });
       }
       const newAction = new Action({
@@ -126,15 +112,8 @@ export async function PUT(req) {
 
   try {
     const { id } = new URL(req.url);
-    const {
-      name,
-      type,
-      description,
-      channel_id,
-      api_id,
-      message,
-      keyword,
-    } = await req.json();
+    const { name, type, description, channel_id, api_id, message, keyword } =
+      await req.json();
 
     const action = await Action.findById(id);
     if (!action) {
