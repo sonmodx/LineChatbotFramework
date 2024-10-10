@@ -1,20 +1,58 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Box, TextField, Checkbox, Typography, Autocomplete, Grid, Button } from '@mui/material';
+import React, { useState } from "react";
+import {
+  Box,
+  TextField,
+  Checkbox,
+  Typography,
+  Autocomplete,
+  Grid,
+  Button,
+} from "@mui/material";
+import { useSearchParams } from "next/navigation";
+import axios from "axios";
 
-const apis = ['API 1', 'API 2', 'API 3']; // Example options for API selection
+const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
 
-export default function replyaction() {
+export default function Replyaction({ setIsCreateState }) {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
-
+  const [keywords, setKeywords] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const searchParams = useSearchParams();
+  const channelId = searchParams.get("id");
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
   };
 
   const handleApiChange = (event, newValue) => {
     setSelectedApi(newValue);
+  };
+
+  const handleSave = async () => {
+    try {
+      const body = {
+        name: "Test reply message",
+        type: "text",
+        channel_id: channelId,
+        message: messages.split(","),
+        keyword: keywords.split(","),
+      };
+      const res = await axios.post(
+        "/api/Action?action_type=reply_message",
+        body,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (res.status === 201) {
+        setIsCreateState(false);
+        console.log("Successful created new channel!");
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -46,6 +84,7 @@ export default function replyaction() {
               fullWidth
               placeholder="Enter keyword"
               variant="outlined"
+              onChange={(e) => setKeywords(e.target.value)}
             />
           </Grid>
 
@@ -68,7 +107,9 @@ export default function replyaction() {
         <Grid container alignItems="center">
           <Grid item xs={12} sm={3}>
             <Checkbox checked={useApi} onChange={handleCheckboxChange} />
-            <Typography variant="body1" display="inline">Use API</Typography>
+            <Typography variant="body1" display="inline">
+              Use API
+            </Typography>
           </Grid>
 
           <Grid item xs={12} sm={9}>
@@ -96,7 +137,7 @@ export default function replyaction() {
         <Typography
           variant="h6"
           gutterBottom
-          style={{ backgroundColor: '#1E88E5', color: '#fff', padding: '10px' }}
+          style={{ backgroundColor: "#1E88E5", color: "#fff", padding: "10px" }}
         >
           Text Message
         </Typography>
@@ -106,17 +147,21 @@ export default function replyaction() {
           rows={8}
           placeholder="Enter your message here"
           variant="outlined"
+          onChange={(e) => setMessages(e.target.value)}
         />
       </Box>
 
       {/* Note */}
       <Box mt={2}>
-        <Typography variant="caption">*หมายเหตุ การเรียกใช้ keyword จะอยู่ก่อน Params เช่น call {'{num}'} และแสดงผลใน text message ใช้ {'{result}'} </Typography>
+        <Typography variant="caption">
+          *หมายเหตุ การเรียกใช้ keyword จะอยู่ก่อน Params เช่น call {"{num}"}{" "}
+          และแสดงผลใน text message ใช้ {"{result}"}{" "}
+        </Typography>
       </Box>
 
       {/* Save Button */}
       <Box mt={4} textAlign="right">
-        <Button variant="contained" color="primary">
+        <Button variant="contained" color="primary" onClick={handleSave}>
           Save
         </Button>
       </Box>

@@ -89,23 +89,10 @@ export async function POST(req) {
   try {
     const { searchParams } = new URL(req.url);
     const action_type = searchParams.get("action_type");
-    const {
-      name,
-      type,
-      description,
-      channel_id,
-      api_id,
-      message,
-      keyword,
-    } = await req.json();
+    const { name, type, description, channel_id, api_id, message, keyword } =
+      await req.json();
     console.log("action_type", action_type);
-    if (
-      !name ||
-      !type ||
-      !channel_id ||
-      !message ||
-      !keyword
-    ) {
+    if (!name || !type || !channel_id || !message || !keyword) {
       return formatResponse(400, { message: "Missing required fields." });
     }
 
@@ -129,7 +116,7 @@ export async function POST(req) {
         message,
         keyword,
       };
-      
+
       if (api_id) {
         actionData.api_id = new mongoose.Types.ObjectId(api_id);
       }
@@ -170,15 +157,8 @@ export async function PUT(req) {
 
   try {
     const { id } = new URL(req.url);
-    const {
-      name,
-      type,
-      description,
-      channel_id,
-      api_id,
-      message,
-      keyword,
-    } = await req.json();
+    const { name, type, description, channel_id, api_id, message, keyword } =
+      await req.json();
 
     const action = await Action.findById(id);
     if (!action) {
@@ -221,21 +201,30 @@ export async function DELETE(req) {
   await connectMongoDB();
 
   try {
-    const { id } = new URL(req.url);
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
 
     const action = await Action.findById(id);
+
     if (!action) {
       return formatResponse(404, { message: "Message not found." });
     }
 
+    const existingChannel = await Channel.findById(
+      action.channel_id.toString()
+    );
+    if (!existingChannel) {
+      return formatResponse(404, { message: "Channel not found." });
+    }
+
     if (
       session.user._id &&
-      session.user._id.toString() !== message.list_user.toString()
+      session.user._id.toString() !== existingChannel.user_id.toString()
     ) {
       return formatResponse(401, { message: "Unauthorized" });
     }
 
-    await action.delete();
+    await Action.findByIdAndDelete(id);
 
     return formatResponse(200, { message: "Message deleted." });
   } catch (error) {

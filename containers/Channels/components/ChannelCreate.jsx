@@ -18,6 +18,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { getBotInfo, setWebhookURL } from "./action";
 
+const WEBHOOK_URL = "https://example.com/hoge";
+
 export default function ChannelCreate() {
   const [channelId, setChannelId] = useState();
   const [channelName, setChannelName] = useState();
@@ -58,7 +60,7 @@ export default function ChannelCreate() {
       //webhook url must be valid, currently for example
       const resultWebhook = await setWebhookURL(
         channelAccessToken,
-        "https://mywebhook.com/webhook"
+        WEBHOOK_URL
       );
       // if return {message: ""}
       if (Object.keys(resultWebhook).length !== 0) {
@@ -71,12 +73,12 @@ export default function ChannelCreate() {
       const body = {
         name: channelName,
         description: description, //No field description
-        webhook_url: "https://mywebhook.com/webhook",
+        webhook_url: WEBHOOK_URL,
         status: isActive, //No field status
         channel_id: channelId,
         channel_secret: channelSecret,
         channel_access_token: channelAccessToken,
-        // destination: destination,
+        destination: destination,
       };
       console.log(body);
       const res = await axios.post("/api/Channel/", body, {
@@ -189,8 +191,7 @@ export default function ChannelCreate() {
               name="webhook-api"
               label="Webhook API"
               fullWidth
-              disabled
-              defaultValue="https://mywebhook.com/webhook"
+              defaultValue={WEBHOOK_URL}
             />
             <FormControlLabel
               control={

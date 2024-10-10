@@ -18,6 +18,8 @@ import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+const WEBHOOK_URL = "https://example.com/hoge";
+
 export default function ChannelEdit() {
   //   const [channelId, setChannelId] = useState();
   //   const [channelSecret, setChannelSecret] = useState();
@@ -68,7 +70,7 @@ export default function ChannelEdit() {
         id: channel._id,
         name: channel.name,
         description: channel.description,
-        webhook_url: "https://mywebhook.com/webhook",
+        webhook_url: WEBHOOK_URL,
         status: channel.status,
         channel_id: channel.channel_id,
         channel_secret: channel.channel_secret,
@@ -225,7 +227,7 @@ export default function ChannelEdit() {
                 label="Webhook API"
                 fullWidth
                 disabled
-                defaultValue="https://mywebhook.com/webhook"
+                defaultValue={WEBHOOK_URL}
               />
 
               <FormControlLabel

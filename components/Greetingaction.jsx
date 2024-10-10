@@ -5,7 +5,7 @@ import { Box, TextField, Checkbox, Typography, Autocomplete, Grid, Button } from
 
 const apis = ['API 1', 'API 2', 'API 3']; // Example options for API selection
 
-export default function greetingaction() {
+export default function Greetingaction() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
 
