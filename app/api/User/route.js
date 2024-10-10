@@ -43,9 +43,7 @@ export async function GET(req) {
 
       return formatResponse(200, { user: Line_User });
     } else {
-      console.log("get !!!!!");
       const channels = await Channel.findById(channel_id);
-      console.log("channels", channels);
       if (!channels) {
         return formatResponse(404, { message: "Channel not found." });
       }
