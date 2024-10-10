@@ -11,7 +11,7 @@ import ActionCreate from "./ActionCreate";
 export default function ChannelAction({ listTitle, channelId }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [apis, setApis] = useState([]);
+  const [actions, setActions] = useState([]);
   const [total, setTotal] = useState();
   const [isOpenSnackbar, setIsOpenSnackbar] = useState(false);
   const [anchorEl, setAnchorEl] = useState();
@@ -29,91 +29,93 @@ export default function ChannelAction({ listTitle, channelId }) {
       );
       if (res.status === 200) {
         const data = res.data;
-        setApis(data.API);
+        setActions(data.Actions);
         setTotal(data.Total);
-        console.log("APIs data:", data);
+        console.log("Action data:", data);
       }
       setIsLoading(false);
     } catch (error) {
-      console.error("Error when get apis:", error);
+      console.error("Error when get action:", error);
     }
   };
 
   const handleDeleteApi = async (selectId) => {
     try {
       console.log(selectId);
-      const res = await axios.delete(`/api/uAPI?id=${selectId}`);
+      const res = await axios.delete(`/api/Action?id=${selectId}`);
       if (res.status === 200) {
-        getAllApis();
+        getAllActions();
         setAnchorEl(null);
-        console.log("API deleted successfully.");
+        console.log("Action deleted successfully.");
         setIsOpenSnackbar(true);
       }
     } catch (error) {
-      console.error("Error delete API failed:", error);
+      console.error("Error delete Action failed:", error);
     }
   };
 
   const handleEditApi = (id) => {
-    router.push(`/api/edit?channelId=${id}`);
+    router.push(``);
   };
 
   return (
     <Container>
       {!isCreateState && (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: 5,
-            px: 2,
-          }}
-        >
-          <Typography variant="h4" sx={{ py: 1, fontWeight: "bolder" }}>
-            List {listTitle}
-          </Typography>
-          <Button
-            variant="contained"
-            size="medium"
-            onClick={() => setIsCreateState(true)}
+        <>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: 5,
+              px: 2,
+            }}
           >
-            Create
-          </Button>
-        </Box>
+            <Typography variant="h4" sx={{ py: 1, fontWeight: "bolder" }}>
+              List {listTitle}
+            </Typography>
+            <Button
+              variant="contained"
+              size="medium"
+              onClick={() => setIsCreateState(true)}
+            >
+              Create
+            </Button>
+          </Box>
+          <CustomTable
+            headerColumns={[
+              "Action",
+              "API",
+              "Description",
+              "Update date",
+              "Create date",
+              "",
+            ]}
+            bodyColumns={["api_id", "description", "updatedAt", "createdAt"]}
+            canSetting={true}
+            statusState={[]}
+            callbackGetData={getAllActions}
+            // callbackEditData={handleEditApi}
+            callbackDeleteData={handleDeleteApi}
+            isLoading={isLoading}
+            total={total}
+            data={actions}
+            headerCell={"name"}
+            headerLink={""}
+            anchorEl={anchorEl}
+            setAnchorEl={setAnchorEl}
+            isOpenSnackbar={isOpenSnackbar}
+            setIsOpenSnackbar={setIsOpenSnackbar}
+            session={session}
+            page={page}
+            setPage={setPage}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+          />
+        </>
       )}
 
-      {isCreateState && <ActionCreate />}
-      {/* <CustomTable
-        headerColumns={[
-          "Action",
-          "API",
-          "Description",
-          "Update date",
-          "Create date",
-          "",
-        ]}
-        bodyColumns={["method_type", "description", "updatedAt", "createdAt"]}
-        canSetting={true}
-        statusState={[]}
-        callbackGetData={getAllActions}
-        // callbackEditData={handleEditApi}
-        // callbackDeleteData={handleDeleteApi}
-        isLoading={isLoading}
-        total={total}
-        data={apis}
-        headerCell={"name"}
-        headerLink={""}
-        anchorEl={anchorEl}
-        setAnchorEl={setAnchorEl}
-        isOpenSnackbar={isOpenSnackbar}
-        setIsOpenSnackbar={setIsOpenSnackbar}
-        session={session}
-        page={page}
-        setPage={setPage}
-        rowsPerPage={rowsPerPage}
-        setRowsPerPage={setRowsPerPage}
-      /> */}
+      {isCreateState && <ActionCreate setIsCreateState={setIsCreateState} />}
     </Container>
   );
 }

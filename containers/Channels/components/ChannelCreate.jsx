@@ -191,7 +191,6 @@ export default function ChannelCreate() {
               name="webhook-api"
               label="Webhook API"
               fullWidth
-              disabled
               defaultValue={WEBHOOK_URL}
             />
             <FormControlLabel

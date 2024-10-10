@@ -7,13 +7,13 @@ import MulticastMessage from "@/components/Multicastaction";
 import BroadcastMessage from "@/components/Boardcastaction";
 import Greetingaction from "@/components/Greetingaction";
 
-export default function ActionCreate() {
+export default function ActionCreate({ setIsCreateState }) {
   const manageActionUI = (index) => {
     switch (index) {
       case 0:
         return <Greetingaction />;
       case 1:
-        return <Replyaction />;
+        return <Replyaction setIsCreateState={setIsCreateState} />;
       case 2:
         return;
       case 3:

@@ -10,15 +10,18 @@ import {
   Grid,
   Button,
 } from "@mui/material";
+import { useSearchParams } from "next/navigation";
+import axios from "axios";
 
 const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
 
-export default function Replyaction() {
+export default function Replyaction({ setIsCreateState }) {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [keywords, setKeywords] = useState([]);
   const [messages, setMessages] = useState([]);
-
+  const searchParams = useSearchParams();
+  const channelId = searchParams.get("id");
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
   };
@@ -27,16 +30,26 @@ export default function Replyaction() {
     setSelectedApi(newValue);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
       const body = {
-        name: "test reply",
-        type: "reply message",
-        channel_id: "",
-        api_id: "",
-        message: messages,
-        keyword: keywords,
+        name: "Test reply message",
+        type: "text",
+        channel_id: channelId,
+        message: messages.split(","),
+        keyword: keywords.split(","),
       };
+      const res = await axios.post(
+        "/api/Action?action_type=reply_message",
+        body,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (res.status === 201) {
+        setIsCreateState(false);
+        console.log("Successful created new channel!");
+      }
     } catch (error) {
       console.error(error);
     }

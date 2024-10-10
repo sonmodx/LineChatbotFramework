@@ -201,21 +201,30 @@ export async function DELETE(req) {
   await connectMongoDB();
 
   try {
-    const { id } = new URL(req.url);
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
 
     const action = await Action.findById(id);
+
     if (!action) {
       return formatResponse(404, { message: "Message not found." });
     }
 
+    const existingChannel = await Channel.findById(
+      action.channel_id.toString()
+    );
+    if (!existingChannel) {
+      return formatResponse(404, { message: "Channel not found." });
+    }
+
     if (
       session.user._id &&
-      session.user._id.toString() !== message.list_user.toString()
+      session.user._id.toString() !== existingChannel.user_id.toString()
     ) {
       return formatResponse(401, { message: "Unauthorized" });
     }
 
-    await action.delete();
+    await Action.findByIdAndDelete(id);
 
     return formatResponse(200, { message: "Message deleted." });
   } catch (error) {
