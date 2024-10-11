@@ -30,6 +30,7 @@ export default function ChannelCreate() {
   const [isError, setIsError] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [isOpenSnackbar, setIsOpenSnackbar] = useState(false);
+  const [customWebhook, setCustomWebhook] = useState("");
   const router = useRouter();
 
   const handleCloseSnackbar = (event, reason) => {
@@ -60,7 +61,7 @@ export default function ChannelCreate() {
       //webhook url must be valid, currently for example
       const resultWebhook = await setWebhookURL(
         channelAccessToken,
-        WEBHOOK_URL
+        customWebhook
       );
       // if return {message: ""}
       if (Object.keys(resultWebhook).length !== 0) {
@@ -73,7 +74,7 @@ export default function ChannelCreate() {
       const body = {
         name: channelName,
         description: description, //No field description
-        webhook_url: WEBHOOK_URL,
+        webhook_url: customWebhook,
         status: isActive, //No field status
         channel_id: channelId,
         channel_secret: channelSecret,
@@ -191,7 +192,10 @@ export default function ChannelCreate() {
               name="webhook-api"
               label="Webhook API"
               fullWidth
-              defaultValue={WEBHOOK_URL}
+              value={customWebhook}
+              onChange={(e) => {
+                setCustomWebhook(e.target.value);
+              }}
             />
             <FormControlLabel
               control={
