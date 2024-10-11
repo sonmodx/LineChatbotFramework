@@ -31,6 +31,7 @@ export default function ChannelEdit() {
   const [channel, setChannel] = useState({});
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const [customWebhook, setCustomWebhook] = useState("");
 
   const channelIdParams = searchParams.get("channelId");
   console.log(channel);
@@ -70,7 +71,7 @@ export default function ChannelEdit() {
         id: channel._id,
         name: channel.name,
         description: channel.description,
-        webhook_url: WEBHOOK_URL,
+        webhook_url: customWebhook,
         status: channel.status,
         channel_id: channel.channel_id,
         channel_secret: channel.channel_secret,
@@ -226,8 +227,8 @@ export default function ChannelEdit() {
                 name="webhook-api"
                 label="Webhook API"
                 fullWidth
-                disabled
-                defaultValue={WEBHOOK_URL}
+                value={customWebhook}
+                onChange={(e) => setCustomWebhook(e.target.value)}
               />
 
               <FormControlLabel
