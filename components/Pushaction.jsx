@@ -33,25 +33,21 @@ export default function PushMessage() {
   };
 
   return (
-    <Box p={4}>
+    <Box p={4} width="100%">
       {/* Title and Description */}
       <Typography variant="h5" gutterBottom>
         Push Message
       </Typography>
 
       {/* Thin Black Line */}
-      <Box
-        borderBottom={1}
-        borderColor="black"
-        mb={3} // Add some space below the line
-      />
+      <Box borderBottom={1} borderColor="black" mb={3} width="100%" />
 
       <Typography variant="body2" gutterBottom>
         วิธีใช้งาน : สามารถส่ง messages ไปหา user ทีละคนโดยระบุ User
       </Typography>
 
       {/* Text Message and User Areas */}
-      <Box mt={3}>
+      <Box mt={3} width="100%">
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <Typography
@@ -61,8 +57,8 @@ export default function PushMessage() {
             >
               Text Message
             </Typography>
-            
-            {/* Dynamically created text fields for message */}
+
+            {/* Dynamically Created Message Fields */}
             {[...Array(messageCount)].map((_, index) => (
               <Box key={index} mt={2}>
                 <TextField
@@ -75,7 +71,7 @@ export default function PushMessage() {
               </Box>
             ))}
 
-            {/* ADD and REMOVE buttons */}
+            {/* ADD and REMOVE Buttons */}
             <Box mt={2}>
               {messageCount < 5 && (
                 <IconButton onClick={addMessageBox}>
@@ -104,12 +100,14 @@ export default function PushMessage() {
               fullWidth
               placeholder="Enter user info"
               variant="outlined"
-              mb={2}
+              sx={{ marginBottom: 2 }}
             />
 
             {/* API Section */}
-            <Checkbox checked={useApi} onChange={handleCheckboxChange} />
-            <Typography variant="body1" display="inline">Use API</Typography>
+            <Box display="flex" alignItems="center">
+              <Checkbox checked={useApi} onChange={handleCheckboxChange} />
+              <Typography variant="body1" display="inline">Use API</Typography>
+            </Box>
 
             {useApi && (
               <Autocomplete
@@ -131,7 +129,7 @@ export default function PushMessage() {
       </Box>
 
       {/* Result Section */}
-      <Box mt={3}>
+      <Box mt={3} width="100%">
         <Typography
           variant="h6"
           gutterBottom
@@ -149,7 +147,7 @@ export default function PushMessage() {
       </Box>
 
       {/* Send Button */}
-      <Box mt={4} textAlign="right">
+      <Box mt={4} textAlign="right" width="100%">
         <Button variant="contained" color="primary">
           Send
         </Button>

@@ -18,25 +18,21 @@ export default function MulticastMessage() {
   };
 
   return (
-    <Box p={4}>
+    <Box p={4} width="100%">
       {/* Title and Description */}
       <Typography variant="h5" gutterBottom>
         Multicast Message
       </Typography>
 
       {/* Thin Black Line */}
-      <Box
-        borderBottom={1}
-        borderColor="black"
-        mb={3} // Add some space below the line
-      />
+      <Box borderBottom={1} borderColor="black" mb={3} width="100%" />
 
       <Typography variant="body2" gutterBottom>
         วิธีใช้งาน : สามารถ Multicast messages ไปหา user ได้ทั้งหมดในทีเดียวโดยไม่จำเป็นต้องทำหลาย ๆ ครั้ง
       </Typography>
 
       {/* Text Message and User Areas */}
-      <Box mt={3}>
+      <Box mt={3} width="100%">
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <Typography
@@ -75,7 +71,7 @@ export default function MulticastMessage() {
       </Box>
 
       {/* Result Section */}
-      <Box mt={3}>
+      <Box mt={3} width="100%">
         <Typography
           variant="h6"
           gutterBottom
@@ -93,11 +89,13 @@ export default function MulticastMessage() {
       </Box>
 
       {/* API Section */}
-      <Box mt={4}>
-        <Grid container alignItems="center">
+      <Box mt={4} width="100%">
+        <Grid container alignItems="center" spacing={2}>
           <Grid item xs={12} sm={3}>
             <Checkbox checked={useApi} onChange={handleCheckboxChange} />
-            <Typography variant="body1" display="inline">Use API</Typography>
+            <Typography variant="body1" display="inline">
+              Use API
+            </Typography>
           </Grid>
 
           <Grid item xs={12} sm={9}>
@@ -121,7 +119,7 @@ export default function MulticastMessage() {
       </Box>
 
       {/* Send Button */}
-      <Box mt={4} textAlign="right">
+      <Box mt={4} textAlign="right" width="100%">
         <Button variant="contained" color="primary">
           Send
         </Button>

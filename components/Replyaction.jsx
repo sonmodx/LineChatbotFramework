@@ -56,25 +56,21 @@ export default function Replyaction({ setIsCreateState }) {
   };
 
   return (
-    <Box p={4}>
+    <Box p={4} width="100%">
       {/* Title and Description */}
       <Typography variant="h5" gutterBottom>
         Reply Message
       </Typography>
-
+  
       {/* Thin Black Line */}
-      <Box
-        borderBottom={1}
-        borderColor="black"
-        mb={3} // Add some space below the line
-      />
-
+      <Box borderBottom={1} borderColor="black" mb={3} width="100%" />
+  
       <Typography variant="body2" gutterBottom>
         วิธีใช้งาน: ข้อความตอบกลับเมื่อพบ keyword ใน Line Chatbot
       </Typography>
-
+  
       {/* Keyword Input */}
-      <Box mt={3}>
+      <Box mt={3} width="100%">
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={6}>
             <Typography variant="h6" gutterBottom>
@@ -87,7 +83,7 @@ export default function Replyaction({ setIsCreateState }) {
               onChange={(e) => setKeywords(e.target.value)}
             />
           </Grid>
-
+  
           {/* Param Label and Input */}
           <Grid item xs={12} sm={6}>
             <Typography variant="h6" gutterBottom>
@@ -101,9 +97,9 @@ export default function Replyaction({ setIsCreateState }) {
           </Grid>
         </Grid>
       </Box>
-
+  
       {/* API Section */}
-      <Box mt={4}>
+      <Box mt={4} width="100%">
         <Grid container alignItems="center">
           <Grid item xs={12} sm={3}>
             <Checkbox checked={useApi} onChange={handleCheckboxChange} />
@@ -111,7 +107,7 @@ export default function Replyaction({ setIsCreateState }) {
               Use API
             </Typography>
           </Grid>
-
+  
           <Grid item xs={12} sm={9}>
             {useApi && (
               <Autocomplete
@@ -131,9 +127,9 @@ export default function Replyaction({ setIsCreateState }) {
           </Grid>
         </Grid>
       </Box>
-
+  
       {/* Text Message Section */}
-      <Box mt={4}>
+      <Box mt={4} width="100%">
         <Typography
           variant="h6"
           gutterBottom
@@ -150,17 +146,17 @@ export default function Replyaction({ setIsCreateState }) {
           onChange={(e) => setMessages(e.target.value)}
         />
       </Box>
-
+  
       {/* Note */}
-      <Box mt={2}>
+      <Box mt={2} width="100%">
         <Typography variant="caption">
           *หมายเหตุ การเรียกใช้ keyword จะอยู่ก่อน Params เช่น call {"{num}"}{" "}
           และแสดงผลใน text message ใช้ {"{result}"}{" "}
         </Typography>
       </Box>
-
+  
       {/* Save Button */}
-      <Box mt={4} textAlign="right">
+      <Box mt={4} textAlign="right" width="100%">
         <Button variant="contained" color="primary" onClick={handleSave}>
           Save
         </Button>
