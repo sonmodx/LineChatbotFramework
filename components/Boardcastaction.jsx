@@ -18,7 +18,7 @@ export default function BroadcastMessage() {
   };
 
   return (
-    <Box p={4}>
+    <Box p={4} width="100%">
       {/* Title and Description */}
       <Typography variant="h5" gutterBottom>
         Broadcast Message
@@ -28,7 +28,8 @@ export default function BroadcastMessage() {
       <Box
         borderBottom={1}
         borderColor="black"
-        mb={3} // Add some space below the line
+        mb={3} // Add space below the line
+        width="100%"
       />
 
       <Typography variant="body2" gutterBottom>
@@ -36,7 +37,7 @@ export default function BroadcastMessage() {
       </Typography>
 
       {/* Text Message and Result Areas */}
-      <Box mt={3}>
+      <Box mt={3} width="100%">
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <Typography
@@ -75,11 +76,13 @@ export default function BroadcastMessage() {
       </Box>
 
       {/* API Section */}
-      <Box mt={4}>
-        <Grid container alignItems="center">
+      <Box mt={4} width="100%">
+        <Grid container alignItems="center" spacing={2}>
           <Grid item xs={12} sm={3}>
             <Checkbox checked={useApi} onChange={handleCheckboxChange} />
-            <Typography variant="body1" display="inline">Use API</Typography>
+            <Typography variant="body1" display="inline">
+              Use API
+            </Typography>
           </Grid>
 
           <Grid item xs={12} sm={9}>
@@ -103,7 +106,7 @@ export default function BroadcastMessage() {
       </Box>
 
       {/* Send Button */}
-      <Box mt={4} textAlign="right">
+      <Box mt={4} textAlign="right" width="100%">
         <Button variant="contained" color="primary">
           Send
         </Button>

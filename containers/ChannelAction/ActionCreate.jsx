@@ -28,7 +28,11 @@ export default function ActionCreate({ setIsCreateState }) {
   };
   const [selectedIndex, setSelectedIndex] = useState(0);
   return (
-    <Stack direction="row" spacing={20}>
+    <Stack 
+      direction="row" 
+      spacing={1} 
+      sx={{ width: '100%' }} 
+    >
       <ListMenu
         selectedIndex={selectedIndex}
         setSelectedIndex={setSelectedIndex}

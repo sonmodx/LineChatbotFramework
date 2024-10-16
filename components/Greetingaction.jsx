@@ -18,29 +18,27 @@ export default function Greetingaction() {
   };
 
   return (
-    <Box p={4}>
+    <Box p={4} width="100%">
       {/* Title and Description */}
       <Typography variant="h5" gutterBottom>
         Greeting Message
       </Typography>
 
       {/* Thin Black Line */}
-      <Box
-        borderBottom={1}
-        borderColor="black"
-        mb={3} // Add some space below the line
-      />
+      <Box borderBottom={1} borderColor="black" mb={3} width="100%" />
 
       <Typography variant="body2" gutterBottom>
         วิธีใช้งาน: ข้อความตอบกลับครั้งแรกเมื่อเพิ่มเพื่อน Line Chatbot
       </Typography>
 
       {/* API Section */}
-      <Box mt={4}>
-        <Grid container alignItems="center">
+      <Box mt={4} width="100%">
+        <Grid container alignItems="center" spacing={2}>
           <Grid item xs={12} sm={3}>
             <Checkbox checked={useApi} onChange={handleCheckboxChange} />
-            <Typography variant="body1" display="inline">Use API</Typography>
+            <Typography variant="body1" display="inline">
+              Use API
+            </Typography>
           </Grid>
 
           <Grid item xs={12} sm={9}>
@@ -64,7 +62,7 @@ export default function Greetingaction() {
       </Box>
 
       {/* Text Message Section */}
-      <Box mt={4}>
+      <Box mt={4} width="100%">
         <Typography
           variant="h6"
           gutterBottom
@@ -82,12 +80,12 @@ export default function Greetingaction() {
       </Box>
 
       {/* Note */}
-      <Box mt={2}>
-        <Typography variant="caption">*หมายเหตุ </Typography>
+      <Box mt={2} width="100%">
+        <Typography variant="caption">*หมายเหตุ</Typography>
       </Box>
 
       {/* Save Button */}
-      <Box mt={4} textAlign="right">
+      <Box mt={4} textAlign="right" width="100%">
         <Button variant="contained" color="primary">
           Save
         </Button>
