@@ -1,9 +1,17 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Box, TextField, Checkbox, Typography, Autocomplete, Grid, Button } from '@mui/material';
+import React, { useState } from "react";
+import {
+  Box,
+  TextField,
+  Checkbox,
+  Typography,
+  Autocomplete,
+  Grid,
+  Button,
+} from "@mui/material";
 
-const apis = ['API 1', 'API 2', 'API 3']; // Example options for API selection
+const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
 
 export default function BroadcastMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -33,7 +41,8 @@ export default function BroadcastMessage() {
       />
 
       <Typography variant="body2" gutterBottom>
-        วิธีใช้งาน : สามารถ broadcast messages ไปหา user ได้ทั้งหมดในทีเดียวโดยไม่จำเป็นต้องทำหลาย ๆ ครั้ง
+        วิธีใช้งาน : สามารถ broadcast messages ไปหา user
+        ได้ทั้งหมดในทีเดียวโดยไม่จำเป็นต้องทำหลาย ๆ ครั้ง
       </Typography>
 
       {/* Text Message and Result Areas */}
@@ -43,7 +52,8 @@ export default function BroadcastMessage() {
             <Typography
               variant="h6"
               gutterBottom
-              style={{ backgroundColor: '#1E88E5', color: '#fff', padding: '10px' }}
+              backgroundColor="primary.main"
+              style={{ color: "#fff", padding: "10px" }}
             >
               Text Message
             </Typography>
@@ -60,7 +70,8 @@ export default function BroadcastMessage() {
             <Typography
               variant="h6"
               gutterBottom
-              style={{ backgroundColor: '#1E88E5', color: '#fff', padding: '10px' }}
+              backgroundColor="primary.main"
+              style={{ color: "#fff", padding: "10px" }}
             >
               Result
             </Typography>
