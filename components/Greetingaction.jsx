@@ -1,9 +1,17 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Box, TextField, Checkbox, Typography, Autocomplete, Grid, Button } from '@mui/material';
+import React, { useState } from "react";
+import {
+  Box,
+  TextField,
+  Checkbox,
+  Typography,
+  Autocomplete,
+  Grid,
+  Button,
+} from "@mui/material";
 
-const apis = ['API 1', 'API 2', 'API 3']; // Example options for API selection
+const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
 
 export default function Greetingaction() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -62,11 +70,13 @@ export default function Greetingaction() {
       </Box>
 
       {/* Text Message Section */}
-      <Box mt={4} width="100%">
+      <Box mt={4} width="100%" backgroundColor="primary">
         <Typography
           variant="h6"
+          backgroundColor="primary.main"
           gutterBottom
-          style={{ backgroundColor: '#1E88E5', color: '#fff', padding: '10px' }}
+          padding="10px"
+          color="white"
         >
           Text Message
         </Typography>

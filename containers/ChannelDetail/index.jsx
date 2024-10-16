@@ -47,7 +47,7 @@ export default function ChannelDetail({ id, channelName }) {
               label={tab.label}
               value={tab.id}
               sx={{
-                color: selectTab === tab.id ? "#3758F9" : "#C5C5C5",
+                color: selectTab === tab.id ? "primary.dark" : "#C5C5C5",
                 fontSize: "1.2rem",
                 fontWeight: "bold",
                 borderLeft: tab.id === 0 ? "none" : "1px solid black",

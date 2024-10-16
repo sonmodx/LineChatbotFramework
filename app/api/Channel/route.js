@@ -33,10 +33,10 @@ export async function GET(req) {
 
       if (channel.user_id.toString() !== session.user._id.toString()) {
         return formatResponse(403, {
-          message: "Unauthorized: You do not have permission to access this channel.",
+          message:
+            "Unauthorized: You do not have permission to access this channel.",
         });
       }
-
 
       return formatResponse(200, { Channel: channel });
     } else {
@@ -63,7 +63,6 @@ export async function GET(req) {
         .sort({ [orderBy]: orderDirection })
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
-
 
       return formatResponse(200, {
         Channel: channels,
@@ -132,6 +131,7 @@ export async function POST(req) {
 
 export async function PUT(req) {
   const session = await getServerSession(authOptions);
+
   if (!session) {
     return formatResponse(401, { message: "Unauthorized" });
   }
@@ -221,7 +221,7 @@ export async function DELETE(req) {
         message: "No access this Channel",
       });
     }
-    
+
     // delete all related data
     await API.deleteMany({ channel_id: new mongoose.Types.ObjectId(id) });
     await LineUser.deleteMany({ channel_id: new mongoose.Types.ObjectId(id) });

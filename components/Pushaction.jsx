@@ -1,11 +1,20 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Box, TextField, Checkbox, Typography, Autocomplete, Grid, Button, IconButton } from '@mui/material';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import React, { useState } from "react";
+import {
+  Box,
+  TextField,
+  Checkbox,
+  Typography,
+  Autocomplete,
+  Grid,
+  Button,
+  IconButton,
+} from "@mui/material";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 
-const apis = ['API 1', 'API 2', 'API 3']; // Example options for API selection
+const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
 
 export default function PushMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -53,7 +62,8 @@ export default function PushMessage() {
             <Typography
               variant="h6"
               gutterBottom
-              style={{ backgroundColor: '#1E88E5', color: '#fff', padding: '10px' }}
+              backgroundColor="primary.main"
+              style={{ color: "#fff", padding: "10px" }}
             >
               Text Message
             </Typography>
@@ -92,7 +102,8 @@ export default function PushMessage() {
             <Typography
               variant="h6"
               gutterBottom
-              style={{ backgroundColor: '#1E88E5', color: '#fff', padding: '10px' }}
+              backgroundColor="primary.main"
+              style={{ color: "#fff", padding: "10px" }}
             >
               User
             </Typography>
@@ -106,7 +117,9 @@ export default function PushMessage() {
             {/* API Section */}
             <Box display="flex" alignItems="center">
               <Checkbox checked={useApi} onChange={handleCheckboxChange} />
-              <Typography variant="body1" display="inline">Use API</Typography>
+              <Typography variant="body1" display="inline">
+                Use API
+              </Typography>
             </Box>
 
             {useApi && (
@@ -133,7 +146,8 @@ export default function PushMessage() {
         <Typography
           variant="h6"
           gutterBottom
-          style={{ backgroundColor: '#1E88E5', color: '#fff', padding: '10px' }}
+          backgroundColor="primary.main"
+          style={{ color: "#fff", padding: "10px" }}
         >
           Result
         </Typography>

@@ -1,9 +1,17 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Box, TextField, Checkbox, Typography, Autocomplete, Grid, Button } from '@mui/material';
+import React, { useState } from "react";
+import {
+  Box,
+  TextField,
+  Checkbox,
+  Typography,
+  Autocomplete,
+  Grid,
+  Button,
+} from "@mui/material";
 
-const apis = ['API 1', 'API 2', 'API 3']; // Example options for API selection
+const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
 
 export default function MulticastMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -28,7 +36,8 @@ export default function MulticastMessage() {
       <Box borderBottom={1} borderColor="black" mb={3} width="100%" />
 
       <Typography variant="body2" gutterBottom>
-        วิธีใช้งาน : สามารถ Multicast messages ไปหา user ได้ทั้งหมดในทีเดียวโดยไม่จำเป็นต้องทำหลาย ๆ ครั้ง
+        วิธีใช้งาน : สามารถ Multicast messages ไปหา user
+        ได้ทั้งหมดในทีเดียวโดยไม่จำเป็นต้องทำหลาย ๆ ครั้ง
       </Typography>
 
       {/* Text Message and User Areas */}
@@ -38,7 +47,8 @@ export default function MulticastMessage() {
             <Typography
               variant="h6"
               gutterBottom
-              style={{ backgroundColor: '#1E88E5', color: '#fff', padding: '10px' }}
+              backgroundColor="primary.main"
+              style={{ color: "#fff", padding: "10px" }}
             >
               Text Message
             </Typography>
@@ -55,7 +65,8 @@ export default function MulticastMessage() {
             <Typography
               variant="h6"
               gutterBottom
-              style={{ backgroundColor: '#1E88E5', color: '#fff', padding: '10px' }}
+              backgroundColor="primary.main"
+              style={{ color: "#fff", padding: "10px" }}
             >
               User
             </Typography>
@@ -75,7 +86,8 @@ export default function MulticastMessage() {
         <Typography
           variant="h6"
           gutterBottom
-          style={{ backgroundColor: '#1E88E5', color: '#fff', padding: '10px' }}
+          backgroundColor="primary.main"
+          style={{ color: "#fff", padding: "10px" }}
         >
           Result
         </Typography>
