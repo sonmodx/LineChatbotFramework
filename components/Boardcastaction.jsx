@@ -48,7 +48,7 @@ export default function BroadcastMessage() {
       {/* Text Message and Result Areas */}
       <Box mt={3} width="100%">
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12}>
             <Typography
               variant="h6"
               gutterBottom
@@ -62,24 +62,6 @@ export default function BroadcastMessage() {
               multiline
               rows={8}
               placeholder="Enter your message here"
-              variant="outlined"
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <Typography
-              variant="h6"
-              gutterBottom
-              backgroundColor="primary.main"
-              style={{ color: "#fff", padding: "10px" }}
-            >
-              Result
-            </Typography>
-            <TextField
-              fullWidth
-              multiline
-              rows={8}
-              placeholder="Result will be shown here"
               variant="outlined"
             />
           </Grid>
