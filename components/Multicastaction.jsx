@@ -81,24 +81,7 @@ export default function MulticastMessage() {
         </Grid>
       </Box>
 
-      {/* Result Section */}
-      <Box mt={3} width="100%">
-        <Typography
-          variant="h6"
-          gutterBottom
-          backgroundColor="primary.main"
-          style={{ color: "#fff", padding: "10px" }}
-        >
-          Result
-        </Typography>
-        <TextField
-          fullWidth
-          multiline
-          rows={6}
-          placeholder="Result will be shown here"
-          variant="outlined"
-        />
-      </Box>
+
 
       {/* API Section */}
       <Box mt={4} width="100%">
