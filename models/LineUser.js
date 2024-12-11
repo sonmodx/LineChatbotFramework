@@ -1,6 +1,5 @@
 import mongoose, { Schema, models } from "mongoose";
 
-
 // ยังไม่เสร็จ
 const lineUserSchema = new Schema(
   {

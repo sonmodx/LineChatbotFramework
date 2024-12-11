@@ -6,6 +6,8 @@ import PushMessage from "@/components/Pushaction";
 import MulticastMessage from "@/components/Multicastaction";
 import BroadcastMessage from "@/components/Boardcastaction";
 import Greetingaction from "@/components/Greetingaction";
+import FlexMessage from "@/components/Flexaction";
+import NarrowMessage from "@/components/Narrowaction";
 
 export default function ActionCreate({ setIsCreateState }) {
   const manageActionUI = (index) => {
@@ -15,24 +17,22 @@ export default function ActionCreate({ setIsCreateState }) {
       case 1:
         return <Replyaction setIsCreateState={setIsCreateState} />;
       case 2:
-        return;
+        return <FlexMessage />;
       case 3:
         return <PushMessage />;
       case 4:
         return <MulticastMessage />;
       case 5:
-        return <BroadcastMessage />;
+        return <NarrowMessage />;
       case 6:
+        return <BroadcastMessage />;
+      case 7:
         return;
     }
   };
   const [selectedIndex, setSelectedIndex] = useState(0);
   return (
-    <Stack 
-      direction="row" 
-      spacing={1} 
-      sx={{ width: '100%' }} 
-    >
+    <Stack direction="row" spacing={1} sx={{ width: "100%" }}>
       <ListMenu
         selectedIndex={selectedIndex}
         setSelectedIndex={setSelectedIndex}

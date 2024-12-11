@@ -57,7 +57,7 @@ export default function Channels() {
   };
 
   const handleHeaderLink = (row) => {
-    return `/channels/detail?id=${row._id}&channelName=${row.name}`;
+    return `/channels/detail?id=${row._id}&channelName=${row.name}&channel_id=${row.channel_id}`;
   };
 
   return (

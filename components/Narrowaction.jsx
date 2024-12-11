@@ -1,18 +1,39 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Box, TextField, Checkbox, Typography, Autocomplete, Grid, Button, IconButton } from '@mui/material';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import React, { useState } from "react";
+import {
+  Box,
+  TextField,
+  Checkbox,
+  Typography,
+  Autocomplete,
+  Grid,
+  Button,
+  IconButton,
+} from "@mui/material";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import Notification from "./์Notification";
+import { useSearchParams } from "next/navigation";
+import axios from "axios";
 
-const apis = ['API 1', 'API 2', 'API 3']; // Example options for API selection
-const groups = ['teacher', 'student', 'staff'];
+const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
+const narrowFilterList = [{ type: "audience", audienceGroupId: 6379677725631 }];
 
-export default function PushMessage() {
+export default function NarrowMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [selectedGroups, setSelectedGroups] = useState(null); // State for selected group
   const [messageCount, setMessageCount] = useState(1); // Track number of message boxes
+  const maximumMessage = 5;
+  const [messages, setMessages] = useState(Array(messageCount).fill(""));
+  const [selectAudience, setSelectAudience] = useState(null);
+  const [openNotification, setOpenNotification] = useState(false);
+  console.log("msg", messages);
+  const searchParams = useSearchParams();
+  const channelObjectId = searchParams.get("id");
+  const channelId = searchParams.get("channel_id");
+  const typeMessage = "Narrowcast";
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
@@ -35,6 +56,44 @@ export default function PushMessage() {
   const removeMessageBox = () => {
     if (messageCount > 1) {
       setMessageCount(messageCount - 1);
+      setMessages(messages.slice(0, messageCount - 1));
+    }
+  };
+
+  const handleMessageChange = (index, value) => {
+    const updatedMessages = [...messages];
+    updatedMessages[index] = value;
+    setMessages(updatedMessages);
+  };
+
+  const handleSendMessage = async () => {
+    const body = {
+      type: typeMessage,
+      destination: channelId,
+      narrow_filter: selectAudience,
+      message: messages
+        .filter((msg) => msg !== undefined && msg.trim() !== "")
+        .map((msg) => ({ type: "text", text: msg })),
+    };
+    console.log("body", body);
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/direct_message`,
+        body,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (res.status === 200) {
+        setOpenNotification(true);
+      }
+
+      console.log("Response from webhook:", res.data);
+    } catch (error) {
+      console.error(
+        "Error sending request to webhook:",
+        error.response?.data || error.message
+      );
     }
   };
 
@@ -42,7 +101,7 @@ export default function PushMessage() {
     <Box p={4} width="100%">
       {/* Title and Description */}
       <Typography variant="h5" gutterBottom>
-        Push Message
+        Narrowcast Message
       </Typography>
 
       {/* Thin Black Line */}
@@ -59,7 +118,11 @@ export default function PushMessage() {
             <Typography
               variant="h6"
               gutterBottom
-              style={{ backgroundColor: '#1E88E5', color: '#fff', padding: '10px' }}
+              backgroundColor="primary.main"
+              style={{
+                color: "#fff",
+                padding: "10px",
+              }}
             >
               Text Message
             </Typography>
@@ -71,8 +134,12 @@ export default function PushMessage() {
                   fullWidth
                   multiline
                   rows={4}
-                  placeholder={`Enter your message (${index + 1}/5)`}
+                  placeholder={`Enter your message (${
+                    index + 1
+                  }/${maximumMessage})`}
                   variant="outlined"
+                  value={messages[index]}
+                  onChange={(e) => handleMessageChange(index, e.target.value)}
                 />
               </Box>
             ))}
@@ -98,16 +165,21 @@ export default function PushMessage() {
             <Typography
               variant="h6"
               gutterBottom
-              style={{ backgroundColor: '#1E88E5', color: '#fff', padding: '10px' }}
+              backgroundColor="primary.main"
+              style={{
+                color: "#fff",
+                padding: "10px",
+              }}
             >
               Filter by
             </Typography>
 
             {/* Group Selection */}
             <Autocomplete
-              options={groups}
-              value={selectedGroups}
-              onChange={handleGroupChange}
+              options={narrowFilterList}
+              getOptionLabel={(option) => option.type || ""}
+              value={selectAudience}
+              onChange={(event, newValue) => setSelectAudience(newValue)}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -147,10 +219,15 @@ export default function PushMessage() {
 
       {/* Send Button */}
       <Box mt={4} textAlign="right" width="100%">
-        <Button variant="contained" color="primary">
+        <Button variant="contained" color="primary" onClick={handleSendMessage}>
           Send
         </Button>
       </Box>
+      <Notification
+        openNotification={openNotification}
+        setOpenNotification={setOpenNotification}
+        message="Successful sent message"
+      />
     </Box>
   );
 }
