@@ -13,13 +13,28 @@ import {
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import { getAllLineUsers } from "@/actions";
+import { useSearchParams } from "next/navigation";
+import axios from "axios";
+import Notification from "./์Notification";
 
 const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
+//query all line users in line OA
 
 export default function PushMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [messageCount, setMessageCount] = useState(1); // Track number of message boxes
+  const maximumMessage = 5;
+  const [messages, setMessages] = useState(Array(messageCount).fill(""));
+  const [selectLineUser, setSelectLineUser] = useState(null);
+  const [lineUsers, setLineUsers] = useState([]);
+  const [openNotification, setOpenNotification] = useState(false);
+  const searchParams = useSearchParams();
+  const channelObjectId = searchParams.get("id");
+  const channelId = searchParams.get("channel_id");
+  const typeMessage = "Push";
+  console.log(messages);
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
@@ -38,6 +53,50 @@ export default function PushMessage() {
   const removeMessageBox = () => {
     if (messageCount > 1) {
       setMessageCount(messageCount - 1);
+      setMessages(messages.slice(0, messageCount - 1));
+    }
+  };
+
+  const handleGetAllLineUsers = async () => {
+    const line_users = await getAllLineUsers(channelObjectId);
+
+    console.log(line_users);
+    setLineUsers(JSON.parse(line_users));
+  };
+
+  const handleMessageChange = (index, value) => {
+    const updatedMessages = [...messages];
+    updatedMessages[index] = value;
+    setMessages(updatedMessages);
+  };
+
+  const handleSendMessage = async () => {
+    const body = {
+      type: typeMessage,
+      destination: channelId,
+      user_id: selectLineUser.line_user_id,
+      message: messages
+        .filter((msg) => msg !== undefined && msg.trim() !== "")
+        .map((msg) => ({ type: "text", text: msg })),
+    };
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/direct_message`,
+        body,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (res.status === 200) {
+        setOpenNotification(true);
+      }
+
+      console.log("Response from webhook:", res.data);
+    } catch (error) {
+      console.error(
+        "Error sending request to webhook:",
+        error.response?.data || error.message
+      );
     }
   };
 
@@ -75,8 +134,12 @@ export default function PushMessage() {
                   fullWidth
                   multiline
                   rows={4}
-                  placeholder={`Enter your message (${index + 1}/5)`}
+                  placeholder={`Enter your message (${
+                    index + 1
+                  }/${maximumMessage})`}
                   variant="outlined"
+                  value={messages[index]}
+                  onChange={(e) => handleMessageChange(index, e.target.value)}
                 />
               </Box>
             ))}
@@ -107,11 +170,20 @@ export default function PushMessage() {
             >
               User
             </Typography>
-            <TextField
-              fullWidth
-              placeholder="Enter user info"
-              variant="outlined"
-              sx={{ marginBottom: 2 }}
+            <Autocomplete
+              options={lineUsers}
+              getOptionLabel={(option) => option.display_name || ""}
+              value={selectLineUser}
+              onChange={(event, newValue) => setSelectLineUser(newValue)}
+              onSelect={handleGetAllLineUsers}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Select Line User"
+                  variant="outlined"
+                  fullWidth
+                />
+              )}
             />
 
             {/* API Section */}
@@ -141,31 +213,17 @@ export default function PushMessage() {
         </Grid>
       </Box>
 
-      {/* Result Section */}
-      <Box mt={3} width="100%">
-        <Typography
-          variant="h6"
-          gutterBottom
-          backgroundColor="primary.main"
-          style={{ color: "#fff", padding: "10px" }}
-        >
-          Result
-        </Typography>
-        <TextField
-          fullWidth
-          multiline
-          rows={4}
-          placeholder="Result will be shown here"
-          variant="outlined"
-        />
-      </Box>
-
       {/* Send Button */}
       <Box mt={4} textAlign="right" width="100%">
-        <Button variant="contained" color="primary">
+        <Button variant="contained" color="primary" onClick={handleSendMessage}>
           Send
         </Button>
       </Box>
+      <Notification
+        openNotification={openNotification}
+        setOpenNotification={setOpenNotification}
+        message="Successful sent message"
+      />
     </Box>
   );
 }

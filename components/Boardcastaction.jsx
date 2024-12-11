@@ -10,12 +10,21 @@ import {
   Grid,
   Button,
 } from "@mui/material";
+import { useSearchParams } from "next/navigation";
+import Notification from "./์Notification";
+import axios from "axios";
 
 const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
 
 export default function BroadcastMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
+  const [openNotification, setOpenNotification] = useState(false);
+  const [messages, setMessages] = useState("");
+  const searchParams = useSearchParams();
+  const channelObjectId = searchParams.get("id");
+  const channelId = searchParams.get("channel_id");
+  const typeMessage = "Broadcast";
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
@@ -23,6 +32,42 @@ export default function BroadcastMessage() {
 
   const handleApiChange = (event, newValue) => {
     setSelectedApi(newValue);
+  };
+
+  const handleMessageChange = (value) => {
+    setMessages(value);
+  };
+
+  const handleSendMessage = async () => {
+    if (messages.trim() === "" || messages === undefined) {
+      return;
+    }
+    const body = {
+      type: typeMessage,
+      destination: channelId,
+      message: [{ type: "text", text: messages }],
+    };
+    console.log("body", body);
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/direct_message`,
+        body,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      if (res.status === 200) {
+        setOpenNotification(true);
+      }
+
+      console.log("Response from webhook:", res.data);
+    } catch (error) {
+      console.error(
+        "Error sending request to webhook:",
+        error.response?.data || error.message
+      );
+    }
   };
 
   return (
@@ -63,6 +108,8 @@ export default function BroadcastMessage() {
               rows={8}
               placeholder="Enter your message here"
               variant="outlined"
+              value={messages}
+              onChange={(e) => handleMessageChange(e.target.value)}
             />
           </Grid>
         </Grid>
@@ -100,10 +147,15 @@ export default function BroadcastMessage() {
 
       {/* Send Button */}
       <Box mt={4} textAlign="right" width="100%">
-        <Button variant="contained" color="primary">
+        <Button variant="contained" color="primary" onClick={handleSendMessage}>
           Send
         </Button>
       </Box>
+      <Notification
+        openNotification={openNotification}
+        setOpenNotification={setOpenNotification}
+        message="Successful sent message"
+      />
     </Box>
   );
 }

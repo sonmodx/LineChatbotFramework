@@ -31,7 +31,7 @@ export async function setWebhookURL(token, endpoint) {
     console.log(
       "PUT Webhook URL",
       data,
-      "asd",
+
       JSON.stringify({ endpoint: endpoint })
     );
     return data;

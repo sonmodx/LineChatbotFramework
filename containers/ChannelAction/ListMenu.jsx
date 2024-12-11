@@ -11,6 +11,7 @@ const listAction = [
   "Flex message",
   "Push Message",
   "Multicast Message",
+  "Narrow Message",
   "Broadcast Message",
   "Rich menu",
 ];
@@ -23,6 +24,7 @@ export default function ListMenu({ selectedIndex, setSelectedIndex }) {
 
         {listAction?.map((action, index) => (
           <ListItemButton
+            key={index}
             selected={selectedIndex === index}
             onClick={() => setSelectedIndex(index)}
           >
