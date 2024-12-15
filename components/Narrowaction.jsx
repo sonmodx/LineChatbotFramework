@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
-import Notification from "./์Notification";
+import Notification from "./Notification";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 

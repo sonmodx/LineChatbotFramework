@@ -11,7 +11,7 @@ import {
   Button,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
-import Notification from "./์Notification";
+import Notification from "./Notification";
 import axios from "axios";
 
 const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection

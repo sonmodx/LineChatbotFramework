@@ -8,6 +8,7 @@ import BroadcastMessage from "@/components/Boardcastaction";
 import Greetingaction from "@/components/Greetingaction";
 import FlexMessage from "@/components/Flexaction";
 import NarrowMessage from "@/components/Narrowaction";
+import RichMenuAction from "@/components/RichMenuAction";
 
 export default function ActionCreate({ setIsCreateState }) {
   const manageActionUI = (index) => {
@@ -27,7 +28,7 @@ export default function ActionCreate({ setIsCreateState }) {
       case 6:
         return <BroadcastMessage />;
       case 7:
-        return;
+        return <RichMenuAction />;
     }
   };
   const [selectedIndex, setSelectedIndex] = useState(0);
