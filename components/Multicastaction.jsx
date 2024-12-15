@@ -14,7 +14,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import { getAllLineUsers } from "@/actions";
 import axios from "axios";
-import Notification from "./์Notification";
+import Notification from "./Notification";
 
 const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
 
