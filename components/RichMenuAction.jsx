@@ -26,21 +26,53 @@ const HiddenInput = styled("input")({
 });
 
 const largeTemplate = [
-  { id: 1, imageUrl: "/template1L.png" },
-  { id: 2, imageUrl: "/template2L.png" },
-  { id: 3, imageUrl: "/template3L.png" },
-  { id: 4, imageUrl: "/template4L.png" },
-  { id: 5, imageUrl: "/template5L.png" },
-  { id: 6, imageUrl: "/template6L.png" },
-  { id: 7, imageUrl: "/template7L.png" },
+  {
+    id: 1,
+    imageUrl: "/template1L.png",
+    area: [
+      {
+        bounds: {
+          x: 0,
+          y: 0,
+          width: 1666,
+          height: 1686,
+        },
+        action: {},
+      },
+      {
+        bounds: {
+          x: 1667,
+          y: 0,
+          width: 834,
+          height: 843,
+        },
+        action: {},
+      },
+      {
+        bounds: {
+          x: 1667,
+          y: 844,
+          width: 834,
+          height: 843,
+        },
+        action: {},
+      },
+    ],
+  },
+  { id: 2, imageUrl: "/template2L.png", area: [] },
+  { id: 3, imageUrl: "/template3L.png", area: [] },
+  { id: 4, imageUrl: "/template4L.png", area: [] },
+  { id: 5, imageUrl: "/template5L.png", area: [] },
+  { id: 6, imageUrl: "/template6L.png", area: [] },
+  { id: 7, imageUrl: "/template7L.png", area: [] },
 ];
 
 const compactTemplate = [
-  { id: 1, imageUrl: "/template1C.png" },
-  { id: 2, imageUrl: "/template2C.png" },
-  { id: 3, imageUrl: "/template3C.png" },
-  { id: 4, imageUrl: "/template4C.png" },
-  { id: 5, imageUrl: "/template5C.png" },
+  { id: 1, imageUrl: "/template1C.png", area: [] },
+  { id: 2, imageUrl: "/template2C.png", area: [] },
+  { id: 3, imageUrl: "/template3C.png", area: [] },
+  { id: 4, imageUrl: "/template4C.png", area: [] },
+  { id: 5, imageUrl: "/template5C.png", area: [] },
 ];
 
 export default function RichMenuDesigner() {
@@ -51,15 +83,34 @@ export default function RichMenuDesigner() {
   const searchParams = useSearchParams();
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("channel_id");
-  const typeMessage = "RichMenu";
+  // const typeMessage = "RichMenu";
   const [image, setImage] = useState(null);
   const [openModal, setOpenModal] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedAreaTemplate, setSelectedAreaTemplate] = useState([]);
+  console.log("image", image);
   const [imagePreview, setImagePreview] = useState(null);
+  console.log("template area", selectedAreaTemplate);
+
+  const type = "createrichmenu"; //แค่ create ยังไม่อัปเดท ต้องแก้เป็น setrichmenuforalluser เพื่ออัปเดทในหน้าไลน์
+
+  const richmenuconfig = {
+    richmenu: {
+      size: {
+        width: 2500,
+        height: 1686,
+      },
+      selected: false,
+      name: "Test the default rich menu",
+      chatBarText: chatBarTitle,
+      areas: selectedAreaTemplate,
+    },
+    // richmenu_id: "richmenu-b78718c4de8e4de2cd5dad2c630e0e3e",
+    image: image,
+  };
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
-    console.log(file);
+    console.log("file", file);
     if (file) {
       if (file.size > 1024 * 1024) {
         alert("File size must be less than 1MB");
@@ -87,23 +138,26 @@ export default function RichMenuDesigner() {
     setSelectedApi(newValue);
   };
 
+  const handleAreaChange = (index, key, value) => {
+    const updatedAreas = [...selectedAreaTemplate];
+    updatedAreas[index] = { ...updatedAreas[index], [key]: value };
+    setSelectedAreaTemplate(updatedAreas);
+  };
+
   //   const handleMessageChange = (value) => {
   //     setMessages(value);
   //   };
 
   const handleSendMessage = async () => {
-    if (messages.trim() === "" || messages === undefined) {
-      return;
-    }
     const body = {
-      type: typeMessage,
+      type: type,
       destination: channelId,
-      message: [{ type: "text", text: messages }],
+      richmenu_config: richmenuconfig,
     };
     console.log("body", body);
     try {
       const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/direct_message`,
+        `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/richmenu`,
         body,
         {
           headers: { "Content-Type": "application/json" },
@@ -123,9 +177,10 @@ export default function RichMenuDesigner() {
     }
   };
 
-  const handleSelectTemplate = (imageUrl) => {
-    setImagePreview(imageUrl);
+  const handleSelectTemplate = (template) => {
+    setImagePreview(template.imageUrl);
     setOpenModal(false);
+    setSelectedAreaTemplate(template.area);
   };
 
   return (
@@ -236,11 +291,18 @@ export default function RichMenuDesigner() {
         variant="outlined"
         value={chatBarTitle}
         onChange={(e) => setChatBarTitle(e.target.value)}
+        inputProps={{ maxLength: 14 }}
       />
       <Box>
         <Typography mt={4}>Action Bar</Typography>
       </Box>
-      <ActionComponent />
+      {selectedAreaTemplate?.map((area, index) => (
+        <ActionComponent
+          handleAreaChange={handleAreaChange}
+          key={index}
+          index={index}
+        />
+      ))}
 
       {/* Send Button */}
       <Box mt={4} textAlign="right" width="100%">
@@ -291,7 +353,7 @@ export default function RichMenuDesigner() {
                 <Grid item xs={6} md={3} key={lt.id}>
                   <div
                     className="relative group"
-                    onClick={() => handleSelectTemplate(lt.imageUrl)}
+                    onClick={() => handleSelectTemplate(lt)}
                   >
                     <Image
                       src={lt.imageUrl}
@@ -321,7 +383,7 @@ export default function RichMenuDesigner() {
                 <Grid item xs={6} md={3} key={ct.id}>
                   <div
                     className="relative group"
-                    onClick={() => handleSelectTemplate(ct.imageUrl)}
+                    onClick={() => handleSelectTemplate(ct)}
                   >
                     <Image
                       src={ct.imageUrl}

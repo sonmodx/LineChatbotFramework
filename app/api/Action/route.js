@@ -89,10 +89,18 @@ export async function POST(req) {
   try {
     const { searchParams } = new URL(req.url);
     const action_type = searchParams.get("action_type");
-    const { name, type, description, channel_id, api_id, message, keyword } =
-      await req.json();
+    const {
+      name,
+      type,
+      description,
+      channel_id,
+      api_id,
+      message,
+      keyword,
+      type_action,
+    } = await req.json();
     console.log("action_type", action_type);
-    if (!name || !type || !channel_id || !message || !keyword) {
+    if (!name || !type || !channel_id || !message || !type_action) {
       return formatResponse(400, { message: "Missing required fields." });
     }
 
@@ -111,6 +119,7 @@ export async function POST(req) {
       let actionData = {
         name,
         type,
+        type_action,
         description,
         channel_id: new mongoose.Types.ObjectId(channel_id),
         message,
@@ -134,8 +143,28 @@ export async function POST(req) {
       // code for multicast message
     } else if (action_type === "Narrowcast_message") {
       // code for Narrowcast message
-    } else if (action_type === "greeting_message") {
-      // code for greeting message
+    } else if (
+      action_type === "greeting_message" ||
+      action_type === "default_message"
+    ) {
+      let actionData = {
+        name,
+        type,
+        type_action,
+        description,
+        channel_id: new mongoose.Types.ObjectId(channel_id),
+        message,
+      };
+
+      if (api_id) {
+        actionData.api_id = new mongoose.Types.ObjectId(api_id);
+      }
+
+      const newAction = new Action(actionData);
+
+      const savedAction = await newAction.save();
+
+      return formatResponse(201, { Action: savedAction });
     } else if (action_type === "rich_menu") {
       // code for rich menu
     } else {
@@ -156,18 +185,30 @@ export async function PUT(req) {
   await connectMongoDB();
 
   try {
-    const { id } = new URL(req.url);
-    const { name, type, description, channel_id, api_id, message, keyword } =
-      await req.json();
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    const {
+      name,
+      type,
+      type_action,
+      description,
+      channel_id,
+      api_id,
+      message,
+      keyword,
+    } = await req.json();
 
     const action = await Action.findById(id);
+
     if (!action) {
       return formatResponse(404, { message: "Message not found." });
     }
 
+    const existingChannel = await Channel.findById(action.channel_id);
+
     if (
       session.user._id &&
-      session.user._id.toString() !== message.list_user.toString()
+      session.user._id.toString() !== existingChannel.user_id.toString()
     ) {
       return formatResponse(401, { message: "Unauthorized" });
     }
@@ -175,9 +216,10 @@ export async function PUT(req) {
     const updateData = {
       name,
       type,
+      type_action,
       description,
-      channel_id: mongoose.Types.ObjectId(channel_id),
-      api_id: mongoose.Types.ObjectId(api_id),
+      channel_id: new mongoose.Types.ObjectId(channel_id),
+      api_id: new mongoose.Types.ObjectId(api_id),
       message,
       keyword,
     };

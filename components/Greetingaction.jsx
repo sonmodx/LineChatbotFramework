@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   TextField,
@@ -10,12 +10,24 @@ import {
   Grid,
   Button,
 } from "@mui/material";
+import { useSearchParams } from "next/navigation";
+import axios from "axios";
 
 const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
 
-export default function Greetingaction() {
+export default function Greetingaction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
+  const [messages, setMessages] = useState(data?.message.join(",") || []);
+  const searchParams = useSearchParams();
+  const id = data?._id || null;
+  console.log("GETDATA", data);
+
+  // useEffect(() => {
+  //   setMessages(data.message);
+  // }, []);
+
+  const channelId = searchParams.get("id");
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
@@ -23,6 +35,41 @@ export default function Greetingaction() {
 
   const handleApiChange = (event, newValue) => {
     setSelectedApi(newValue);
+  };
+
+  const handleSave = async () => {
+    try {
+      const body = {
+        name: "Test greeting message2",
+        type: "text",
+        type_action: "greeting",
+        channel_id: channelId,
+        message: messages.split(","),
+      };
+      if (state === "create") {
+        const res = await axios.post(
+          "/api/Action?action_type=greeting_message",
+          body,
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+        if (res.status === 201) {
+          setState("actions");
+          console.log("Successful created new channel!");
+        }
+      } else if (state === "edit") {
+        const res = await axios.put(`/api/Action?id=${id}`, body, {
+          headers: { "Content-Type": "application/json" },
+        });
+        if (res.status === 200) {
+          setState("actions");
+          console.log("Successful update action!");
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -75,8 +122,10 @@ export default function Greetingaction() {
           variant="h6"
           backgroundColor="primary.main"
           gutterBottom
-          padding="10px"
-          color="white"
+          style={{
+            color: "#fff",
+            padding: "10px",
+          }}
         >
           Text Message
         </Typography>
@@ -86,6 +135,8 @@ export default function Greetingaction() {
           rows={8}
           placeholder="Enter your message here"
           variant="outlined"
+          value={messages}
+          onChange={(e) => setMessages(e.target.value)}
         />
       </Box>
 
@@ -96,7 +147,7 @@ export default function Greetingaction() {
 
       {/* Save Button */}
       <Box mt={4} textAlign="right" width="100%">
-        <Button variant="contained" color="primary">
+        <Button variant="contained" color="primary" onClick={handleSave}>
           Save
         </Button>
       </Box>
