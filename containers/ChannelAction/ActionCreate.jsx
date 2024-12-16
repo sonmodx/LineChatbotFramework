@@ -9,14 +9,23 @@ import Greetingaction from "@/components/Greetingaction";
 import FlexMessage from "@/components/Flexaction";
 import NarrowMessage from "@/components/Narrowaction";
 import RichMenuAction from "@/components/RichMenuAction";
+import DefaultAction from "@/components/DefaultAction";
 
-export default function ActionCreate({ setIsCreateState }) {
+export default function ActionCreate({ setIsCreateState, state }) {
   const manageActionUI = (index) => {
     switch (index) {
       case 0:
-        return <Greetingaction />;
+        return (
+          <Greetingaction
+            setState={setIsCreateState}
+            state={state}
+            data={null}
+          />
+        );
       case 1:
-        return <Replyaction setIsCreateState={setIsCreateState} />;
+        return (
+          <Replyaction setState={setIsCreateState} state={state} data={null} />
+        );
       case 2:
         return <FlexMessage />;
       case 3:
@@ -29,6 +38,14 @@ export default function ActionCreate({ setIsCreateState }) {
         return <BroadcastMessage />;
       case 7:
         return <RichMenuAction />;
+      case 8:
+        return (
+          <DefaultAction
+            setState={setIsCreateState}
+            state={state}
+            data={null}
+          />
+        );
     }
   };
   const [selectedIndex, setSelectedIndex] = useState(0);

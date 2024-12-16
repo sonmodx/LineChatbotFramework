@@ -7,6 +7,7 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import ActionCreate from "./ActionCreate";
+import ActionEdit from "./ActionEdit";
 
 export default function ChannelAction({ listTitle, channelId }) {
   const router = useRouter();
@@ -18,7 +19,8 @@ export default function ChannelAction({ listTitle, channelId }) {
   const { data: session } = useSession(authOptions);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [isCreateState, setIsCreateState] = useState(false);
+  const [state, setState] = useState("actions");
+  const [selectedActionId, setSelectedActionId] = useState();
   const getAllActions = async () => {
     try {
       setIsLoading(true);
@@ -55,12 +57,13 @@ export default function ChannelAction({ listTitle, channelId }) {
   };
 
   const handleEditApi = (id) => {
-    router.push(``);
+    setSelectedActionId(id);
+    setState("edit");
   };
 
   return (
     <Container>
-      {!isCreateState && (
+      {state === "actions" && (
         <>
           <Box
             sx={{
@@ -77,7 +80,7 @@ export default function ChannelAction({ listTitle, channelId }) {
             <Button
               variant="contained"
               size="medium"
-              onClick={() => setIsCreateState(true)}
+              onClick={() => setState("create")}
             >
               Create
             </Button>
@@ -95,7 +98,7 @@ export default function ChannelAction({ listTitle, channelId }) {
             canSetting={true}
             statusState={[]}
             callbackGetData={getAllActions}
-            // callbackEditData={handleEditApi}
+            callbackEditData={handleEditApi}
             callbackDeleteData={handleDeleteApi}
             isLoading={isLoading}
             total={total}
@@ -115,7 +118,16 @@ export default function ChannelAction({ listTitle, channelId }) {
         </>
       )}
 
-      {isCreateState && <ActionCreate setIsCreateState={setIsCreateState} />}
+      {state === "create" && (
+        <ActionCreate setIsCreateState={setState} state={state} />
+      )}
+      {state === "edit" && (
+        <ActionEdit
+          setIsEditState={setState}
+          state={state}
+          id={selectedActionId}
+        />
+      )}
     </Container>
   );
 }

@@ -14,6 +14,7 @@ const listAction = [
   "Narrow Message",
   "Broadcast Message",
   "Rich menu",
+  "Default Message",
 ];
 
 export default function ListMenu({ selectedIndex, setSelectedIndex }) {
