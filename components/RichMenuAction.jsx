@@ -300,14 +300,14 @@ export default function RichMenuDesigner() {
     sx={{
       position: "relative",
       width: imagePreview
-        ? imagePreview.includes("template1L") || imagePreview.includes("template2L") // Check if large template
+        ? imagePreview.includes("template1L") || imagePreview.includes("template2L") || imagePreview.includes("template3L") || imagePreview.includes("template4L") || imagePreview.includes("template5L") || imagePreview.includes("template6L") || imagePreview.includes("template7L")// Check if large template
           ? 2500 * 0.25 // Scale down to 50% for large templates
-          : 1200 * 0.5 // Scale down to 50% for compact templates
+          : 2500 * 0.25 // Scale down to 50% for compact templates
         : 0, // Adjust width based on selected template
       height: imagePreview
-        ? imagePreview.includes("template1L") || imagePreview.includes("template2L") // Check if large template
+        ? imagePreview.includes("template1L") || imagePreview.includes("template2L") || imagePreview.includes("template3L") || imagePreview.includes("template4L") || imagePreview.includes("template5L") || imagePreview.includes("template6L") || imagePreview.includes("template7L") // Check if large template
           ? 1686 * 0.25 // Scale down to 50% for large templates
-          : 800 * 0.5 // Scale down to 50% for compact templates
+          : 800 * 0.25 // Scale down to 50% for compact templates
         : 0, // Adjust height based on selected template
       maxWidth: "100%",
       border: "2px dashed #ccc",
@@ -326,7 +326,7 @@ export default function RichMenuDesigner() {
           top: 0,
           left: 0,
           width: "100%",
-          height: "100%",
+          height: "85%",
           objectFit: "cover",
         }}
       />
