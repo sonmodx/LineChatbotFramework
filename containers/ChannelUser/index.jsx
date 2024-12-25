@@ -1,78 +1,71 @@
 "use client";
-import { Box, Container, Typography } from "@mui/material";
-import CustomTable from "../../components/CustomTable";
+import { Box, Container, Stack, Typography } from "@mui/material";
 import { useState } from "react";
-import axios from "axios";
-import { useSession } from "next-auth/react";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export default function ChannelUser({ listTitle, channelId }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [users, setUsers] = useState([]);
-  const [total, setTotal] = useState();
-  const [isOpenSnackbar, setIsOpenSnackbar] = useState(false);
-  const [anchorEl, setAnchorEl] = useState();
-  const { data: session } = useSession(authOptions);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const getAllUsers = async () => {
-    try {
-      setIsLoading(true);
-      const res = await axios.get(
-        `/api/User?channel_id=${channelId}&pageNumber=${
-          page + 1
-        }&pageSize=${rowsPerPage}`
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import { ListSubheader } from "@mui/material";
+import ListUser from "./components/ListUser";
+import ListAudience from "./components/ListAudience";
+
+const ManageActionUI = ({ index, listTitle, channelId, channelIdLine }) => {
+  switch (index) {
+    case 0:
+      return <ListUser listTitle={listTitle} channelId={channelId} />;
+    case 1:
+      return (
+        <ListAudience channelId={channelId} channelIdLine={channelIdLine} />
       );
-      if (res.status === 200) {
-        const data = res.data;
-        setUsers(data.user);
-        setTotal(data.Total);
-        console.log("Line user data:", data);
-      }
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Error when get line user:", error);
-    }
-  };
+  }
+};
+
+export default function ChannelUser({ listTitle, channelId, channelIdLine }) {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const listAction = ["List user", "List audience"];
 
   return (
     <Container>
-      <Box
+      <Stack
         sx={{
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginTop: 5,
-          px: 2,
+          flexDirection: "row",
+          gap: 1, // Replace `spacing` from Stack
+          width: "100%",
         }}
       >
-        <Typography variant="h4" sx={{ py: 1, fontWeight: "bolder" }}>
-          List {listTitle}
-        </Typography>
-      </Box>
-      <CustomTable
-        headerColumns={["User", "Role", "Description", "Group"]}
-        bodyColumns={["tags", "description", "group"]}
-        canSetting={false}
-        statusState={[]}
-        callbackGetData={getAllUsers}
-        callbackEditData={null}
-        callbackDeleteData={null}
-        isLoading={isLoading}
-        total={total}
-        data={users}
-        headerCell={"display_name"}
-        headerLink={""}
-        anchorEl={anchorEl}
-        setAnchorEl={setAnchorEl}
-        isOpenSnackbar={isOpenSnackbar}
-        setIsOpenSnackbar={setIsOpenSnackbar}
-        session={session}
-        page={page}
-        setPage={setPage}
-        rowsPerPage={rowsPerPage}
-        setRowsPerPage={setRowsPerPage}
-      />
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: 360,
+            bgcolor: "background.paper",
+          }}
+        >
+          <List
+            component="nav"
+            aria-label="secondary mailbox folder"
+            sx={{ mt: 5 }}
+          >
+            <ListSubheader>Manage Users</ListSubheader>
+
+            {listAction?.map((action, index) => (
+              <ListItemButton
+                key={index}
+                selected={selectedIndex === index}
+                onClick={() => setSelectedIndex(index)}
+              >
+                <ListItemText primary={action} />
+              </ListItemButton>
+            ))}
+          </List>
+        </Box>
+        <ManageActionUI
+          index={selectedIndex}
+          listTitle={listTitle}
+          channelId={channelId}
+          channelIdLine={channelIdLine}
+        />
+      </Stack>
     </Container>
   );
 }

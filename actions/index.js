@@ -7,8 +7,7 @@ export const getAllLineUsers = async (channelId) => {
   await connectMongoDB();
 
   try {
-    // Query all LineUsers with the given channelId
-
+    // Explicitly ensure channelId is treated as a string
     const lineUsers = await LineUser.find({ channel_id: channelId });
 
     return JSON.stringify(lineUsers);

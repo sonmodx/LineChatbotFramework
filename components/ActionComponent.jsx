@@ -1,13 +1,13 @@
 import React, { act, useEffect, useState } from "react";
 import { Autocomplete, Box, TextField, Typography } from "@mui/material";
 
-const ActionComponent = ({ handleAreaChange, index }) => {
-  const [action, setAction] = useState("Message Action");
+const ActionComponent = ({ handleAreaChange, index, imagePreview }) => {
+  const [action, setAction] = useState("No action");
   const [text, setText] = useState("");
   const [label, setLabel] = useState("");
   const [uri, setUri] = useState("");
 
-  const actions = ["Link", "Text", "Coupon", "Reward cards", "No action"];
+  const actions = ["Link", "Text", "No action"];
 
   const handleTextChange = (event) => {
     setText(event.target.value);
@@ -17,7 +17,7 @@ const ActionComponent = ({ handleAreaChange, index }) => {
     if (type === "text") {
       return {
         type: "message",
-        label: text,
+        // label: text,
         text: text,
       };
     } else if (type === "uri") {
@@ -28,6 +28,12 @@ const ActionComponent = ({ handleAreaChange, index }) => {
       };
     }
   };
+  useEffect(() => {
+    setAction("No action");
+    setText("");
+    setUri("");
+    setLabel("");
+  }, [imagePreview]);
 
   useEffect(() => {
     handleAreaChange(index, "action", objectValue("text"));
@@ -38,9 +44,14 @@ const ActionComponent = ({ handleAreaChange, index }) => {
   }, [label, uri]);
 
   useEffect(() => {
-    setText("");
-    setLabel("");
-    setUri("");
+    if (action === "Text") {
+      setText("");
+    } else if (action === "Link") {
+      setLabel("");
+      setUri("");
+    } else {
+      handleAreaChange(index, "action", {});
+    }
   }, [action]);
 
   return (
@@ -76,6 +87,7 @@ const ActionComponent = ({ handleAreaChange, index }) => {
             value={text}
             onChange={handleTextChange}
             fullWidth
+            required
           />
         </Box>
       )}
@@ -87,6 +99,7 @@ const ActionComponent = ({ handleAreaChange, index }) => {
             value={uri}
             onChange={(event) => setUri(event.target.value)}
             fullWidth
+            required
           />
           <TextField
             sx={{ mt: 3 }}
@@ -96,6 +109,7 @@ const ActionComponent = ({ handleAreaChange, index }) => {
             value={label}
             onChange={(event) => setLabel(event.target.value)}
             fullWidth
+            required
           />
         </Box>
       )}

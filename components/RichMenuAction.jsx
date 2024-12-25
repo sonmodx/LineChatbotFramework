@@ -29,50 +29,226 @@ const largeTemplate = [
   {
     id: 1,
     imageUrl: "/template1L.png",
-    area: [
+    size: { width: 2500, height: 1686 },
+    areas: [
+      {
+        bounds: { x: 0, y: 0, width: 833, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 833, y: 0, width: 833, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 1666, y: 0, width: 834, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 0, y: 843, width: 833, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 833, y: 843, width: 833, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 1666, y: 843, width: 834, height: 843 },
+        action: {},
+      },
+    ],
+  },
+  {
+    id: 2,
+    imageUrl: "/template2L.png",
+    size: { width: 2500, height: 1686 },
+    areas: [
+      {
+        bounds: { x: 0, y: 0, width: 1250, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 1250, y: 0, width: 1250, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 0, y: 843, width: 1250, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 1250, y: 843, width: 1250, height: 843 },
+        action: {},
+      },
+    ],
+  },
+  {
+    id: 3,
+    imageUrl: "/template3L.png",
+    size: { width: 2500, height: 1686 },
+    areas: [
+      {
+        bounds: { x: 0, y: 0, width: 2500, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 0, y: 843, width: 833, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 833, y: 843, width: 834, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 1667, y: 843, width: 833, height: 843 },
+        action: {},
+      },
+    ],
+  },
+  {
+    id: 4,
+    imageUrl: "/template4L.png",
+    size: { width: 2500, height: 1686 },
+    areas: [
+      {
+        bounds: { x: 0, y: 0, width: 1666, height: 1686 },
+        action: {},
+      },
+      {
+        bounds: { x: 1666, y: 0, width: 834, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 1666, y: 843, width: 834, height: 843 },
+        action: {},
+      },
+    ],
+  },
+  {
+    id: 5,
+    imageUrl: "/template5L.png",
+    size: { width: 2500, height: 1686 },
+    areas: [
+      {
+        bounds: { x: 0, y: 0, width: 2500, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 0, y: 843, width: 2500, height: 843 },
+        action: {},
+      },
+    ],
+  },
+  {
+    id: 6,
+    imageUrl: "/template6L.png",
+    size: { width: 2500, height: 1686 },
+    areas: [
+      {
+        bounds: { x: 0, y: 0, width: 1250, height: 1686 },
+        action: {},
+      },
+      {
+        bounds: { x: 1250, y: 0, width: 1250, height: 1686 },
+        action: {},
+      },
+    ],
+  },
+  {
+    id: 7,
+    imageUrl: "/template7L.png",
+    size: {
+      width: 2500,
+      height: 1686,
+    },
+    areas: [
       {
         bounds: {
           x: 0,
           y: 0,
-          width: 1666,
+          width: 2500,
           height: 1686,
-        },
-        action: {},
-      },
-      {
-        bounds: {
-          x: 1667,
-          y: 0,
-          width: 834,
-          height: 843,
-        },
-        action: {},
-      },
-      {
-        bounds: {
-          x: 1667,
-          y: 844,
-          width: 834,
-          height: 843,
         },
         action: {},
       },
     ],
   },
-  { id: 2, imageUrl: "/template2L.png", area: [] },
-  { id: 3, imageUrl: "/template3L.png", area: [] },
-  { id: 4, imageUrl: "/template4L.png", area: [] },
-  { id: 5, imageUrl: "/template5L.png", area: [] },
-  { id: 6, imageUrl: "/template6L.png", area: [] },
-  { id: 7, imageUrl: "/template7L.png", area: [] },
 ];
 
 const compactTemplate = [
-  { id: 1, imageUrl: "/template1C.png", area: [] },
-  { id: 2, imageUrl: "/template2C.png", area: [] },
-  { id: 3, imageUrl: "/template3C.png", area: [] },
-  { id: 4, imageUrl: "/template4C.png", area: [] },
-  { id: 5, imageUrl: "/template5C.png", area: [] },
+  {
+    id: 1,
+    imageUrl: "/template1C.png",
+    size: { width: 2500, height: 843 },
+    areas: [
+      {
+        bounds: { x: 0, y: 0, width: 833, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 833, y: 0, width: 834, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 1667, y: 0, width: 833, height: 843 },
+        action: {},
+      },
+    ],
+  },
+  {
+    id: 2,
+    imageUrl: "/template2C.png",
+    size: { width: 2500, height: 843 },
+    areas: [
+      {
+        bounds: { x: 0, y: 0, width: 834, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 834, y: 0, width: 1666, height: 843 },
+        action: {},
+      },
+    ],
+  },
+  {
+    id: 3,
+    imageUrl: "/template3C.png",
+    size: { width: 2500, height: 843 },
+    areas: [
+      {
+        bounds: { x: 0, y: 0, width: 1666, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 1666, y: 0, width: 834, height: 843 },
+        action: {},
+      },
+    ],
+  },
+  {
+    id: 4,
+    imageUrl: "/template4C.png",
+    size: { width: 2500, height: 843 },
+    areas: [
+      {
+        bounds: { x: 0, y: 0, width: 1250, height: 843 },
+        action: {},
+      },
+      {
+        bounds: { x: 1250, y: 0, width: 1250, height: 843 },
+        action: {},
+      },
+    ],
+  },
+  {
+    id: 5,
+    imageUrl: "/template5C.png",
+    size: { width: 2500, height: 843 },
+    areas: [
+      {
+        bounds: { x: 0, y: 0, width: 2500, height: 843 },
+        action: {},
+      },
+    ],
+  },
 ];
 
 export default function RichMenuDesigner() {
@@ -87,26 +263,27 @@ export default function RichMenuDesigner() {
   const [image, setImage] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [selectedAreaTemplate, setSelectedAreaTemplate] = useState([]);
+  const [selectedSizeTemplate, setSelectedSizeTemplate] = useState({
+    width: 0,
+    height: 0,
+  });
   console.log("image", image);
   const [imagePreview, setImagePreview] = useState(null);
   console.log("template area", selectedAreaTemplate);
 
-  const type = "createrichmenu"; //แค่ create ยังไม่อัปเดท ต้องแก้เป็น setrichmenuforalluser เพื่ออัปเดทในหน้าไลน์
-
   const richmenuconfig = {
     richmenu: {
-      size: {
-        width: 2500,
-        height: 1686,
-      },
+      size: selectedSizeTemplate,
       selected: false,
-      name: "Test the default rich menu",
+      name: "Rich menu",
       chatBarText: chatBarTitle,
       areas: selectedAreaTemplate,
     },
     // richmenu_id: "richmenu-b78718c4de8e4de2cd5dad2c630e0e3e",
     image: image,
   };
+
+  console.log("rich oncifg", richmenuconfig);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -150,7 +327,7 @@ export default function RichMenuDesigner() {
 
   const handleSendMessage = async () => {
     const body = {
-      type: type,
+      type: "createrichmenu",
       destination: channelId,
       richmenu_config: richmenuconfig,
     };
@@ -163,9 +340,37 @@ export default function RichMenuDesigner() {
           headers: { "Content-Type": "application/json" },
         }
       );
+      console.log("result", res);
 
       if (res.status === 200) {
-        setOpenNotification(true);
+        const richmenuconfigWithRichId = {
+          richmenu_id: res.data,
+          richmenu: {
+            size: selectedSizeTemplate,
+            selected: false,
+            name: "Rich menu",
+            chatBarText: chatBarTitle,
+            areas: selectedAreaTemplate,
+          },
+
+          image: image,
+        };
+        const body2 = {
+          type: "setrichmenuforalluser",
+          destination: channelId,
+          richmenu_config: richmenuconfigWithRichId,
+        };
+        const res2 = await axios.post(
+          `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/richmenu`,
+          body2,
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+        if (res2.status === 200) {
+          console.log("Response from webhook:", res.data);
+          setOpenNotification(true);
+        }
       }
 
       console.log("Response from webhook:", res.data);
@@ -179,8 +384,9 @@ export default function RichMenuDesigner() {
 
   const handleSelectTemplate = (template) => {
     setImagePreview(template.imageUrl);
+    setSelectedSizeTemplate(template.size);
     setOpenModal(false);
-    setSelectedAreaTemplate(template.area);
+    setSelectedAreaTemplate(template.areas);
   };
 
   return (
@@ -296,19 +502,25 @@ export default function RichMenuDesigner() {
       <Box>
         <Typography mt={4}>Action Bar</Typography>
       </Box>
-      {selectedAreaTemplate?.map((area, index) => (
-        <ActionComponent
-          handleAreaChange={handleAreaChange}
-          key={index}
-          index={index}
-        />
-      ))}
-
-      {/* Send Button */}
-      <Box mt={4} textAlign="right" width="100%">
-        <Button variant="contained" color="primary" onClick={handleSendMessage}>
-          Send
-        </Button>
+      <Box component="form">
+        {selectedAreaTemplate?.map((area, index) => (
+          <ActionComponent
+            handleAreaChange={handleAreaChange}
+            key={index}
+            index={index}
+            imagePreview={imagePreview}
+          />
+        ))}
+        {/* Send Button */}
+        <Box mt={4} textAlign="right" width="100%">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSendMessage}
+          >
+            Send
+          </Button>
+        </Box>
       </Box>
 
       <Notification
