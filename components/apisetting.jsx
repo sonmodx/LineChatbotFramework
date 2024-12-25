@@ -82,26 +82,7 @@ function PostmanClonePage() {
       scripts,
     };
     console.log('API Request Data:', requestData);
-    // Here, you can implement saving functionality, e.g., saving to localStorage or a database
-  };
-
-  const handleSave = () => {
-    const requestData = {
-      method,
-      url,
-      headers,
-      urlParams,
-      body,
-      auth,
-      scripts,
-    };
-    // Assuming `saveToLocal` is a function that persists data locally
-    saveToLocal(requestData);
-  };
-
-  const saveToLocal = (data) => {
-    localStorage.setItem('apiRequest', JSON.stringify(data));
-    alert('Request configuration saved successfully!');
+    // Send API request using fetch, axios, etc.
   };
 
   return (
@@ -159,7 +140,7 @@ function PostmanClonePage() {
               textColor="primary"
               centered
               sx={{ marginTop: 2 }}
-            > 
+            >
               <Tab label="URL Params" />
               <Tab label="Headers" />
               <Tab label="Body" />
@@ -169,7 +150,7 @@ function PostmanClonePage() {
             </Tabs>
 
             {/* Tab Content */}
-            {activeTab === 1 && (
+            {activeTab === 0 && (
               <Box sx={{ marginTop: 2 }}>
                 {/* Headers Section */}
                 <Typography variant="h6" sx={{ marginBottom: 2 }}>Headers</Typography>
@@ -219,75 +200,8 @@ function PostmanClonePage() {
               </Box>
             )}
 
-            {activeTab === 2 && (
-              <Box sx={{ marginTop: 2 }}>
-                {/* Body Section */}
-                <Typography variant="h6" sx={{ marginBottom: 2 }}>Body</Typography>
-                <TextField
-                  label="Body"
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  rows={6}
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                />
-              </Box>
-            )}
-
-            {activeTab === 3 && (
-              <Box sx={{ marginTop: 2 }}>
-                {/* Auth Section */}
-                <Typography variant="h6" sx={{ marginBottom: 2 }}>Authentication</Typography>
-                <FormControl fullWidth>
-                  <Select
-                    value={auth}
-                    onChange={(e) => setAuth(e.target.value)}
-                    label="Auth Type"
-                  >
-                    <MenuItem value="None">None</MenuItem>
-                    <MenuItem value="Basic">Basic Auth</MenuItem>
-                    <MenuItem value="Bearer">Bearer Token</MenuItem>
-                  </Select>
-                </FormControl>
-                {auth === 'Basic' && (
-                  <Grid container spacing={2} sx={{ marginTop: 2 }}>
-                    <Grid item xs={6}>
-                      <TextField label="Username" fullWidth />
-                    </Grid>
-                    <Grid item xs={6}>
-                      <TextField label="Password" fullWidth type="password" />
-                    </Grid>
-                  </Grid>
-                )}
-                {auth === 'Bearer' && (
-                  <TextField
-                    label="Token"
-                    variant="outlined"
-                    fullWidth
-                    sx={{ marginTop: 2 }}
-                  />
-                )}
-              </Box>
-            )}
-
+            
             {activeTab === 4 && (
-              <Box sx={{ marginTop: 2 }}>
-                {/* Scripts Section */}
-                <Typography variant="h6" sx={{ marginBottom: 2 }}>Pre-request Script</Typography>
-                <TextField
-                  label="Script"
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  rows={6}
-                  value={scripts}
-                  onChange={(e) => setScripts(e.target.value)}
-                />
-              </Box>
-            )}
-
-            {activeTab === 0 && (
               <Box sx={{ marginTop: 2 }}>
                 {/* URL Params Section */}
                 <Typography variant="h6" sx={{ marginBottom: 2 }}>URL Params</Typography>
@@ -337,15 +251,78 @@ function PostmanClonePage() {
               </Box>
             )}
 
-            {/* Buttons Section */}
-            <Box sx={{ marginTop: 3, display: 'flex', justifyContent: 'space-between' }}>
-              <Button variant="contained" color="primary" onClick={handleSubmit}>
-                Send Request
-              </Button>
-              <Button variant="outlined" onClick={handleSave}>
-                Save
-              </Button>
-            </Box>
+            {activeTab === 1 && (
+              <Box sx={{ marginTop: 2 }}>
+                {/* Body Section */}
+                <Typography variant="h6" sx={{ marginBottom: 2 }}>Body</Typography>
+                <TextField
+                  label="Body"
+                  variant="outlined"
+                  fullWidth
+                  multiline
+                  rows={6}
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                />
+              </Box>
+            )}
+
+            {activeTab === 2 && (
+              <Box sx={{ marginTop: 2 }}>
+                {/* Auth Section */}
+                <Typography variant="h6" sx={{ marginBottom: 2 }}>Authentication</Typography>
+                <FormControl fullWidth>
+                  <Select
+                    value={auth}
+                    onChange={(e) => setAuth(e.target.value)}
+                    label="Auth Type"
+                  >
+                    <MenuItem value="None">None</MenuItem>
+                    <MenuItem value="Basic">Basic Auth</MenuItem>
+                    <MenuItem value="Bearer">Bearer Token</MenuItem>
+                  </Select>
+                </FormControl>
+                {auth === 'Basic' && (
+                  <Grid container spacing={2} sx={{ marginTop: 2 }}>
+                    <Grid item xs={6}>
+                      <TextField label="Username" fullWidth />
+                    </Grid>
+                    <Grid item xs={6}>
+                      <TextField label="Password" fullWidth type="password" />
+                    </Grid>
+                  </Grid>
+                )}
+                {auth === 'Bearer' && (
+                  <TextField
+                    label="Token"
+                    variant="outlined"
+                    fullWidth
+                    sx={{ marginTop: 2 }}
+                  />
+                )}
+              </Box>
+            )}
+
+            {activeTab === 3 && (
+              <Box sx={{ marginTop: 2 }}>
+                {/* Scripts Section */}
+                <Typography variant="h6" sx={{ marginBottom: 2 }}>Pre-request Script</Typography>
+                <TextField
+                  label="Script"
+                  variant="outlined"
+                  fullWidth
+                  multiline
+                  rows={6}
+                  value={scripts}
+                  onChange={(e) => setScripts(e.target.value)}
+                />
+              </Box>
+            )}
+
+            {/* Submit Button */}
+            <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ marginTop: 3 }}>
+              Send Request
+            </Button>
           </CardContent>
         </Card>
       </Box>
