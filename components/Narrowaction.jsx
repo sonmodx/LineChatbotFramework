@@ -18,7 +18,7 @@ import { useSearchParams } from "next/navigation";
 import axios from "axios";
 
 const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
-const narrowFilterList = [{ type: "audience", audienceGroupId: 6379677725631 }];
+const narrowFilterList = [{ type: "audience", audienceGroupId: 9820799089250 }];
 
 export default function NarrowMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)

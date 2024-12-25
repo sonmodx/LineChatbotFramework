@@ -6,19 +6,25 @@ import ChannelAPI from "../ChannelAPI";
 import ChannelUser from "../ChannelUser";
 import ChannelAction from "../ChannelAction";
 
-function ManageShowTable({ tab, id }) {
+function ManageShowTable({ tab, id, channelId }) {
   const listTitle = ["Action", "User", "API", "Log"];
   if (tab === 0) {
     return <ChannelAction listTitle={listTitle[tab]} channelId={id} />;
   } else if (tab === 1) {
-    return <ChannelUser listTitle={listTitle[tab]} channelId={id} />;
+    return (
+      <ChannelUser
+        listTitle={listTitle[tab]}
+        channelId={id}
+        channelIdLine={channelId}
+      />
+    );
   } else if (tab === 2) {
     return <ChannelAPI listTitle={listTitle[tab]} channelId={id} />;
   }
   return <Box>Empty Component</Box>;
 }
 
-export default function ChannelDetail({ id, channelName }) {
+export default function ChannelDetail({ id, channelName, channelId }) {
   const [selectTab, setSelectTab] = useState(0);
 
   const listTab = [
@@ -56,7 +62,7 @@ export default function ChannelDetail({ id, channelName }) {
             />
           ))}
         </Tabs>
-        <ManageShowTable tab={selectTab} id={id} />
+        <ManageShowTable tab={selectTab} id={id} channelId={channelId} />
       </Container>
     </>
   );
