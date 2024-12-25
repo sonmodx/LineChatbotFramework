@@ -285,6 +285,73 @@ export default function RichMenuDesigner() {
         />
       )}
 
+<Box mt={3} width="100%">
+<Typography
+              variant="h6"
+              gutterBottom
+              backgroundColor="primary.main"
+              style={{ color: "#fff", padding: "10px" }}
+            >
+              Preview Richmenu
+            </Typography>
+
+  {/* Preview Box */}
+  <Box
+    sx={{
+      position: "relative",
+      width: imagePreview
+        ? imagePreview.includes("template1L") || imagePreview.includes("template2L") // Check if large template
+          ? 2500 * 0.25 // Scale down to 50% for large templates
+          : 1200 * 0.5 // Scale down to 50% for compact templates
+        : 0, // Adjust width based on selected template
+      height: imagePreview
+        ? imagePreview.includes("template1L") || imagePreview.includes("template2L") // Check if large template
+          ? 1686 * 0.25 // Scale down to 50% for large templates
+          : 800 * 0.5 // Scale down to 50% for compact templates
+        : 0, // Adjust height based on selected template
+      maxWidth: "100%",
+      border: "2px dashed #ccc",
+      borderRadius: 2,
+      overflow: "hidden",
+      backgroundColor: "#f5f5f5",
+    }}
+  >
+    {/* Display uploaded image */}
+    {image && (
+      <img
+        src={image}
+        alt="Uploaded Preview"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+        }}
+      />
+    )}
+
+    {/* Display selected template overlay */}
+    {imagePreview && (
+      <img
+        src={imagePreview}
+        alt="Template Preview"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          opacity: 0.7, // 60% opacity
+        }}
+      />
+    )}
+  </Box>
+</Box>
+
+
       <Typography mt={4}>Chat Bar Title</Typography>
       <TextField
         fullWidth
