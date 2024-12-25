@@ -550,7 +550,7 @@ export default function RichMenuDesigner() {
           width: "100%",
           height: "100%",
           objectFit: "cover",
-          opacity: 0.7, // 60% opacity
+          opacity: 0.85, // 60% opacity
         }}
       />
     )}
