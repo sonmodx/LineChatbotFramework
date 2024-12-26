@@ -1,6 +1,7 @@
-'use client'; // Marking this component as client-side
+"use client"; // Marking this component as client-side
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   AppBar,
   Box,
@@ -24,18 +25,52 @@ import {
   TableHead,
   TableRow,
   Paper,
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+} from "@mui/material";
+import Loading from "./Loading";
+import Notification from "./Notification";
 
-function PostmanClonePage() {
-  const [method, setMethod] = useState('GET');
-  const [url, setUrl] = useState('');
-  const [headers, setHeaders] = useState([{ key: '', value: '' }]);
-  const [urlParams, setUrlParams] = useState([{ key: '', value: '' }]);
-  const [body, setBody] = useState('');
-  const [auth, setAuth] = useState('None');
-  const [scripts, setScripts] = useState('');
+function ApiSetting({ mode = "create", id = null, channelId = null }) {
+  const [method, setMethod] = useState("GET");
+  const [url, setUrl] = useState("");
+  const [headers, setHeaders] = useState([{ key: "", value: "" }]);
+  const [urlParams, setUrlParams] = useState([{ key: "", value: "" }]);
+  const [body, setBody] = useState([
+    { key: "", content_type: "", content: "" },
+  ]);
+  const [auth, setAuth] = useState("None");
+  const [scripts, setScripts] = useState("");
   const [activeTab, setActiveTab] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [openNotification, setOpenNotification] = useState(false);
+
+  // Fetch existing data for editing
+  useEffect(() => {
+    if (mode === "edit" && id) {
+      const fetchData = async () => {
+        setLoading(true);
+        try {
+          const response = await axios.get(`/api/uAPI?id=${id}`);
+          console.log("res API ID", response);
+          if (response.status !== 200) return;
+
+          const data = response.data.API;
+          setMethod(data.method_type || "GET");
+          setUrl(data.api_endpoint || "");
+          setHeaders(data.api_headers || [{ key: "", value: "" }]);
+          setUrlParams(data.api_params || [{ key: "", value: "" }]);
+          setBody(data.api_body || "");
+          setAuth(data.api_auth || "None");
+          setScripts(data.scripts || "");
+        } catch (error) {
+          console.error("Error fetching data:", error.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchData();
+    } else {
+    }
+  }, [mode, id]);
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -54,7 +89,7 @@ function PostmanClonePage() {
   };
 
   const addHeader = () => {
-    setHeaders([...headers, { key: '', value: '' }]);
+    setHeaders([...headers, { key: "", value: "" }]);
   };
 
   const removeHeader = (index) => {
@@ -63,7 +98,7 @@ function PostmanClonePage() {
   };
 
   const addUrlParam = () => {
-    setUrlParams([...urlParams, { key: '', value: '' }]);
+    setUrlParams([...urlParams, { key: "", value: "" }]);
   };
 
   const removeUrlParam = (index) => {
@@ -71,263 +106,343 @@ function PostmanClonePage() {
     setUrlParams(updatedParams);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const requestData = {
-      method,
-      url,
-      headers,
-      urlParams,
-      body,
-      auth,
-      scripts,
+      name: "MY API",
+      description: "",
+      method_type: method,
+      api_endpoint: url,
+      api_headers: headers,
+      api_params: urlParams,
+      api_body: body,
+      api_auth: "",
+      keywords: ["api"],
     };
-    console.log('API Request Data:', requestData);
-    // Send API request using fetch, axios, etc.
+    if (mode === "edit") {
+      requestData.id = id;
+    }
+    if (mode === "create") {
+      requestData.channel_id = channelId;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios({
+        method: mode === "edit" ? "put" : "post",
+        url: mode === "edit" && id ? `/api/uAPI?id=${id}` : "/api/uAPI",
+        headers: { "Content-Type": "application/json" },
+        data: requestData,
+      });
+      console.log("API Request Successful:", response.data);
+      if (response.status === 200 || response.status === 201) {
+        setOpenNotification(true);
+      }
+    } catch (error) {
+      console.error(
+        "Error sending request:",
+        error.response?.data?.message || error.message
+      );
+    } finally {
+      setLoading(false);
+    }
   };
+  if (loading) return <Loading />;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      {/* AppBar */}
-      <AppBar position="static">
-        <Container>
-          <Typography variant="h6" sx={{ color: 'white' }}>
-            Postman API Params
-          </Typography>
-        </Container>
-      </AppBar>
-
-      {/* Main Content */}
-      <Box sx={{ padding: 2 }}>
-        <Card>
-          <CardContent>
-            <Typography variant="h6" sx={{ marginBottom: 2 }}>
-              Configure API Request
+    <Container>
+      <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+        {/* AppBar */}
+        <AppBar position="static">
+          <Container>
+            <Typography variant="h6" sx={{ color: "white" }}>
+              Postman API Params
             </Typography>
+          </Container>
+        </AppBar>
 
-            {/* HTTP Method & URL */}
-            <Grid container spacing={2}>
-              <Grid item xs={3}>
-                <FormControl fullWidth>
-                  <InputLabel>Method</InputLabel>
-                  <Select
-                    value={method}
-                    onChange={(e) => setMethod(e.target.value)}
-                    label="Method"
-                  >
-                    <MenuItem value="GET">GET</MenuItem>
-                    <MenuItem value="POST">POST</MenuItem>
-                    <MenuItem value="PUT">PUT</MenuItem>
-                    <MenuItem value="DELETE">DELETE</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={9}>
-                <TextField
-                  label="URL"
-                  variant="outlined"
-                  fullWidth
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                />
-              </Grid>
-            </Grid>
+        {/* Main Content */}
+        <Box sx={{ padding: 2 }}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" sx={{ marginBottom: 2 }}>
+                Configure API Request
+              </Typography>
 
-            {/* Tabs for different sections */}
-            <Tabs
-              value={activeTab}
-              onChange={handleTabChange}
-              indicatorColor="primary"
-              textColor="primary"
-              centered
-              sx={{ marginTop: 2 }}
-            >
-              <Tab label="URL Params" />
-              <Tab label="Headers" />
-              <Tab label="Body" />
-              <Tab label="Auth" />
-              <Tab label="Scripts" />
-
-            </Tabs>
-
-            {/* Tab Content */}
-            {activeTab === 0 && (
-              <Box sx={{ marginTop: 2 }}>
-                {/* Headers Section */}
-                <Typography variant="h6" sx={{ marginBottom: 2 }}>Headers</Typography>
-                <TableContainer component={Paper}>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Key</TableCell>
-                        <TableCell>Value</TableCell>
-                        <TableCell>Action</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {headers.map((header, index) => (
-                        <TableRow key={index}>
-                          <TableCell>
-                            <TextField
-                              value={header.key}
-                              onChange={(e) => handleHeaderChange(index, 'key', e.target.value)}
-                              fullWidth
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <TextField
-                              value={header.value}
-                              onChange={(e) => handleHeaderChange(index, 'value', e.target.value)}
-                              fullWidth
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="outlined"
-                              color="error"
-                              onClick={() => removeHeader(index)}
-                            >
-                              Remove
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                <Button variant="outlined" sx={{ marginTop: 2 }} onClick={addHeader}>
-                  Add Header
-                </Button>
-              </Box>
-            )}
-
-            
-            {activeTab === 4 && (
-              <Box sx={{ marginTop: 2 }}>
-                {/* URL Params Section */}
-                <Typography variant="h6" sx={{ marginBottom: 2 }}>URL Params</Typography>
-                <TableContainer component={Paper}>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Key</TableCell>
-                        <TableCell>Value</TableCell>
-                        <TableCell>Action</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {urlParams.map((param, index) => (
-                        <TableRow key={index}>
-                          <TableCell>
-                            <TextField
-                              value={param.key}
-                              onChange={(e) => handleUrlParamChange(index, 'key', e.target.value)}
-                              fullWidth
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <TextField
-                              value={param.value}
-                              onChange={(e) => handleUrlParamChange(index, 'value', e.target.value)}
-                              fullWidth
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="outlined"
-                              color="error"
-                              onClick={() => removeUrlParam(index)}
-                            >
-                              Remove
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                <Button variant="outlined" sx={{ marginTop: 2 }} onClick={addUrlParam}>
-                  Add URL Param
-                </Button>
-              </Box>
-            )}
-
-            {activeTab === 1 && (
-              <Box sx={{ marginTop: 2 }}>
-                {/* Body Section */}
-                <Typography variant="h6" sx={{ marginBottom: 2 }}>Body</Typography>
-                <TextField
-                  label="Body"
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  rows={6}
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                />
-              </Box>
-            )}
-
-            {activeTab === 2 && (
-              <Box sx={{ marginTop: 2 }}>
-                {/* Auth Section */}
-                <Typography variant="h6" sx={{ marginBottom: 2 }}>Authentication</Typography>
-                <FormControl fullWidth>
-                  <Select
-                    value={auth}
-                    onChange={(e) => setAuth(e.target.value)}
-                    label="Auth Type"
-                  >
-                    <MenuItem value="None">None</MenuItem>
-                    <MenuItem value="Basic">Basic Auth</MenuItem>
-                    <MenuItem value="Bearer">Bearer Token</MenuItem>
-                  </Select>
-                </FormControl>
-                {auth === 'Basic' && (
-                  <Grid container spacing={2} sx={{ marginTop: 2 }}>
-                    <Grid item xs={6}>
-                      <TextField label="Username" fullWidth />
-                    </Grid>
-                    <Grid item xs={6}>
-                      <TextField label="Password" fullWidth type="password" />
-                    </Grid>
-                  </Grid>
-                )}
-                {auth === 'Bearer' && (
+              {/* HTTP Method & URL */}
+              <Grid container spacing={2}>
+                <Grid item xs={3}>
+                  <FormControl fullWidth>
+                    <InputLabel>Method</InputLabel>
+                    <Select
+                      value={method}
+                      onChange={(e) => setMethod(e.target.value)}
+                      label="Method"
+                    >
+                      <MenuItem value="GET">GET</MenuItem>
+                      <MenuItem value="POST">POST</MenuItem>
+                      <MenuItem value="PUT">PUT</MenuItem>
+                      <MenuItem value="DELETE">DELETE</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={9}>
                   <TextField
-                    label="Token"
+                    label="URL"
                     variant="outlined"
                     fullWidth
-                    sx={{ marginTop: 2 }}
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
                   />
-                )}
-              </Box>
-            )}
+                </Grid>
+              </Grid>
 
-            {activeTab === 3 && (
-              <Box sx={{ marginTop: 2 }}>
-                {/* Scripts Section */}
-                <Typography variant="h6" sx={{ marginBottom: 2 }}>Pre-request Script</Typography>
-                <TextField
-                  label="Script"
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  rows={6}
-                  value={scripts}
-                  onChange={(e) => setScripts(e.target.value)}
-                />
-              </Box>
-            )}
+              {/* Tabs for different sections */}
+              <Tabs
+                value={activeTab}
+                onChange={handleTabChange}
+                indicatorColor="primary"
+                textColor="primary"
+                centered
+                sx={{ marginTop: 2 }}
+              >
+                <Tab label="Headers" />
+                <Tab label="Body" />
+                <Tab label="Auth" />
+                <Tab label="Scripts" />
+                <Tab label="URL Params" />
+              </Tabs>
 
-            {/* Submit Button */}
-            <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ marginTop: 3 }}>
-              Send Request
-            </Button>
-          </CardContent>
-        </Card>
+              {/* Tab Content */}
+              {activeTab === 0 && (
+                <Box sx={{ marginTop: 2 }}>
+                  {/* Headers Section */}
+                  <Typography variant="h6" sx={{ marginBottom: 2 }}>
+                    Headers
+                  </Typography>
+                  <TableContainer component={Paper}>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Key</TableCell>
+                          <TableCell>Value</TableCell>
+                          <TableCell>Action</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {headers.map((header, index) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <TextField
+                                value={header.key}
+                                onChange={(e) =>
+                                  handleHeaderChange(
+                                    index,
+                                    "key",
+                                    e.target.value
+                                  )
+                                }
+                                fullWidth
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <TextField
+                                value={header.value}
+                                onChange={(e) =>
+                                  handleHeaderChange(
+                                    index,
+                                    "value",
+                                    e.target.value
+                                  )
+                                }
+                                fullWidth
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="outlined"
+                                color="error"
+                                onClick={() => removeHeader(index)}
+                              >
+                                Remove
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                  <Button
+                    variant="outlined"
+                    sx={{ marginTop: 2 }}
+                    onClick={addHeader}
+                  >
+                    Add Header
+                  </Button>
+                </Box>
+              )}
+
+              {activeTab === 4 && (
+                <Box sx={{ marginTop: 2 }}>
+                  {/* URL Params Section */}
+                  <Typography variant="h6" sx={{ marginBottom: 2 }}>
+                    URL Params
+                  </Typography>
+                  <TableContainer component={Paper}>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Key</TableCell>
+                          <TableCell>Value</TableCell>
+                          <TableCell>Action</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {urlParams.map((param, index) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <TextField
+                                value={param.key}
+                                onChange={(e) =>
+                                  handleUrlParamChange(
+                                    index,
+                                    "key",
+                                    e.target.value
+                                  )
+                                }
+                                fullWidth
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <TextField
+                                value={param.value}
+                                onChange={(e) =>
+                                  handleUrlParamChange(
+                                    index,
+                                    "value",
+                                    e.target.value
+                                  )
+                                }
+                                fullWidth
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="outlined"
+                                color="error"
+                                onClick={() => removeUrlParam(index)}
+                              >
+                                Remove
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                  <Button
+                    variant="outlined"
+                    sx={{ marginTop: 2 }}
+                    onClick={addUrlParam}
+                  >
+                    Add URL Param
+                  </Button>
+                </Box>
+              )}
+
+              {activeTab === 1 && (
+                <Box sx={{ marginTop: 2 }}>
+                  {/* Body Section */}
+                  <Typography variant="h6" sx={{ marginBottom: 2 }}>
+                    Body
+                  </Typography>
+                  <TextField
+                    label="Body"
+                    variant="outlined"
+                    fullWidth
+                    multiline
+                    rows={6}
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                  />
+                </Box>
+              )}
+
+              {activeTab === 2 && (
+                <Box sx={{ marginTop: 2 }}>
+                  {/* Auth Section */}
+                  <Typography variant="h6" sx={{ marginBottom: 2 }}>
+                    Authentication
+                  </Typography>
+                  <FormControl fullWidth>
+                    <Select
+                      value={auth}
+                      onChange={(e) => setAuth(e.target.value)}
+                      label="Auth Type"
+                    >
+                      <MenuItem value="None">None</MenuItem>
+                      <MenuItem value="Basic">Basic Auth</MenuItem>
+                      <MenuItem value="Bearer">Bearer Token</MenuItem>
+                    </Select>
+                  </FormControl>
+                  {auth === "Basic" && (
+                    <Grid container spacing={2} sx={{ marginTop: 2 }}>
+                      <Grid item xs={6}>
+                        <TextField label="Username" fullWidth />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <TextField label="Password" fullWidth type="password" />
+                      </Grid>
+                    </Grid>
+                  )}
+                  {auth === "Bearer" && (
+                    <TextField
+                      label="Token"
+                      variant="outlined"
+                      fullWidth
+                      sx={{ marginTop: 2 }}
+                    />
+                  )}
+                </Box>
+              )}
+
+              {activeTab === 3 && (
+                <Box sx={{ marginTop: 2 }}>
+                  {/* Scripts Section */}
+                  <Typography variant="h6" sx={{ marginBottom: 2 }}>
+                    Pre-request Script
+                  </Typography>
+                  <TextField
+                    label="Script"
+                    variant="outlined"
+                    fullWidth
+                    multiline
+                    rows={6}
+                    value={scripts}
+                    onChange={(e) => setScripts(e.target.value)}
+                  />
+                </Box>
+              )}
+
+              {/* Submit Button */}
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit}
+                sx={{ marginTop: 3 }}
+              >
+                Send Request
+              </Button>
+            </CardContent>
+          </Card>
+        </Box>
       </Box>
-    </Box>
+      <Notification
+        openNotification={openNotification}
+        setOpenNotification={setOpenNotification}
+        message={`Successful ${mode === "edit" ? "update API" : "create API"}`}
+      />
+    </Container>
   );
 }
 
-export default PostmanClonePage;
+export default ApiSetting;

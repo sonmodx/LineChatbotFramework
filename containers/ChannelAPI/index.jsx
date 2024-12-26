@@ -53,7 +53,7 @@ export default function ChannelAPI({ listTitle, channelId }) {
   };
 
   const handleEditApi = (id) => {
-    router.push(`/api/edit?channelId=${id}`);
+    router.push(`/apiPage/edit?id=${id}`);
   };
 
   return (
@@ -73,7 +73,7 @@ export default function ChannelAPI({ listTitle, channelId }) {
         <Button
           variant="contained"
           size="medium"
-          onClick={() => router.push("/api/create")}
+          onClick={() => router.push(`/apiPage/create?channel_id=${channelId}`)}
         >
           Create
         </Button>

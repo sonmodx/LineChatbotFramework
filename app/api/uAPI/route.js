@@ -35,7 +35,11 @@ export async function GET(req) {
       if (!existingChannel) {
         return formatResponse(404, { message: "Channel not found." });
       }
-      if (session.user._id && session.user._id !== existingChannel.user_id) {
+
+      if (
+        session.user._id &&
+        session.user._id !== existingChannel.user_id.toString()
+      ) {
         return formatResponse(400, { message: "No access this Channel" });
       }
 
@@ -139,10 +143,12 @@ export async function POST(req) {
       api_auth,
       keywords,
     });
+    console.log("HERE", newAPI);
     const savedAPI = await newAPI.save();
 
     return formatResponse(201, { API: savedAPI });
   } catch (error) {
+    console.error(error);
     return formatResponse(500, { message: "Internal server error." });
   }
 }
