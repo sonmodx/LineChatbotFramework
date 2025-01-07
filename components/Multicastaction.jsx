@@ -12,11 +12,9 @@ import {
   Chip,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
-import { getAllLineUsers } from "@/actions";
+import { getAllApis, getAllLineUsers } from "@/actions";
 import axios from "axios";
 import Notification from "./Notification";
-
-const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
 
 export default function MulticastMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -32,6 +30,7 @@ export default function MulticastMessage() {
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("channel_id");
   const typeMessage = "Multicast";
+  const [apis, setApis] = useState([]);
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
   };
@@ -70,11 +69,14 @@ export default function MulticastMessage() {
     const body = {
       type: typeMessage,
       destination: channelId,
-      user_id: selectedUsers.map((user) => user.line_user_id),
-      // message: messages
-      //   .filter((msg) => msg !== undefined && msg.trim() !== "")
-      //   .map((msg) => ({ type: "text", text: msg })),
-      message: [{ type: "text", text: messages }],
+      direct_config: {
+        api_id: selectedApi?._id || null,
+        user_id: selectedUsers.map((user) => user.line_user_id),
+        // message: messages
+        //   .filter((msg) => msg !== undefined && msg.trim() !== "")
+        //   .map((msg) => ({ type: "text", text: msg })),
+        message: [{ type: "text", text: messages }],
+      },
     };
     console.log("body", body);
     try {
@@ -99,8 +101,16 @@ export default function MulticastMessage() {
     }
   };
 
+  const handleGetAllApis = async () => {
+    const _apis = await getAllApis(channelObjectId);
+
+    console.log(_apis);
+    setApis(JSON.parse(_apis));
+  };
+
   useEffect(() => {
     handleGetAllLineUsers();
+    handleGetAllApis();
     console.log("HI");
   }, []);
 
@@ -204,6 +214,7 @@ export default function MulticastMessage() {
             {useApi && (
               <Autocomplete
                 options={apis}
+                getOptionLabel={(option) => option.name || ""}
                 value={selectedApi}
                 onChange={handleApiChange}
                 renderInput={(params) => (

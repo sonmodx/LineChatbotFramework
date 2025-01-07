@@ -50,7 +50,7 @@ export default function ListUser({ listTitle, channelId }) {
       </Box>
       <CustomTable
         headerColumns={["User", "Audiences"]}
-        bodyColumns={["tags"]}
+        bodyColumns={["audience"]}
         canSetting={false}
         statusState={[]}
         callbackGetData={getAllUsers}

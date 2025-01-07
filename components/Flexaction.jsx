@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   TextField,
@@ -10,8 +10,8 @@ import {
   Grid,
   Button,
 } from "@mui/material";
-
-const apis = ["API 1", "API 2", "API 3"]; // Example API options
+import { useSearchParams } from "next/navigation";
+import { getAllApis } from "@/actions";
 
 export default function FlexMessage() {
   const [useApi, setUseApi] = useState(false); // Checkbox state for using API
@@ -19,7 +19,11 @@ export default function FlexMessage() {
   const [flexMessageInput, setFlexMessageInput] = useState(""); // User input from the left box
   const [flexMessageJson, setFlexMessageJson] = useState(""); // JSON for the right box
   const [parsedFlexMessage, setParsedFlexMessage] = useState(null); // Parsed JSON for the preview
+  const searchParams = useSearchParams();
 
+  const channelObjectId = searchParams.get("id");
+  const channelId = searchParams.get("channel_id");
+  const [apis, setApis] = useState([]);
   // Handle the change in the Flex Message Designer input (left box)
   const handleFlexMessageInputChange = (event) => {
     const inputValue = event.target.value;
@@ -41,6 +45,17 @@ export default function FlexMessage() {
       setParsedFlexMessage(null); // Clear the preview if JSON is invalid
     }
   };
+
+  const handleGetAllApis = async () => {
+    const _apis = await getAllApis(channelObjectId);
+
+    console.log(_apis);
+    setApis(JSON.parse(_apis));
+  };
+
+  useEffect(() => {
+    handleGetAllApis();
+  }, []);
 
   // Render the preview based on the parsed Flex Message JSON
   const renderPreview = () => {
@@ -223,6 +238,7 @@ export default function FlexMessage() {
         {useApi && (
           <Autocomplete
             options={apis}
+            getOptionLabel={(option) => option.name || ""}
             value={selectedApi}
             onChange={(event, newValue) => setSelectedApi(newValue)}
             renderInput={(params) => (

@@ -143,7 +143,7 @@ export async function POST(req) {
       api_auth,
       keywords,
     });
-    console.log("HERE", newAPI);
+
     const savedAPI = await newAPI.save();
 
     return formatResponse(201, { API: savedAPI });

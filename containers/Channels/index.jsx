@@ -40,7 +40,7 @@ export default function Channels() {
   const handleDeleteChannel = async (selectId) => {
     try {
       console.log(selectId);
-      const res = await axios.delete(`/api/Channel?id=${selectId}`);
+      const res = await axios.delete(`/api/Channel?id=${selectId._id}`);
       if (res.status === 200) {
         getAllChannels();
         setAnchorEl(null);
@@ -52,8 +52,8 @@ export default function Channels() {
     }
   };
 
-  const handleEditChannel = (id) => {
-    router.push(`/channels/edit?channelId=${id}`);
+  const handleEditChannel = (item) => {
+    router.push(`/channels/edit?channelId=${item._id}`);
   };
 
   const handleHeaderLink = (row) => {

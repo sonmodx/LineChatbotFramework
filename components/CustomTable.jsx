@@ -141,12 +141,10 @@ export default function CustomTable({
                 {canSetting && (
                   <TableCell width={120}>
                     <IconButton>
-                      <EditOutlinedIcon
-                        onClick={() => callbackEditData(row._id)}
-                      />
+                      <EditOutlinedIcon onClick={() => callbackEditData(row)} />
                     </IconButton>
                     <IconButton
-                      onClick={(e) => handleClick(e, row._id)}
+                      onClick={(e) => handleClick(e, row)}
                       aria-describedby={id}
                     >
                       <DeleteOutlineOutlinedIcon />
