@@ -31,6 +31,15 @@ const Navbar = () => {
     }
   };
 
+  // Handle Manual button click
+  const handleManualClick = () => {
+    router.push("/manual"); // Redirect to the manual page
+  };
+
+  const handlefeaturesClick = () => {
+    router.push("/features"); // Redirect 
+  };
+
   return (
     <AppBar 
       position="static" 
@@ -67,6 +76,38 @@ const Navbar = () => {
         <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold" }}>
           FRONTEND FRAMEWORK
         </Typography>
+        <Button
+          variant="text"
+          color="inherit"
+          onClick={handlefeaturesClick}
+          sx={{
+            fontWeight: "bold",
+            textTransform: "none", // Ensure button text is not all caps
+            color: "darkblue",
+            mx: 2, // Add spacing between buttons
+            "&:hover": {
+              backgroundColor: "lightblue", // Light blue background on hover
+            },
+          }}
+        >
+          Features
+        </Button>
+        <Button
+          variant="text"
+          color="inherit"
+          onClick={handleManualClick}
+          sx={{
+            fontWeight: "bold",
+            textTransform: "none", // Ensure button text is not all caps
+            color: "darkblue",
+            mx: 2, // Add spacing between buttons
+            "&:hover": {
+              backgroundColor: "lightblue", // Light blue background on hover
+            },
+          }}
+        >
+          Manual
+        </Button>
         <>
           {session?.user?.name && (
             <Typography variant="body1" sx={{ mx: 2, fontWeight: "bold" }}>
