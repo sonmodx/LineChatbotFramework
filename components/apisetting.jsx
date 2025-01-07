@@ -42,6 +42,8 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(false);
   const [openNotification, setOpenNotification] = useState(false);
+  const [name, setName] = useState("");
+  const [keywords, setKeywords] = useState([]);
 
   // Fetch existing data for editing
   useEffect(() => {
@@ -61,6 +63,8 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
           setBody(data.api_body || "");
           setAuth(data.api_auth || "None");
           setScripts(data.scripts || "");
+          setName(data.name || "");
+          setKeywords(data.keywords || []);
         } catch (error) {
           console.error("Error fetching data:", error.message);
         } finally {
@@ -108,7 +112,7 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
 
   const handleSubmit = async () => {
     const requestData = {
-      name: "MY API",
+      name: name,
       description: "",
       method_type: method,
       api_endpoint: url,
@@ -116,7 +120,6 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
       api_params: urlParams,
       api_body: body,
       api_auth: "",
-      keywords: ["api"],
     };
     if (mode === "edit") {
       requestData.id = id;
@@ -127,13 +130,27 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
 
     try {
       setLoading(true);
+      const responseUserAPI = await getResponseAPI();
+      if (!responseUserAPI) {
+        return;
+      }
+      const responseUserApiData = responseUserAPI.data;
+      let keywordApi;
+      if (Array.isArray(responseUserApiData)) {
+        keywordApi = responseUserApiData[0];
+      }
+
+      requestData.keywords = JSON.stringify(keywordApi);
+
       const response = await axios({
         method: mode === "edit" ? "put" : "post",
         url: mode === "edit" && id ? `/api/uAPI?id=${id}` : "/api/uAPI",
         headers: { "Content-Type": "application/json" },
         data: requestData,
       });
+
       console.log("API Request Successful:", response.data);
+
       if (response.status === 200 || response.status === 201) {
         setOpenNotification(true);
       }
@@ -146,6 +163,36 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
       setLoading(false);
     }
   };
+
+  const getResponseAPI = async () => {
+    try {
+      const response = await axios(
+        "https://677cf6ac4496848554c861b2.mockapi.io/posts",
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      console.log("RESPINSE FROM API,", response);
+
+      if (
+        response.status === 200 ||
+        response.status === 201 ||
+        response.status === 204
+      ) {
+        console.log("OK");
+        return response;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error(
+        "Error get response from API:",
+        error.response?.data?.message || error.message
+      );
+    }
+    return;
+  };
+
   if (loading) return <Loading />;
 
   return (
@@ -167,9 +214,16 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
               <Typography variant="h6" sx={{ marginBottom: 2 }}>
                 Configure API Request
               </Typography>
+              <TextField
+                label="Name"
+                variant="outlined"
+                fullWidth
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
 
               {/* HTTP Method & URL */}
-              <Grid container spacing={2}>
+              <Grid container spacing={2} sx={{ marginTop: 2 }}>
                 <Grid item xs={3}>
                   <FormControl fullWidth>
                     <InputLabel>Method</InputLabel>

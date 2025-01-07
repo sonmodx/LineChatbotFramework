@@ -5,6 +5,7 @@ import { useState } from "react";
 import ChannelAPI from "../ChannelAPI";
 import ChannelUser from "../ChannelUser";
 import ChannelAction from "../ChannelAction";
+import ChannelLog from "../ChannelLog";
 
 function ManageShowTable({ tab, id, channelId }) {
   const listTitle = ["Action", "User", "API", "Log"];
@@ -20,6 +21,8 @@ function ManageShowTable({ tab, id, channelId }) {
     );
   } else if (tab === 2) {
     return <ChannelAPI listTitle={listTitle[tab]} channelId={id} />;
+  } else if (tab === 3) {
+    return <ChannelLog listTitle={listTitle[tab]} channelId={id} />;
   }
   return <Box>Empty Component</Box>;
 }

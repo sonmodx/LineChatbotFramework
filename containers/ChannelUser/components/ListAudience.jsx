@@ -16,7 +16,7 @@ import { useSession } from "next-auth/react";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import CustomTable from "@/components/CustomTable";
 import Notification from "@/components/Notification";
-import { getAllLineUsers } from "@/actions";
+import { getAllLineUsers, getAllLineUsersByUserId } from "@/actions";
 export default function ListAudience({ channelId, channelIdLine }) {
   const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState([]);
@@ -36,14 +36,16 @@ export default function ListAudience({ channelId, channelIdLine }) {
   const [selectLineUser, setSelectLineUser] = useState(null);
   const [openUpdate, setOpenUpdate] = useState(false);
   const [openNotificationUpdate, setOpenNotificationUpdate] = useState(false);
+  const [selectAudienceId, setSelectAudienceId] = useState(null);
 
   const audienceConfig = {
-    // audience_id: "9820799089250",
+    audience_id: "",
     description: name,
     isIfaAudience: false,
     user_id: selectedUsers?.map((user) => user.line_user_id),
     uploadDescription: description,
   };
+  console.log("audddddd", audienceConfig.user_id);
   const style = {
     position: "absolute",
     top: "50%",
@@ -55,19 +57,20 @@ export default function ListAudience({ channelId, channelIdLine }) {
     boxShadow: 24,
     p: 4,
   };
-  const getAllUsers = async () => {
+  const getAllAudiences = async () => {
     try {
       setIsLoading(true);
       const res = await axios.get(
-        `/api/User?channel_id=${channelId}&pageNumber=${
+        `/api/audience?channel_id=${channelId}&pageNumber=${
           page + 1
         }&pageSize=${rowsPerPage}`
       );
+
       if (res.status === 200) {
         const data = res.data;
-        setUsers(data.user);
+        setUsers(data.audience);
         setTotal(data.Total);
-        console.log("Line user data:", data);
+        console.log("Line audience data:", data);
       }
       setIsLoading(false);
     } catch (error) {
@@ -105,19 +108,20 @@ export default function ListAudience({ channelId, channelIdLine }) {
         setOpenNotification(true);
         setOpen(false);
         setDefaultValue();
+        getAllAudiences();
       }
     } catch (error) {
       console.error("Error when create audience:", error);
     }
   };
 
-  const handleDeleteAudience = async () => {
+  const handleDeleteAudience = async (selectId) => {
     try {
-      const audience_id = prompt("Enter audience ID:", "");
+      // const audience_id = prompt("Enter audience ID:", "");
       const body = {
         type: "deleteaudience",
         destination: channelIdLine,
-        audience_config: { audience_id: audience_id },
+        audience_config: { audience_id: selectId.audienceGroupId },
       };
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/audience`,
@@ -127,8 +131,10 @@ export default function ListAudience({ channelId, channelIdLine }) {
         }
       );
       if (res.status === 200) {
+        getAllAudiences();
         console.log("Successful delete audience");
         setOpenNotification(true);
+        setDefaultValue();
       }
     } catch (error) {
       console.error("Error when delete audience:", error);
@@ -137,8 +143,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
 
   const handleUpdateAudience = async () => {
     try {
-      const audience_id = prompt("Enter audience ID:", "");
-      audienceConfig.audience_id = audience_id.toString();
+      audienceConfig.audience_id = selectAudienceId.audienceGroupId.toString();
       const body = {
         type: "uploadaudience",
         destination: channelIdLine,
@@ -156,6 +161,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
         setOpenNotificationUpdate(true);
         setOpenUpdate(false);
         setDefaultValue();
+        getAllAudiences();
       }
     } catch (error) {
       console.error("Error when update audience:", error);
@@ -169,11 +175,20 @@ export default function ListAudience({ channelId, channelIdLine }) {
     setLineUsers(JSON.parse(line_users));
   };
 
+  const handleGetAllLineUsersByUserId = async () => {
+    const users = await getAllLineUsersByUserId(selectAudienceId.audiences);
+    console.log(users);
+    setLineUsers(JSON.parse(users));
+  };
+
   const setDefaultValue = async () => {
     setName("");
     setDescription("");
     setSelectedUsers([]);
     setSelectLineUser(null);
+    setSelectAudienceId(null);
+    setAnchorEl(null);
+    setLineUsers([]);
   };
   return (
     <Box sx={{ width: "100%" }}>
@@ -202,16 +217,23 @@ export default function ListAudience({ channelId, channelIdLine }) {
           "Create date",
           "",
         ]}
-        bodyColumns={["volume", "description", "created_date"]}
+        bodyColumns={["volume", "uploadDescription", "createdAt"]}
         canSetting={true}
         statusState={[]}
-        callbackGetData={getAllUsers}
-        callbackEditData={() => setOpenUpdate(true)}
+        callbackGetData={getAllAudiences}
+        callbackEditData={async (item) => {
+          console.log("aud", item.audiences);
+
+          setOpenUpdate(true);
+          setSelectAudienceId(item);
+          setName(item.description);
+          setDescription(item.uploadDescription);
+        }}
         callbackDeleteData={handleDeleteAudience}
         isLoading={isLoading}
         total={total}
         data={users}
-        headerCell={"display_name"}
+        headerCell={"description"}
         headerLink={""}
         anchorEl={anchorEl}
         setAnchorEl={setAnchorEl}
@@ -400,7 +422,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
               getOptionLabel={(option) => option.display_name || ""}
               value={selectLineUser}
               onChange={(event, newValue) => handleSelectLineUser(newValue)}
-              onSelect={handleGetAllLineUsers}
+              onSelect={handleGetAllLineUsersByUserId}
               renderInput={(params) => (
                 <TextField
                   {...params}

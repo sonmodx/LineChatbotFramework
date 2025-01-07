@@ -12,21 +12,22 @@ import {
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
-
-const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
+import { getAllApis } from "@/actions";
 
 export default function Greetingaction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [messages, setMessages] = useState(data?.message.join(",") || []);
   const searchParams = useSearchParams();
+
   const id = data?._id || null;
   console.log("GETDATA", data);
+  const [apis, setApis] = useState([]);
 
   // useEffect(() => {
   //   setMessages(data.message);
   // }, []);
-
+  const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("id");
 
   const handleCheckboxChange = (event) => {
@@ -72,6 +73,17 @@ export default function Greetingaction({ data, setState, state }) {
     }
   };
 
+  const handleGetAllApis = async () => {
+    const _apis = await getAllApis(channelObjectId);
+
+    console.log(_apis);
+    setApis(JSON.parse(_apis));
+  };
+
+  useEffect(() => {
+    handleGetAllApis();
+  }, []);
+
   return (
     <Box p={4} width="100%">
       {/* Title and Description */}
@@ -100,6 +112,7 @@ export default function Greetingaction({ data, setState, state }) {
             {useApi && (
               <Autocomplete
                 options={apis}
+                getOptionLabel={(option) => option.name || ""}
                 value={selectedApi}
                 onChange={handleApiChange}
                 renderInput={(params) => (

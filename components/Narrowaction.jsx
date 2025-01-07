@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   TextField,
@@ -16,9 +16,9 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import Notification from "./Notification";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
+import { getAllApis } from "@/actions";
 
-const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
-const narrowFilterList = [{ type: "audience", audienceGroupId: 9820799089250 }];
+const narrowFilterList = [{ type: "audience", audienceGroupId: 6618080771019 }];
 
 export default function NarrowMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -34,6 +34,7 @@ export default function NarrowMessage() {
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("channel_id");
   const typeMessage = "Narrowcast";
+  const [apis, setApis] = useState([]);
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
@@ -70,10 +71,12 @@ export default function NarrowMessage() {
     const body = {
       type: typeMessage,
       destination: channelId,
-      narrow_filter: selectAudience,
-      message: messages
-        .filter((msg) => msg !== undefined && msg.trim() !== "")
-        .map((msg) => ({ type: "text", text: msg })),
+      direct_config: {
+        narrow_filter: selectAudience,
+        message: messages
+          .filter((msg) => msg !== undefined && msg.trim() !== "")
+          .map((msg) => ({ type: "text", text: msg })),
+      },
     };
     console.log("body", body);
     try {
@@ -96,6 +99,17 @@ export default function NarrowMessage() {
       );
     }
   };
+
+  const handleGetAllApis = async () => {
+    const _apis = await getAllApis(channelObjectId);
+
+    console.log(_apis);
+    setApis(JSON.parse(_apis));
+  };
+
+  useEffect(() => {
+    handleGetAllApis();
+  }, []);
 
   return (
     <Box p={4} width="100%">
@@ -201,6 +215,7 @@ export default function NarrowMessage() {
             {useApi && (
               <Autocomplete
                 options={apis}
+                getOptionLabel={(option) => option.name || ""}
                 value={selectedApi}
                 onChange={handleApiChange}
                 renderInput={(params) => (

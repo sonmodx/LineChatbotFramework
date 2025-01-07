@@ -5,6 +5,7 @@ import Channel from "@/models/channel";
 import LineUser from "@/models/LineUser";
 import mongoose from "mongoose";
 import { formatResponse } from "@/lib/utils";
+import Audience from "@/models/audience";
 
 export async function GET(req) {
   const session = await getServerSession(authOptions);
@@ -47,11 +48,12 @@ export async function GET(req) {
       if (!channels) {
         return formatResponse(404, { message: "Channel not found." });
       }
+
       if (
         session.user._id &&
         session.user._id.toString() !== channels.user_id.toString()
       ) {
-        return formatResponse(400, { message: "No access this Channel" });
+        return formatResponse(400, { message: "No access to this Channel" });
       }
 
       const filter = {
@@ -73,7 +75,33 @@ export async function GET(req) {
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
 
-      return formatResponse(200, { user: Line_Users, Total: totalLine_Users });
+      // Map users to include audience descriptions
+      const allAudiences = await Audience.find(); // Get all Audience documents at once
+      console.log("server all aud", allAudiences);
+      const usersWithAudience = Line_Users.map((user) => {
+        // Find all matching Audience records for the user's line_user_id in the audiences array
+        console.log("server match line user", user);
+        const matchedAudiences = allAudiences.filter(
+          (aud) => aud.audiences.includes(user.line_user_id) // Check if the line_user_id exists in the audiences array
+        );
+
+        console.log("server match aud", matchedAudiences);
+
+        // Extract the `description` field from the matched Audience records
+        const audienceDescriptions = matchedAudiences.map(
+          (aud) => aud.description
+        );
+
+        return {
+          ...user.toObject(), // Use `toObject` for mongoose docs to avoid serialization issues
+          audience: audienceDescriptions.join(", "), // Attach audience descriptions
+        };
+      });
+
+      return formatResponse(200, {
+        user: usersWithAudience,
+        Total: totalLine_Users,
+      });
     }
   } catch (error) {
     console.log(error);

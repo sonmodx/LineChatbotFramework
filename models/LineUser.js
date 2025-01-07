@@ -8,6 +8,10 @@ const lineUserSchema = new Schema(
       required: true,
       unique: true,
     },
+    line_user_id: {
+      type: String,
+      require: true,
+    },
     display_name: {
       type: String,
       required: true,

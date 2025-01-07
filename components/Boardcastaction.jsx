@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   TextField,
@@ -13,8 +13,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import Notification from "./Notification";
 import axios from "axios";
-
-const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
+import { getAllApis } from "@/actions";
 
 export default function BroadcastMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -25,7 +24,7 @@ export default function BroadcastMessage() {
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("channel_id");
   const typeMessage = "Broadcast";
-
+  const [apis, setApis] = useState([]);
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
   };
@@ -45,7 +44,9 @@ export default function BroadcastMessage() {
     const body = {
       type: typeMessage,
       destination: channelId,
-      message: [{ type: "text", text: messages }],
+      direct_config: {
+        message: [{ type: "text", text: messages }],
+      },
     };
     console.log("body", body);
     try {
@@ -69,6 +70,17 @@ export default function BroadcastMessage() {
       );
     }
   };
+
+  const handleGetAllApis = async () => {
+    const _apis = await getAllApis(channelObjectId);
+
+    console.log(_apis);
+    setApis(JSON.parse(_apis));
+  };
+
+  useEffect(() => {
+    handleGetAllApis();
+  }, []);
 
   return (
     <Box p={4} width="100%">
@@ -129,6 +141,7 @@ export default function BroadcastMessage() {
             {useApi && (
               <Autocomplete
                 options={apis}
+                getOptionLabel={(option) => option.name || ""}
                 value={selectedApi}
                 onChange={handleApiChange}
                 renderInput={(params) => (

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   TextField,
@@ -12,8 +12,7 @@ import {
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
-
-const apis = ["API 1", "API 2", "API 3"]; // Example options for API selection
+import { getAllApis } from "@/actions";
 
 export default function Replyaction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -22,11 +21,16 @@ export default function Replyaction({ data, setState, state }) {
   const [messages, setMessages] = useState(data?.message.join(",") || []);
   const [errorKeyword, setErrorKeyword] = useState(false);
   const searchParams = useSearchParams();
-  const channelId = searchParams.get("id");
+
+  const channelObjectId = searchParams.get("id");
+  const channelId = searchParams.get("channel_id");
   const id = data?._id || null;
+  const [apis, setApis] = useState([]);
+  const [dynamicContents, setDynamicContents] = useState([]);
   console.log("GETDATA", data);
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
+    setSelectedApi(null);
   };
 
   const handleApiChange = (event, newValue) => {
@@ -45,7 +49,8 @@ export default function Replyaction({ data, setState, state }) {
         name: "Reply message",
         type: "text",
         type_action: "reply",
-        channel_id: channelId,
+        api_id: selectedApi._id || "",
+        channel_id: channelObjectId,
         message: messages.split(","),
         keyword: keywords.split(","),
       };
@@ -73,6 +78,68 @@ export default function Replyaction({ data, setState, state }) {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handleGetAllApis = async () => {
+    const _apis = await getAllApis(channelObjectId);
+
+    console.log(_apis);
+    setApis(JSON.parse(_apis));
+  };
+
+  useEffect(() => {
+    handleGetAllApis();
+  }, []);
+
+  useEffect(() => {
+    if (
+      selectedApi === null ||
+      typeof selectedApi !== "object" ||
+      Array.isArray(selectedApi)
+    )
+      return;
+    const keywordsObject = JSON.parse(selectedApi?.keywords);
+    const getAllKeyObjects = (obj, prefix = "") => {
+      return Object.keys(obj).map((key) => {
+        const value = obj[key];
+        const fullKey = prefix ? `${prefix}.${key}` : key;
+
+        if (typeof value === "object" && !Array.isArray(value)) {
+          return getAllKeyObjects(value, fullKey);
+        } else {
+          return fullKey;
+        }
+      });
+    };
+    const result = getAllKeyObjects(keywordsObject);
+    setDynamicContents(result);
+
+    console.log("MY KEY", keywordsObject);
+    console.log("MY result", result);
+  }, [selectedApi]);
+
+  const renderButtons = (contents) => {
+    return contents.map((keyword, index) => {
+      if (Array.isArray(keyword)) {
+        return renderButtons(keyword);
+      }
+
+      return (
+        <Button
+          key={index}
+          variant="outlined"
+          color="primary"
+          style={{ margin: "5px" }}
+          onClick={() => {
+            let updatedMessages = messages;
+            updatedMessages += `$(${keyword})`;
+            setMessages(updatedMessages);
+          }}
+        >
+          {keyword}
+        </Button>
+      );
+    });
   };
 
   return (
@@ -135,6 +202,7 @@ export default function Replyaction({ data, setState, state }) {
             {useApi && (
               <Autocomplete
                 options={apis}
+                getOptionLabel={(option) => option.name || ""}
                 value={selectedApi}
                 onChange={handleApiChange}
                 renderInput={(params) => (
@@ -173,6 +241,7 @@ export default function Replyaction({ data, setState, state }) {
           value={messages}
           onChange={(e) => setMessages(e.target.value)}
         />
+        {dynamicContents.length > 0 && renderButtons(dynamicContents)}
       </Box>
 
       {/* Note */}
