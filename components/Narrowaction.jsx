@@ -108,7 +108,7 @@ export default function NarrowMessage() {
       <Box borderBottom={1} borderColor="black" mb={3} width="100%" />
 
       <Typography variant="body2" gutterBottom>
-        วิธีใช้งาน : สามารถส่ง messages ไปหา user ทีละคนโดยระบุ User
+        วิธีใช้งาน : สามารถส่ง messages ไปหา user ทีละกลุ่มโดยระบุ audience
       </Typography>
 
       {/* Text Message and User Areas */}

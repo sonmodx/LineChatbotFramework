@@ -151,15 +151,6 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
   return (
     <Container>
       <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-        {/* AppBar */}
-        <AppBar position="static">
-          <Container>
-            <Typography variant="h6" sx={{ color: "white" }}>
-              Postman API Params
-            </Typography>
-          </Container>
-        </AppBar>
-
         {/* Main Content */}
         <Box sx={{ padding: 2 }}>
           <Card>

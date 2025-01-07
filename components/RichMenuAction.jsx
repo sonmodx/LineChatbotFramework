@@ -405,7 +405,7 @@ export default function RichMenuDesigner() {
       />
 
       <Typography variant="body2" gutterBottom>
-        วิธีการใช้งาน : เครื่องมือที่ใช้ทำ Rich Menu
+        วิธีการใช้งาน : เพิ่มรูปภาพและเลือกรูปแบบการใช้งานต่างๆ
       </Typography>
 
       {/* Text Message and Result Areas */}
