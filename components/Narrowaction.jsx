@@ -35,6 +35,7 @@ export default function NarrowMessage() {
   const channelId = searchParams.get("channel_id");
   const typeMessage = "Narrowcast";
   const [apis, setApis] = useState([]);
+  const [dynamicContents, setDynamicContents] = useState([]);
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
@@ -51,6 +52,7 @@ export default function NarrowMessage() {
   const addMessageBox = () => {
     if (messageCount < 5) {
       setMessageCount(messageCount + 1);
+      setMessages((prev) => [...prev, ""]);
     }
   };
 
@@ -111,6 +113,57 @@ export default function NarrowMessage() {
     handleGetAllApis();
   }, []);
 
+  useEffect(() => {
+    if (
+      selectedApi === null ||
+      typeof selectedApi !== "object" ||
+      Array.isArray(selectedApi)
+    )
+      return;
+    const keywordsObject = JSON.parse(selectedApi?.keywords);
+    const getAllKeyObjects = (obj, prefix = "") => {
+      return Object.keys(obj).map((key) => {
+        const value = obj[key];
+        const fullKey = prefix ? `${prefix}.${key}` : key;
+
+        if (typeof value === "object" && !Array.isArray(value)) {
+          return getAllKeyObjects(value, fullKey);
+        } else {
+          return fullKey;
+        }
+      });
+    };
+    const result = getAllKeyObjects(keywordsObject);
+    setDynamicContents(result);
+
+    console.log("MY KEY", keywordsObject);
+    console.log("MY result", result);
+  }, [selectedApi]);
+
+  const renderButtons = (contents, messageIndex) => {
+    return contents.map((keyword, index) => {
+      if (Array.isArray(keyword)) {
+        return renderButtons(keyword, messageIndex);
+      }
+
+      return (
+        <Button
+          key={index}
+          variant="outlined"
+          color="primary"
+          style={{ margin: "5px" }}
+          onClick={() => {
+            const updatedMessages = [...messages];
+            updatedMessages[messageIndex] += `$(${keyword})`;
+            setMessages(updatedMessages);
+          }}
+        >
+          {keyword}
+        </Button>
+      );
+    });
+  };
+
   return (
     <Box p={4} width="100%">
       {/* Title and Description */}
@@ -143,19 +196,23 @@ export default function NarrowMessage() {
 
             {/* Dynamically Created Message Fields */}
             {[...Array(messageCount)].map((_, index) => (
-              <Box key={index} mt={2}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  placeholder={`Enter your message (${
-                    index + 1
-                  }/${maximumMessage})`}
-                  variant="outlined"
-                  value={messages[index]}
-                  onChange={(e) => handleMessageChange(index, e.target.value)}
-                />
-              </Box>
+              <>
+                <Box key={index} mt={2}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={4}
+                    placeholder={`Enter your message (${
+                      index + 1
+                    }/${maximumMessage})`}
+                    variant="outlined"
+                    value={messages[index]}
+                    onChange={(e) => handleMessageChange(index, e.target.value)}
+                  />
+                </Box>
+                {dynamicContents.length > 0 &&
+                  renderButtons(dynamicContents, index)}
+              </>
             ))}
 
             {/* ADD and REMOVE Buttons */}

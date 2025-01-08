@@ -48,6 +48,7 @@ export default function PushMessage() {
   const addMessageBox = () => {
     if (messageCount < 5) {
       setMessageCount(messageCount + 1);
+      setMessages((prev) => [...prev, ""]);
     }
   };
 
@@ -145,7 +146,7 @@ export default function PushMessage() {
   const renderButtons = (contents, messageIndex) => {
     return contents.map((keyword, index) => {
       if (Array.isArray(keyword)) {
-        return renderButtons(keyword);
+        return renderButtons(keyword, messageIndex);
       }
 
       return (
@@ -157,6 +158,7 @@ export default function PushMessage() {
           onClick={() => {
             const updatedMessages = [...messages];
             updatedMessages[messageIndex] += `$(${keyword})`;
+
             setMessages(updatedMessages);
           }}
         >

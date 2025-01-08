@@ -25,6 +25,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Stack,
 } from "@mui/material";
 import Loading from "./Loading";
 import Notification from "./Notification";
@@ -34,14 +35,18 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
   const [url, setUrl] = useState("");
   const [headers, setHeaders] = useState([{ key: "", value: "" }]);
   const [urlParams, setUrlParams] = useState([{ key: "", value: "" }]);
-  const [body, setBody] = useState([
-    { key: "", content_type: "", content: "" },
-  ]);
+  const [body, setBody] = useState("");
+  const [errorBody, setErrorBody] = useState();
+  // [
+  //  { key: "", content_type: "", content: "" },
+  // ]
   const [auth, setAuth] = useState("None");
   const [scripts, setScripts] = useState("");
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(false);
   const [openNotification, setOpenNotification] = useState(false);
+  const [openNotificationRequest, setOpenNotificationRequest] = useState(false);
+
   const [name, setName] = useState("");
   const [keywords, setKeywords] = useState([]);
 
@@ -60,7 +65,7 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
           setUrl(data.api_endpoint || "");
           setHeaders(data.api_headers || [{ key: "", value: "" }]);
           setUrlParams(data.api_params || [{ key: "", value: "" }]);
-          setBody(data.api_body || "");
+          setBody(revertToObjectString(data.api_body) || "");
           setAuth(data.api_auth || "None");
           setScripts(data.scripts || "");
           setName(data.name || "");
@@ -110,7 +115,49 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
     setUrlParams(updatedParams);
   };
 
+  const revertToObjectString = (array) => {
+    // Convert the array back to an object
+    const obj = array.reduce((acc, { key, content }) => {
+      acc[key] = content;
+      return acc;
+    }, {});
+
+    // Convert the object to a JSON string
+    return JSON.stringify(obj, null, 2); // Optional: `null, 2` for pretty formatting
+  };
+
   const handleSubmit = async () => {
+    const transformApiBody = (body) => {
+      try {
+        // Attempt to parse the input string
+        const parsedBody = JSON.parse(body);
+
+        // Ensure the parsed result is an object and not another data type
+        if (
+          typeof parsedBody !== "object" ||
+          Array.isArray(parsedBody) ||
+          parsedBody === null
+        ) {
+          setErrorBody("Input is not a valid object.");
+          throw new Error("Input is not a valid object.");
+        }
+        setErrorBody(null);
+
+        // Transform the object into the desired array format
+        return Object.entries(parsedBody).map(([key, value]) => ({
+          key: key,
+          content_type: typeof value, // Determine the content type
+          content: value,
+        }));
+      } catch (error) {
+        setErrorBody(`Invalid input format: ${error.message}`);
+        // Return an error message or handle it as required
+        console.error("Invalid input format:", error.message);
+        return;
+      }
+    };
+    const apiBody = transformApiBody(body);
+    if (!apiBody) return;
     const requestData = {
       name: name,
       description: "",
@@ -118,7 +165,7 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
       api_endpoint: url,
       api_headers: headers,
       api_params: urlParams,
-      api_body: body,
+      api_body: apiBody,
       api_auth: "",
     };
     if (mode === "edit") {
@@ -127,6 +174,7 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
     if (mode === "create") {
       requestData.channel_id = channelId;
     }
+    console.log("data,", requestData.api_body);
 
     try {
       setLoading(true);
@@ -164,14 +212,28 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
     }
   };
 
+  const handleSendRequest = async () => {
+    try {
+      const response = await getResponseAPI();
+      if (response) {
+        setOpenNotificationRequest(true);
+      } else {
+        window.alert("Request Failed!!!");
+      }
+    } catch (error) {
+      console.error(
+        "Error send req to API:",
+        error.response?.data?.message || error.message
+      );
+    }
+  };
+
   const getResponseAPI = async () => {
     try {
-      const response = await axios(
-        "https://677cf6ac4496848554c861b2.mockapi.io/posts",
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      const response = await axios(url, {
+        headers: { "Content-Type": "application/json" },
+        method: method,
+      });
       console.log("RESPINSE FROM API,", response);
 
       if (
@@ -404,11 +466,24 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
                     label="Body"
                     variant="outlined"
                     fullWidth
+                    error={errorBody}
                     multiline
                     rows={6}
                     value={body}
                     onChange={(e) => setBody(e.target.value)}
                   />
+                  {errorBody && (
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        marginTop: 1,
+                        color: "secondary.main",
+                        fontSize: 16,
+                      }}
+                    >
+                      {errorBody}
+                    </Typography>
+                  )}
                 </Box>
               )}
 
@@ -472,19 +547,34 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={handleSubmit}
+                onClick={handleSendRequest}
                 sx={{ marginTop: 3 }}
               >
                 Send Request
               </Button>
             </CardContent>
           </Card>
+          <Stack>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSubmit}
+              sx={{ marginTop: 3, marginLeft: "auto" }}
+            >
+              Save
+            </Button>
+          </Stack>
         </Box>
       </Box>
       <Notification
         openNotification={openNotification}
         setOpenNotification={setOpenNotification}
         message={`Successful ${mode === "edit" ? "update API" : "create API"}`}
+      />
+      <Notification
+        openNotification={openNotificationRequest}
+        setOpenNotification={setOpenNotificationRequest}
+        message={`Successful request API`}
       />
     </Container>
   );
