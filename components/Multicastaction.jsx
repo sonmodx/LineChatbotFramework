@@ -31,6 +31,7 @@ export default function MulticastMessage() {
   const channelId = searchParams.get("channel_id");
   const typeMessage = "Multicast";
   const [apis, setApis] = useState([]);
+  const [dynamicContents, setDynamicContents] = useState([]);
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
   };
@@ -114,6 +115,57 @@ export default function MulticastMessage() {
     console.log("HI");
   }, []);
 
+  useEffect(() => {
+    if (
+      selectedApi === null ||
+      typeof selectedApi !== "object" ||
+      Array.isArray(selectedApi)
+    )
+      return;
+    const keywordsObject = JSON.parse(selectedApi?.keywords);
+    const getAllKeyObjects = (obj, prefix = "") => {
+      return Object.keys(obj).map((key) => {
+        const value = obj[key];
+        const fullKey = prefix ? `${prefix}.${key}` : key;
+
+        if (typeof value === "object" && !Array.isArray(value)) {
+          return getAllKeyObjects(value, fullKey);
+        } else {
+          return fullKey;
+        }
+      });
+    };
+    const result = getAllKeyObjects(keywordsObject);
+    setDynamicContents(result);
+
+    console.log("MY KEY", keywordsObject);
+    console.log("MY result", result);
+  }, [selectedApi]);
+
+  const renderButtons = (contents) => {
+    return contents.map((keyword, index) => {
+      if (Array.isArray(keyword)) {
+        return renderButtons(keyword);
+      }
+
+      return (
+        <Button
+          key={index}
+          variant="outlined"
+          color="primary"
+          style={{ margin: "5px" }}
+          onClick={() => {
+            let updatedMessages = messages;
+            updatedMessages += `$(${keyword})`;
+            setMessages(updatedMessages);
+          }}
+        >
+          {keyword}
+        </Button>
+      );
+    });
+  };
+
   return (
     <Box p={4} width="100%">
       {/* Title and Description */}
@@ -150,6 +202,7 @@ export default function MulticastMessage() {
               value={messages}
               onChange={(e) => handleMessageChange(e.target.value)}
             />
+            {dynamicContents.length > 0 && renderButtons(dynamicContents)}
           </Grid>
 
           <Grid item xs={12} sm={6}>

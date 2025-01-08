@@ -17,8 +17,10 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import CustomTable from "@/components/CustomTable";
 import Notification from "@/components/Notification";
 import { getAllLineUsers, getAllLineUsersByUserId } from "@/actions";
+import Loading from "@/components/Loading";
 export default function ListAudience({ channelId, channelIdLine }) {
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingSelectedUsers, setIsLoadingSelectedUsers] = useState(false);
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState();
   const [isOpenSnackbar, setIsOpenSnackbar] = useState(false);
@@ -175,10 +177,12 @@ export default function ListAudience({ channelId, channelIdLine }) {
     setLineUsers(JSON.parse(line_users));
   };
 
-  const handleGetAllLineUsersByUserId = async () => {
-    const users = await getAllLineUsersByUserId(selectAudienceId.audiences);
+  const handleGetAllLineUsersByUserId = async (item) => {
+    setIsLoadingSelectedUsers(true);
+    const users = await getAllLineUsersByUserId(item.audiences);
     console.log(users);
-    setLineUsers(JSON.parse(users));
+    setSelectedUsers(JSON.parse(users));
+    setIsLoadingSelectedUsers(false);
   };
 
   const setDefaultValue = async () => {
@@ -223,7 +227,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
         callbackGetData={getAllAudiences}
         callbackEditData={async (item) => {
           console.log("aud", item.audiences);
-
+          handleGetAllLineUsersByUserId(item);
           setOpenUpdate(true);
           setSelectAudienceId(item);
           setName(item.description);
@@ -422,7 +426,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
               getOptionLabel={(option) => option.display_name || ""}
               value={selectLineUser}
               onChange={(event, newValue) => handleSelectLineUser(newValue)}
-              onSelect={handleGetAllLineUsersByUserId}
+              onSelect={handleGetAllLineUsers}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -434,22 +438,26 @@ export default function ListAudience({ channelId, channelIdLine }) {
             />
             <Box mt={2}>
               <div>
-                {selectedUsers.map((user) => (
-                  <Chip
-                    key={user.line_user_id}
-                    label={user.display_name}
-                    color="primary"
-                    onDelete={() => {
-                      // Remove user from selected list
-                      setSelectedUsers((prev) =>
-                        prev.filter((u) => u.line_user_id !== user.line_user_id)
-                      );
-                      // Add back to line users list
-                      setLineUsers((prev) => [...prev, user]);
-                    }}
-                    sx={{ marginRight: 1 }}
-                  />
-                ))}
+                {!isLoadingSelectedUsers &&
+                  selectedUsers.map((user) => (
+                    <Chip
+                      key={user.line_user_id}
+                      label={user.display_name}
+                      color="primary"
+                      onDelete={() => {
+                        // Remove user from selected list
+                        setSelectedUsers((prev) =>
+                          prev.filter(
+                            (u) => u.line_user_id !== user.line_user_id
+                          )
+                        );
+                        // Add back to line users list
+                        setLineUsers((prev) => [...prev, user]);
+                      }}
+                      sx={{ marginRight: 1 }}
+                    />
+                  ))}
+                {isLoadingSelectedUsers && <Loading />}
               </div>
             </Box>
           </Box>
