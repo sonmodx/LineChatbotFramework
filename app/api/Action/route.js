@@ -3,20 +3,21 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { connectMongoDB } from "@/lib/mongodb";
 import mongoose from "mongoose";
 import Action from "@/models/action";
+import { formatResponse } from "@/lib/utils";
+import Channel from "@/models/channel";
 
 // method get
 export async function GET(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      status: 401,
-    });
+    return formatResponse(401, { message: "Unauthorized" });
   }
   await connectMongoDB();
 
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
+    const channel_id = searchParams.get("channel_id");
     const search = searchParams.get("search") || "";
     const orderBy = searchParams.get("orderBy") || "name";
     const orderDirection =
@@ -27,64 +28,53 @@ export async function GET(req) {
     if (id) {
       const action = await Action.findById(id);
       if (!action) {
-        return new Response(JSON.stringify({ message: "Message not found." }), {
-          status: 404,
-        });
+        return formatResponse(404, { message: "Message not found." });
+      }
+      const channel = await Channel.findById(action.channel_id.toString());
+      if (!channel) {
+        return formatResponse(404, { message: "Channel not found." });
+      }
+      if (
+        session.user._id &&
+        session.user._id.toString() !== channel.user_id.toString()
+      ) {
+        return formatResponse(400, { message: "No access this Channel" });
       }
 
-      return new Response(
-        JSON.stringify({
-          status: {
-            code: 200,
-            description: "OK",
-          },
-          Action: action,
-        }),
-        {
-          status: 200,
-        }
-      );
+      return formatResponse(200, { Action: action });
     } else {
-      if (!session.user._id) {
-        return new Response(
-          JSON.stringify({
-            status: {
-              code: 400,
-              description: "Bad Request",
-            },
-            message: "Missing required fields.",
-          }),
-          {
-            status: 400,
-          }
-        );
+      const channel = await Channel.findById(channel_id);
+      if (!channel) {
+        return formatResponse(404, { message: "Channel not found." });
+      }
+      if (
+        session.user._id &&
+        session.user._id.toString() !== channel.user_id.toString()
+      ) {
+        return formatResponse(400, { message: "No access this Channel" });
       }
 
-      const actions = await Action.find({
-        list_user: session.user._id,
-        name: { $regex: search, $options: "i" },
-      })
+      const filter = {
+        ...(channel_id && {
+          channel_id: new mongoose.Types.ObjectId(channel_id),
+        }),
+        ...(search && {
+          name: { $regex: search, $options: "i" },
+        }),
+      };
+
+      const totalActions = await Action.countDocuments(filter);
+
+      const actions = await Action.find(filter)
         .sort({ [orderBy]: orderDirection })
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
 
-      return new Response(
-        JSON.stringify({
-          status: {
-            code: 200,
-            description: "OK",
-          },
-          Actions: actions,
-        }),
-        {
-          status: 200,
-        }
-      );
+      return formatResponse(200, { Actions: actions, Total: totalActions });
     }
   } catch (error) {
-    return new Response(JSON.stringify({ message: error.message }), {
-      status: 500,
-    });
+    console.log(error);
+    return formatResponse(500, { message: error.message });
   }
 }
 
@@ -92,103 +82,97 @@ export async function GET(req) {
 export async function POST(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      status: 401,
-    });
+    return formatResponse(401, { message: "Unauthorized" });
   }
   await connectMongoDB();
 
   try {
-    const { action_type } = new URL(req.url);
+    const { searchParams } = new URL(req.url);
+    const action_type = searchParams.get("action_type");
     const {
       name,
       type,
       description,
       channel_id,
-      text_message,
-      list_user,
+      api_id,
+      message,
       keyword,
+      type_action,
     } = await req.json();
+    console.log("action_type", action_type);
+    if (!name || !type || !channel_id || !message || !type_action) {
+      return formatResponse(400, { message: "Missing required fields." });
+    }
 
-    if (action_type === "reply message") {
-      if (
-        !name ||
-        !type ||
-        !channel_id ||
-        !text_message ||
-        !list_user ||
-        !keyword
-      ) {
-        return new Response(
-          JSON.stringify({
-            status: {
-              code: 400,
-              description: "Bad Request",
-            },
-            message: "Missing required fields.",
-          }),
-          {
-            status: 400,
-          }
-        );
-      }
-      const newAction = new Action({
+    const existingChannel = await Channel.findById(channel_id);
+    if (!existingChannel) {
+      return formatResponse(404, { message: "Channel not found." });
+    }
+    if (
+      session.user._id &&
+      session.user._id.toString() !== existingChannel.user_id.toString()
+    ) {
+      return formatResponse(400, { message: "No access this Channel" });
+    }
+
+    if (action_type === "reply_message") {
+      let actionData = {
         name,
         type,
+        type_action,
         description,
-        channel_id: mongoose.Types.ObjectId(channel_id),
-        text_message,
-        list_user,
+        channel_id: new mongoose.Types.ObjectId(channel_id),
+        message,
         keyword,
-      });
+      };
+
+      if (api_id) {
+        actionData.api_id = new mongoose.Types.ObjectId(api_id);
+      }
+
+      const newAction = new Action(actionData);
 
       const savedAction = await newAction.save();
 
-      // sent request to webhook for working with message
-      /////////////////////////////////////////////////
-
-      return new Response(
-        JSON.stringify({
-          status: {
-            code: 201,
-            description: "Created",
-          },
-          Action: savedAction,
-        }),
-        {
-          status: 201,
-        }
-      );
-    } else if (action_type === "broadcast message") {
+      return formatResponse(201, { Action: savedAction });
+    } else if (action_type === "broadcast_message") {
       // code for broadcast message
-    } else if (action_type === "push message") {
+    } else if (action_type === "push_message") {
       // code for send message
-    } else if (action_type === "multicast message") {
+    } else if (action_type === "multicast_message") {
       // code for multicast message
-    } else if (action_type === "Narrowcast message") {
+    } else if (action_type === "Narrowcast_message") {
       // code for Narrowcast message
-    } else if (action_type === "greeting message") {
-      // code for greeting message
-    } else if (action_type === "rich menu") {
+    } else if (
+      action_type === "greeting_message" ||
+      action_type === "default_message"
+    ) {
+      let actionData = {
+        name,
+        type,
+        type_action,
+        description,
+        channel_id: new mongoose.Types.ObjectId(channel_id),
+        message,
+      };
+
+      if (api_id) {
+        actionData.api_id = new mongoose.Types.ObjectId(api_id);
+      }
+
+      const newAction = new Action(actionData);
+
+      const savedAction = await newAction.save();
+
+      return formatResponse(201, { Action: savedAction });
+    } else if (action_type === "rich_menu") {
       // code for rich menu
     } else {
-      return new Response(
-        JSON.stringify({
-          status: {
-            code: 400,
-            description: "Bad Request",
-          },
-          message: "Invalid action type.",
-        }),
-        {
-          status: 400,
-        }
-      );
+      return formatResponse(400, { message: "Invalid action type." });
     }
   } catch (error) {
-    return new Response(JSON.stringify({ message: error.message }), {
-      status: 500,
-    });
+    console.log(error);
+    return formatResponse(500, { message: error.message });
   }
 }
 
@@ -196,66 +180,57 @@ export async function POST(req) {
 export async function PUT(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      status: 401,
-    });
+    return formatResponse(401, { message: "Unauthorized" });
   }
   await connectMongoDB();
 
   try {
-    const { id } = new URL(req.url);
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
     const {
       name,
       type,
+      type_action,
       description,
       channel_id,
-      text_message,
-      list_user,
+      api_id,
+      message,
       keyword,
     } = await req.json();
 
     const action = await Action.findById(id);
+
     if (!action) {
-      return new Response(JSON.stringify({ message: "Message not found." }), {
-        status: 404,
-      });
+      return formatResponse(404, { message: "Message not found." });
     }
+
+    const existingChannel = await Channel.findById(action.channel_id);
 
     if (
       session.user._id &&
-      session.user._id.toString() !== message.list_user.toString()
+      session.user._id.toString() !== existingChannel.user_id.toString()
     ) {
-      return new Response(JSON.stringify({ message: "Unauthorized" }), {
-        status: 401,
-      });
+      return formatResponse(401, { message: "Unauthorized" });
     }
 
-    action.name = name;
-    action.type = type;
-    action.description = description;
-    action.channel_id = channel_id;
-    action.text_message = text_message;
-    action.list_user = list_user;
-    action.keyword = keyword;
+    const updateData = {
+      name,
+      type,
+      type_action,
+      description,
+      channel_id: new mongoose.Types.ObjectId(channel_id),
+      api_id: new mongoose.Types.ObjectId(api_id),
+      message,
+      keyword,
+    };
 
-    const updatedAction = await Action.save();
-
-    return new Response(
-      JSON.stringify({
-        status: {
-          code: 200,
-          description: "OK",
-        },
-        Action: updatedAction,
-      }),
-      {
-        status: 200,
-      }
-    );
-  } catch (error) {
-    return new Response(JSON.stringify({ message: error.message }), {
-      status: 500,
+    const updatedAction = await Action.findByIdAndUpdate(id, updateData, {
+      new: true,
     });
+
+    return formatResponse(200, { Action: updatedAction });
+  } catch (error) {
+    return formatResponse(500, { message: error.message });
   }
 }
 
@@ -263,47 +238,38 @@ export async function PUT(req) {
 export async function DELETE(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      status: 401,
-    });
+    return formatResponse(401, { message: "Unauthorized" });
   }
   await connectMongoDB();
 
   try {
-    const { id } = new URL(req.url);
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
 
     const action = await Action.findById(id);
+
     if (!action) {
-      return new Response(JSON.stringify({ message: "Message not found." }), {
-        status: 404,
-      });
+      return formatResponse(404, { message: "Message not found." });
+    }
+
+    const existingChannel = await Channel.findById(
+      action.channel_id.toString()
+    );
+    if (!existingChannel) {
+      return formatResponse(404, { message: "Channel not found." });
     }
 
     if (
       session.user._id &&
-      session.user._id.toString() !== message.list_user.toString()
+      session.user._id.toString() !== existingChannel.user_id.toString()
     ) {
-      return new Response(JSON.stringify({ message: "Unauthorized" }), {
-        status: 401,
-      });
+      return formatResponse(401, { message: "Unauthorized" });
     }
 
-    await action.delete();
+    await Action.findByIdAndDelete(id);
 
-    return new Response(
-      JSON.stringify({
-        status: {
-          code: 200,
-          description: "OK",
-        },
-      }),
-      {
-        status: 200,
-      }
-    );
+    return formatResponse(200, { message: "Message deleted." });
   } catch (error) {
-    return new Response(JSON.stringify({ message: error.message }), {
-      status: 500,
-    });
+    return formatResponse(500, { message: error.message });
   }
 }

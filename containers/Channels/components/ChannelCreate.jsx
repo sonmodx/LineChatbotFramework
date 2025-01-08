@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
@@ -8,22 +9,37 @@ import {
   FormControl,
   FormControlLabel,
   FormHelperText,
+  Snackbar,
   Stack,
   TextField,
 } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { getBotInfo, setWebhookURL } from "./action";
+
+const WEBHOOK_URL = "https://example.com/hoge";
 
 export default function ChannelCreate() {
   const [channelId, setChannelId] = useState();
   const [channelName, setChannelName] = useState();
   const [channelSecret, setChannelSecret] = useState();
   const [channelAccessToken, setChannelAccessToken] = useState();
+  const [errorMessage, setErrorMessage] = useState("");
   const [description, setDescription] = useState();
   const [isError, setIsError] = useState(false);
   const [isActive, setIsActive] = useState(true);
+  const [isOpenSnackbar, setIsOpenSnackbar] = useState(false);
+  const [customWebhook, setCustomWebhook] = useState("");
   const router = useRouter();
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setIsOpenSnackbar(false);
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -32,14 +48,38 @@ export default function ChannelCreate() {
         setIsError(true);
         return;
       }
+      //verify channel and get bot's userId
+      const { userId: destination } = await getBotInfo(channelAccessToken);
+
+      if (!destination) {
+        setIsOpenSnackbar(true);
+        setIsError(true);
+        setErrorMessage("Invalid access token");
+        return;
+      }
+
+      //webhook url must be valid, currently for example
+      const resultWebhook = await setWebhookURL(
+        channelAccessToken,
+        customWebhook
+      );
+      // if return {message: ""}
+      if (Object.keys(resultWebhook).length !== 0) {
+        setIsOpenSnackbar(true);
+        setIsError(true);
+        setErrorMessage("Failed, Please verify your webhook url is correctly");
+        return;
+      }
+
       const body = {
         name: channelName,
         description: description, //No field description
-        webhook_url: "https://mywebhook.com/webhook",
+        webhook_url: customWebhook,
         status: isActive, //No field status
         channel_id: channelId,
         channel_secret: channelSecret,
         channel_access_token: channelAccessToken,
+        destination: destination,
       };
       console.log(body);
       const res = await axios.post("/api/Channel/", body, {
@@ -53,6 +93,22 @@ export default function ChannelCreate() {
       console.error("Error create new channel failed:", error);
     }
   };
+
+  // const getBotInfo = async (token) => {
+  //   try {
+  //     const res = await fetch(`${LINE_API}/info`, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+  //     console.log("GET BOT INFO", res);
+  //     return res;
+  //   } catch (err) {
+  //     throw new Error(err);
+  //   }
+  // };
   return (
     <Container
       sx={{
@@ -136,8 +192,10 @@ export default function ChannelCreate() {
               name="webhook-api"
               label="Webhook API"
               fullWidth
-              disabled
-              defaultValue="https://mywebhook.com/webhook"
+              value={customWebhook}
+              onChange={(e) => {
+                setCustomWebhook(e.target.value);
+              }}
             />
             <FormControlLabel
               control={
@@ -160,6 +218,20 @@ export default function ChannelCreate() {
           </Stack>
         </form>
       </Box>
+      <Snackbar
+        open={isOpenSnackbar}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity="error"
+          sx={{ width: "100%", fontWeight: "bold" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

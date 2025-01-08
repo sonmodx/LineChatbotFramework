@@ -18,6 +18,8 @@ import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+const WEBHOOK_URL = "https://example.com/hoge";
+
 export default function ChannelEdit() {
   //   const [channelId, setChannelId] = useState();
   //   const [channelSecret, setChannelSecret] = useState();
@@ -29,6 +31,7 @@ export default function ChannelEdit() {
   const [channel, setChannel] = useState({});
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const [customWebhook, setCustomWebhook] = useState("");
 
   const channelIdParams = searchParams.get("channelId");
   console.log(channel);
@@ -68,7 +71,7 @@ export default function ChannelEdit() {
         id: channel._id,
         name: channel.name,
         description: channel.description,
-        webhook_url: "https://mywebhook.com/webhook",
+        webhook_url: customWebhook,
         status: channel.status,
         channel_id: channel.channel_id,
         channel_secret: channel.channel_secret,
@@ -224,15 +227,14 @@ export default function ChannelEdit() {
                 name="webhook-api"
                 label="Webhook API"
                 fullWidth
-                disabled
-                defaultValue="https://mywebhook.com/webhook"
+                value={customWebhook}
+                onChange={(e) => setCustomWebhook(e.target.value)}
               />
 
               <FormControlLabel
                 control={
                   <Checkbox
-                    defaultChecked={Boolean(channel?.status)}
-                    checked={Boolean(channel?.status)}
+                    checked={channel?.status === "true" ? true : false}
                     onChange={(e) => {
                       setChannel((prev) => ({
                         ...prev,
