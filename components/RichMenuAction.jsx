@@ -578,6 +578,11 @@ export default function RichMenuDesigner() {
             imagePreview={imagePreview}
           />
         ))}
+
+              {/* Note */}
+              <Box mt={2} width="100%">
+                <Typography variant="caption">*หมายเหตุ</Typography>
+              </Box>
         {/* Send Button */}
         <Box mt={4} textAlign="right" width="100%">
           <Button

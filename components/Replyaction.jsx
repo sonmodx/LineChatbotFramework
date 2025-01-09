@@ -9,6 +9,7 @@ import {
   Autocomplete,
   Grid,
   Button,
+  ButtonGroup, // Import ButtonGroup for message type selection
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
@@ -20,6 +21,7 @@ export default function Replyaction({ data, setState, state }) {
   const [keywords, setKeywords] = useState(data?.keyword.join(",") || []);
   const [messages, setMessages] = useState(data?.message.join(",") || []);
   const [errorKeyword, setErrorKeyword] = useState(false);
+  const [messageType, setMessageType] = useState("text"); // State for selected message type
   const searchParams = useSearchParams();
 
   const channelObjectId = searchParams.get("id");
@@ -28,6 +30,7 @@ export default function Replyaction({ data, setState, state }) {
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
   console.log("GETDATA", data);
+
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
     setSelectedApi(null);
@@ -82,9 +85,11 @@ export default function Replyaction({ data, setState, state }) {
 
   const handleGetAllApis = async () => {
     const _apis = await getAllApis(channelObjectId);
-
-    console.log(_apis);
     setApis(JSON.parse(_apis));
+  };
+
+  const handleMessageTypeChange = (type) => {
+    setMessageType(type); // Update message type
   };
 
   useEffect(() => {
@@ -113,9 +118,6 @@ export default function Replyaction({ data, setState, state }) {
     };
     const result = getAllKeyObjects(keywordsObject);
     setDynamicContents(result);
-
-    console.log("MY KEY", keywordsObject);
-    console.log("MY result", result);
   }, [selectedApi]);
 
   const renderButtons = (contents) => {
@@ -156,38 +158,6 @@ export default function Replyaction({ data, setState, state }) {
         วิธีใช้งาน: ข้อความตอบกลับเมื่อพบ keyword ใน Line Chatbot
       </Typography>
 
-      {/* Keyword Input */}
-      <Box mt={3} width="100%">
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={6}>
-            <Typography variant="h6" gutterBottom>
-              Keyword
-            </Typography>
-            <TextField
-              fullWidth
-              placeholder="Enter keyword"
-              variant="outlined"
-              onChange={(e) => setKeywords(e.target.value)}
-              value={keywords}
-              error={errorKeyword}
-              helperText={errorKeyword ? "This field is required" : ""}
-            />
-          </Grid>
-
-          {/* Param Label and Input */}
-          <Grid item xs={12} sm={6}>
-            <Typography variant="h6" gutterBottom>
-              Params
-            </Typography>
-            <TextField
-              fullWidth
-              placeholder="Enter parameters"
-              variant="outlined"
-            />
-          </Grid>
-        </Grid>
-      </Box>
-
       {/* API Section */}
       <Box mt={4} width="100%">
         <Grid container alignItems="center">
@@ -219,29 +189,101 @@ export default function Replyaction({ data, setState, state }) {
         </Grid>
       </Box>
 
-      {/* Text Message Section */}
+      {/* Keyword Input */}
+      <Box mt={3} width="100%">
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6" gutterBottom>
+              Keyword
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter keyword"
+              variant="outlined"
+              onChange={(e) => setKeywords(e.target.value)}
+              value={keywords}
+              error={errorKeyword}
+              helperText={errorKeyword ? "This field is required" : ""}
+            />
+          </Grid>
+
+          {/* Param Label and Input */}
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6" gutterBottom>
+              Params
+            </Typography>
+            <TextField fullWidth placeholder="Enter parameters" variant="outlined" />
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Message Type Selection Bar */}
       <Box mt={4} width="100%">
+        <Typography variant="h6" gutterBottom>
+          Message Type
+        </Typography>
+        <ButtonGroup variant="outlined" color="primary">
+          <Button
+            onClick={() => handleMessageTypeChange("text")}
+            variant={messageType === "text" ? "contained" : "outlined"}
+          >
+            Text
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("image")}
+            variant={messageType === "image" ? "contained" : "outlined"}
+          >
+            Image
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("sticker")}
+            variant={messageType === "sticker" ? "contained" : "outlined"}
+          >
+            Sticker
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("video")}
+            variant={messageType === "video" ? "contained" : "outlined"}
+          >
+            Video
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("audio")}
+            variant={messageType === "audio" ? "contained" : "outlined"}
+          >
+            Audio
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("location")}
+            variant={messageType === "location" ? "contained" : "outlined"}
+          >
+            Location
+          </Button>
+        </ButtonGroup>
+      </Box>
+
+      {/* Text Message Section */}
+      <Box mt={4} width="100%" backgroundColor="primary">
         <Typography
           variant="h6"
-          gutterBottom
           backgroundColor="primary.main"
+          gutterBottom
           style={{
             color: "#fff",
             padding: "10px",
           }}
         >
-          Text Message
+          {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
         </Typography>
         <TextField
           fullWidth
           multiline
           rows={8}
-          placeholder="Enter your message here"
+          placeholder={`Enter your ${messageType} here`}
           variant="outlined"
           value={messages}
           onChange={(e) => setMessages(e.target.value)}
         />
-        {dynamicContents.length > 0 && renderButtons(dynamicContents)}
       </Box>
 
       {/* Note */}
