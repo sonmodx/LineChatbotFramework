@@ -15,6 +15,7 @@ import { useSearchParams } from "next/navigation";
 import { getAllApis, getAllLineUsers } from "@/actions";
 import axios from "axios";
 import Notification from "./Notification";
+import { getCurrentTime, parseDateTime } from "@/lib/utils";
 
 export default function MulticastMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -32,6 +33,7 @@ export default function MulticastMessage() {
   const typeMessage = "Multicast";
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
+  const [dateTime, setDateTime] = useState(null);
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
   };
@@ -73,6 +75,7 @@ export default function MulticastMessage() {
       direct_config: {
         api_id: selectedApi?._id || null,
         user_id: selectedUsers.map((user) => user.line_user_id),
+        ...parseDateTime(dateTime),
         // message: messages
         //   .filter((msg) => msg !== undefined && msg.trim() !== "")
         //   .map((msg) => ({ type: "text", text: msg })),
@@ -112,6 +115,7 @@ export default function MulticastMessage() {
   useEffect(() => {
     handleGetAllLineUsers();
     handleGetAllApis();
+    setDateTime(getCurrentTime());
     console.log("HI");
   }, []);
 
@@ -180,6 +184,15 @@ export default function MulticastMessage() {
         วิธีใช้งาน : สามารถ Multicast messages ไปหา user
         ได้ทั้งหมดในทีเดียวโดยไม่จำเป็นต้องทำหลาย ๆ ครั้ง
       </Typography>
+
+      <TextField
+        id="datetime-local"
+        label="Schedule"
+        type="datetime-local"
+        value={dateTime}
+        onChange={(e) => setDateTime(e.target.value)}
+        sx={{ mt: 2 }}
+      />
 
       {/* Text Message and User Areas */}
       <Box mt={3} width="100%">

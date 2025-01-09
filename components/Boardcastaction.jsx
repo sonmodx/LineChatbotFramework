@@ -14,6 +14,7 @@ import { useSearchParams } from "next/navigation";
 import Notification from "./Notification";
 import axios from "axios";
 import { getAllApis } from "@/actions";
+import { getCurrentTime } from "@/lib/utils";
 
 export default function BroadcastMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -26,6 +27,7 @@ export default function BroadcastMessage() {
   const typeMessage = "Broadcast";
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
+  const [dateTime, setDateTime] = useState(null);
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
@@ -48,6 +50,7 @@ export default function BroadcastMessage() {
       destination: channelId,
       direct_config: {
         message: [{ type: "text", text: messages }],
+        ...parseDateTime(dateTime),
       },
     };
     console.log("body", body);
@@ -82,6 +85,7 @@ export default function BroadcastMessage() {
 
   useEffect(() => {
     handleGetAllApis();
+    setDateTime(getCurrentTime());
   }, []);
 
   useEffect(() => {
@@ -154,6 +158,14 @@ export default function BroadcastMessage() {
         วิธีใช้งาน : สามารถ broadcast messages ไปหา user
         ได้ทั้งหมดในทีเดียวโดยไม่จำเป็นต้องทำหลาย ๆ ครั้ง
       </Typography>
+      <TextField
+        id="datetime-local"
+        label="Schedule"
+        type="datetime-local"
+        value={dateTime}
+        onChange={(e) => setDateTime(e.target.value)}
+        sx={{ mt: 2 }}
+      />
 
       {/* Text Message and Result Areas */}
       <Box mt={3} width="100%">

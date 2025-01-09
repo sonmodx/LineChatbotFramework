@@ -145,7 +145,14 @@ export default function FlexMessage() {
 
       <Typography variant="body2" gutterBottom>
         วิธีการใช้งาน : กรอกFlex Message ที่ได้จาก LINE bot Designer และทำการกด
-        Format Flex Message JSON ที่ได้จาก LINE Bot Designer
+        Format Flex Message JSON ที่ได้จาก{" "}
+        <a
+          href="https://developers.line.biz/flex-simulator/?status=success"
+          target="_blank"
+          style={{ color: "blue", textDecoration: "underline" }}
+        >
+          LINE Bot Designer
+        </a>
       </Typography>
 
       <Box mt={3}>

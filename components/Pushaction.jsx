@@ -17,6 +17,7 @@ import { getAllApis, getAllLineUsers } from "@/actions";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import Notification from "./Notification";
+import { getCurrentTime, parseDateTime } from "@/lib/utils";
 
 export default function PushMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -27,11 +28,14 @@ export default function PushMessage() {
   const [selectLineUser, setSelectLineUser] = useState(null);
   const [lineUsers, setLineUsers] = useState([]);
   const [openNotification, setOpenNotification] = useState(false);
+
   const searchParams = useSearchParams();
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("channel_id");
   const typeMessage = "Push";
   const [apis, setApis] = useState([]);
+  const [dateTime, setDateTime] = useState(null);
+  console.log("date", dateTime);
 
   const [dynamicContents, setDynamicContents] = useState([]);
   console.log(messages);
@@ -78,7 +82,8 @@ export default function PushMessage() {
       destination: channelId,
       direct_config: {
         api_id: selectedApi?._id || null,
-        user_id: selectLineUser.line_user_id,
+        user_id: selectLineUser?.line_user_id || null,
+        ...parseDateTime(dateTime),
         message: messages
           .filter((msg) => msg !== undefined && msg.trim() !== "")
           .map((msg) => ({ type: "text", text: msg })),
@@ -114,6 +119,7 @@ export default function PushMessage() {
 
   useEffect(() => {
     handleGetAllApis();
+    setDateTime(getCurrentTime());
   }, []);
 
   useEffect(() => {
@@ -181,6 +187,14 @@ export default function PushMessage() {
       <Typography variant="body2" gutterBottom>
         วิธีใช้งาน : สามารถส่ง messages ไปหา user ทีละคนโดยระบุ User
       </Typography>
+      <TextField
+        id="datetime-local"
+        label="Schedule"
+        type="datetime-local"
+        value={dateTime}
+        onChange={(e) => setDateTime(e.target.value)}
+        sx={{ mt: 2 }}
+      />
 
       {/* Text Message and User Areas */}
       <Box mt={3} width="100%">

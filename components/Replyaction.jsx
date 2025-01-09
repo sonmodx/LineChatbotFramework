@@ -18,7 +18,9 @@ export default function Replyaction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [keywords, setKeywords] = useState(data?.keyword.join(",") || []);
-  const [messages, setMessages] = useState(data?.message.join(",") || []);
+  const [messages, setMessages] = useState(
+    data?.message.map((item) => item.text).join(", ") || []
+  );
   const [errorKeyword, setErrorKeyword] = useState(false);
   const searchParams = useSearchParams();
 
@@ -46,12 +48,14 @@ export default function Replyaction({ data, setState, state }) {
       setErrorKeyword(false);
 
       const body = {
-        name: "Reply message",
+        name: "Reply messageX",
         type: "text",
         type_action: "reply",
-        api_id: selectedApi._id || "",
+        api_id: selectedApi?._id || "",
         channel_id: channelObjectId,
-        message: messages.split(","),
+        message: messages
+          .split(",")
+          .map((msg) => ({ type: "text", text: msg })),
         keyword: keywords.split(","),
       };
       if (state === "create") {

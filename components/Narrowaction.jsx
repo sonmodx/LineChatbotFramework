@@ -16,9 +16,12 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import Notification from "./Notification";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
-import { getAllApis } from "@/actions";
+import { getAllApis, getAllAudiences } from "@/actions";
+import { getCurrentTime, parseDateTime } from "@/lib/utils";
 
-const narrowFilterList = [{ type: "audience", audienceGroupId: 6618080771019 }];
+// const narrowFilterList = [
+//   { description: "audience", audienceGroupId: 6618080771019 },
+// ];
 
 export default function NarrowMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -35,7 +38,9 @@ export default function NarrowMessage() {
   const channelId = searchParams.get("channel_id");
   const typeMessage = "Narrowcast";
   const [apis, setApis] = useState([]);
+  const [narrowFilterList, setNarrowFilterList] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
+  const [dateTime, setDateTime] = useState(null);
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
@@ -74,7 +79,18 @@ export default function NarrowMessage() {
       type: typeMessage,
       destination: channelId,
       direct_config: {
-        narrow_filter: selectAudience,
+        recipient: {
+          type: "audience",
+          audienceGroupId: selectAudience.audienceGroupId,
+        },
+        ...parseDateTime(dateTime),
+        api_id: selectedApi?._id || null,
+        // recipient: {
+        //   audienceGroup: {
+        //     audienceGroupId: Number(selectAudience.audienceGroupId),
+        //   },
+        // },
+
         message: messages
           .filter((msg) => msg !== undefined && msg.trim() !== "")
           .map((msg) => ({ type: "text", text: msg })),
@@ -109,8 +125,17 @@ export default function NarrowMessage() {
     setApis(JSON.parse(_apis));
   };
 
+  const handleGetAllAudiences = async () => {
+    const _audiences = await getAllAudiences(channelObjectId);
+
+    console.log(_audiences);
+    setNarrowFilterList(JSON.parse(_audiences));
+  };
+
   useEffect(() => {
     handleGetAllApis();
+    handleGetAllAudiences();
+    setDateTime(getCurrentTime());
   }, []);
 
   useEffect(() => {
@@ -177,6 +202,14 @@ export default function NarrowMessage() {
       <Typography variant="body2" gutterBottom>
         วิธีใช้งาน : สามารถส่ง messages ไปหา user ทีละกลุ่มโดยระบุ audience
       </Typography>
+      <TextField
+        id="datetime-local"
+        label="Schedule"
+        type="datetime-local"
+        value={dateTime}
+        onChange={(e) => setDateTime(e.target.value)}
+        sx={{ mt: 2 }}
+      />
 
       {/* Text Message and User Areas */}
       <Box mt={3} width="100%">
@@ -248,7 +281,7 @@ export default function NarrowMessage() {
             {/* Group Selection */}
             <Autocomplete
               options={narrowFilterList}
-              getOptionLabel={(option) => option.type || ""}
+              getOptionLabel={(option) => option.description || ""}
               value={selectAudience}
               onChange={(event, newValue) => setSelectAudience(newValue)}
               renderInput={(params) => (
