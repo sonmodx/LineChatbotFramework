@@ -9,24 +9,22 @@ import {
   Autocomplete,
   Grid,
   Button,
+  ButtonGroup,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import { getAllApis } from "@/actions";
 
 export default function Greetingaction({ data, setState, state }) {
-  const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
-  const [selectedApi, setSelectedApi] = useState(null); // State for selected API
+  const [useApi, setUseApi] = useState(false);
+  const [selectedApi, setSelectedApi] = useState(null);
   const [messages, setMessages] = useState(data?.message.join(",") || []);
+  const [messageType, setMessageType] = useState("text"); // Default to "text"
   const searchParams = useSearchParams();
-
+  const [dynamicContents, setDynamicContents] = useState([]);
   const id = data?._id || null;
-  console.log("GETDATA", data);
   const [apis, setApis] = useState([]);
 
-  // useEffect(() => {
-  //   setMessages(data.message);
-  // }, []);
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("id");
 
@@ -38,11 +36,15 @@ export default function Greetingaction({ data, setState, state }) {
     setSelectedApi(newValue);
   };
 
+  const handleMessageTypeChange = (type) => {
+    setMessageType(type);
+  };
+
   const handleSave = async () => {
     try {
       const body = {
         name: "Test greeting message2",
-        type: "text",
+        type: messageType,
         type_action: "greeting",
         channel_id: channelId,
         message: messages.split(","),
@@ -57,7 +59,7 @@ export default function Greetingaction({ data, setState, state }) {
         );
         if (res.status === 201) {
           setState("actions");
-          console.log("Successful created new channel!");
+          console.log("Successfully created new channel!");
         }
       } else if (state === "edit") {
         const res = await axios.put(`/api/Action?id=${id}`, body, {
@@ -65,7 +67,7 @@ export default function Greetingaction({ data, setState, state }) {
         });
         if (res.status === 200) {
           setState("actions");
-          console.log("Successful update action!");
+          console.log("Successfully updated action!");
         }
       }
     } catch (error) {
@@ -75,7 +77,6 @@ export default function Greetingaction({ data, setState, state }) {
 
   const handleGetAllApis = async () => {
     const _apis = await getAllApis(channelObjectId);
-
     console.log(_apis);
     setApis(JSON.parse(_apis));
   };
@@ -83,6 +84,57 @@ export default function Greetingaction({ data, setState, state }) {
   useEffect(() => {
     handleGetAllApis();
   }, []);
+
+    useEffect(() => {
+      if (
+        selectedApi === null ||
+        typeof selectedApi !== "object" ||
+        Array.isArray(selectedApi)
+      )
+        return;
+      const keywordsObject = JSON.parse(selectedApi?.keywords);
+      const getAllKeyObjects = (obj, prefix = "") => {
+        return Object.keys(obj).map((key) => {
+          const value = obj[key];
+          const fullKey = prefix ? `${prefix}.${key}` : key;
+  
+          if (typeof value === "object" && !Array.isArray(value)) {
+            return getAllKeyObjects(value, fullKey);
+          } else {
+            return fullKey;
+          }
+        });
+      };
+      const result = getAllKeyObjects(keywordsObject);
+      setDynamicContents(result);
+  
+      console.log("MY KEY", keywordsObject);
+      console.log("MY result", result);
+    }, [selectedApi]);
+
+      const renderButtons = (contents) => {
+        return contents.map((keyword, index) => {
+          if (Array.isArray(keyword)) {
+            return renderButtons(keyword);
+          }
+    
+          return (
+            <Button
+              key={index}
+              variant="outlined"
+              color="primary"
+              style={{ margin: "5px" }}
+              onClick={() => {
+                let updatedMessages = messages;
+                updatedMessages += `$(${keyword})`;
+                setMessages(updatedMessages);
+              }}
+            >
+              {keyword}
+            </Button>
+          );
+        });
+      };
 
   return (
     <Box p={4} width="100%">
@@ -129,6 +181,75 @@ export default function Greetingaction({ data, setState, state }) {
         </Grid>
       </Box>
 
+                        {/* Name Input */}
+                        <Box mt={3} width="100%">
+                    <Grid container spacing={2} alignItems="center">
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="h6" gutterBottom>
+                          Name
+                        </Typography>
+                        <TextField
+                          fullWidth
+                          placeholder="Enter Name"
+                          variant="outlined"
+                        />
+                      </Grid>
+            
+                      {/* Description Input */}
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="h6" gutterBottom>
+                        Description
+                        </Typography>
+                        <TextField fullWidth placeholder="Enter Description" variant="outlined"/>
+                      </Grid>
+                    </Grid>
+                  </Box>
+
+      {/* Message Type Selection Bar */}
+      <Box mt={4} width="100%">
+        <Typography variant="h6" gutterBottom>
+          Message Type
+        </Typography>
+        <ButtonGroup variant="outlined" color="primary">
+          <Button
+            onClick={() => handleMessageTypeChange("text")}
+            variant={messageType === "text" ? "contained" : "outlined"}
+          >
+            Text
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("image")}
+            variant={messageType === "image" ? "contained" : "outlined"}
+          >
+            Image
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("sticker")}
+            variant={messageType === "sticker" ? "contained" : "outlined"}
+          >
+            Sticker
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("video")}
+            variant={messageType === "video" ? "contained" : "outlined"}
+          >
+            Video
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("audio")}
+            variant={messageType === "audio" ? "contained" : "outlined"}
+          >
+            Audio
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("location")}
+            variant={messageType === "location" ? "contained" : "outlined"}
+          >
+            Location
+          </Button>
+        </ButtonGroup>
+      </Box>
+
       {/* Text Message Section */}
       <Box mt={4} width="100%" backgroundColor="primary">
         <Typography
@@ -140,17 +261,18 @@ export default function Greetingaction({ data, setState, state }) {
             padding: "10px",
           }}
         >
-          Text Message
+          {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
         </Typography>
         <TextField
           fullWidth
           multiline
           rows={8}
-          placeholder="Enter your message here"
+          placeholder={`Enter your ${messageType} here`}
           variant="outlined"
           value={messages}
           onChange={(e) => setMessages(e.target.value)}
         />
+        {dynamicContents.length > 0 && renderButtons(dynamicContents)}
       </Box>
 
       {/* Note */}
@@ -160,7 +282,11 @@ export default function Greetingaction({ data, setState, state }) {
 
       {/* Save Button */}
       <Box mt={4} textAlign="right" width="100%">
-        <Button variant="contained" color="primary" onClick={handleSave}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSave}
+        >
           Save
         </Button>
       </Box>

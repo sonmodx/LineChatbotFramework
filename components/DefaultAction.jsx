@@ -9,6 +9,7 @@ import {
   Autocomplete,
   Grid,
   Button,
+  ButtonGroup,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
@@ -18,15 +19,12 @@ export default function DefaultAction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [messages, setMessages] = useState(data?.message.join(",") || []);
+  const [messageType, setMessageType] = useState("text"); // State for message type
   const searchParams = useSearchParams();
   const id = data?._id || null;
   const channelObjectId = searchParams.get("id");
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
-
-  // useEffect(() => {
-  //   setMessages(data.message);
-  // }, []);
 
   const channelId = searchParams.get("id");
 
@@ -38,11 +36,16 @@ export default function DefaultAction({ data, setState, state }) {
     setSelectedApi(newValue);
   };
 
+  const handleMessageTypeChange = (type) => {
+    setMessageType(type);
+    setMessages(""); // Reset messages when type changes
+  };
+
   const handleSave = async () => {
     try {
       const body = {
         name: "Test default message",
-        type: "text",
+        type: messageType,
         type_action: "default",
         channel_id: channelId,
         message: messages.split(","),
@@ -181,6 +184,75 @@ export default function DefaultAction({ data, setState, state }) {
         </Grid>
       </Box>
 
+                        {/* Name Input */}
+                        <Box mt={3} width="100%">
+                    <Grid container spacing={2} alignItems="center">
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="h6" gutterBottom>
+                          Name
+                        </Typography>
+                        <TextField
+                          fullWidth
+                          placeholder="Enter Name"
+                          variant="outlined"
+                        />
+                      </Grid>
+            
+                      {/* Description Input */}
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="h6" gutterBottom>
+                        Description
+                        </Typography>
+                        <TextField fullWidth placeholder="Enter Description" variant="outlined"/>
+                      </Grid>
+                    </Grid>
+                  </Box>
+
+      {/* Type Selection Section */}
+      <Box mt={4} width="100%">
+        <Typography variant="h6" gutterBottom>
+          Message Type
+        </Typography>
+        <ButtonGroup variant="outlined" color="primary">
+          <Button
+            onClick={() => handleMessageTypeChange("text")}
+            variant={messageType === "text" ? "contained" : "outlined"}
+          >
+            Text
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("image")}
+            variant={messageType === "image" ? "contained" : "outlined"}
+          >
+            Image
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("sticker")}
+            variant={messageType === "sticker" ? "contained" : "outlined"}
+          >
+            Sticker
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("video")}
+            variant={messageType === "video" ? "contained" : "outlined"}
+          >
+            Video
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("audio")}
+            variant={messageType === "audio" ? "contained" : "outlined"}
+          >
+            Audio
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("location")}
+            variant={messageType === "location" ? "contained" : "outlined"}
+          >
+            Location
+          </Button>
+        </ButtonGroup>
+      </Box>
+
       {/* Text Message Section */}
       <Box mt={4} width="100%" backgroundColor="primary">
         <Typography
@@ -192,13 +264,13 @@ export default function DefaultAction({ data, setState, state }) {
             padding: "10px",
           }}
         >
-          Text Message
+          {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
         </Typography>
         <TextField
           fullWidth
           multiline
           rows={8}
-          placeholder="Enter your message here"
+          placeholder={`Enter your ${messageType} here`}
           variant="outlined"
           value={messages}
           onChange={(e) => setMessages(e.target.value)}

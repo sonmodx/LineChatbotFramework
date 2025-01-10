@@ -10,6 +10,7 @@ import {
   Grid,
   Button,
   Chip,
+  ButtonGroup,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import { getAllApis, getAllLineUsers } from "@/actions";
@@ -21,7 +22,7 @@ export default function MulticastMessage() {
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [messages, setMessages] = useState("");
   const [selectLineUser, setSelectLineUser] = useState(null);
-
+  const [messageType, setMessageType] = useState("text"); // Default to "text"
   const [lineUsers, setLineUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [openNotification, setOpenNotification] = useState(false);
@@ -38,6 +39,10 @@ export default function MulticastMessage() {
 
   const handleApiChange = (event, newValue) => {
     setSelectedApi(newValue);
+  };
+
+  const handleMessageTypeChange = (type) => {
+    setMessageType(type);
   };
 
   const handleGetAllLineUsers = async () => {
@@ -181,8 +186,77 @@ export default function MulticastMessage() {
         ได้ทั้งหมดในทีเดียวโดยไม่จำเป็นต้องทำหลาย ๆ ครั้ง
       </Typography>
 
+                  {/* Name Input */}
+                  <Box mt={3} width="100%">
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="h6" gutterBottom>
+                    Name
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    placeholder="Enter Name"
+                    variant="outlined"
+                  />
+                </Grid>
+      
+                {/* Description Input */}
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="h6" gutterBottom>
+                  Description
+                  </Typography>
+                  <TextField fullWidth placeholder="Enter Description" variant="outlined"/>
+                </Grid>
+              </Grid>
+            </Box>
+
+            {/* Message Type Selection Bar */}
+            <Box mt={4} width="100%">
+        <Typography variant="h6" gutterBottom>
+          Message Type
+        </Typography>
+        <ButtonGroup variant="outlined" color="primary">
+          <Button
+            onClick={() => handleMessageTypeChange("text")}
+            variant={messageType === "text" ? "contained" : "outlined"}
+          >
+            Text
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("image")}
+            variant={messageType === "image" ? "contained" : "outlined"}
+          >
+            Image
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("sticker")}
+            variant={messageType === "sticker" ? "contained" : "outlined"}
+          >
+            Sticker
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("video")}
+            variant={messageType === "video" ? "contained" : "outlined"}
+          >
+            Video
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("audio")}
+            variant={messageType === "audio" ? "contained" : "outlined"}
+          >
+            Audio
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("location")}
+            variant={messageType === "location" ? "contained" : "outlined"}
+          >
+            Location
+          </Button>
+        </ButtonGroup>
+      </Box>
+
       {/* Text Message and User Areas */}
-      <Box mt={3} width="100%">
+      <Box mt={4} width="100%">
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <Typography
@@ -191,13 +265,13 @@ export default function MulticastMessage() {
               backgroundColor="primary.main"
               style={{ color: "#fff", padding: "10px" }}
             >
-              Text Message
+              {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
             </Typography>
             <TextField
               fullWidth
               multiline
               rows={6}
-              placeholder="Enter your message here"
+              placeholder={`Enter your ${messageType} here`}
               variant="outlined"
               value={messages}
               onChange={(e) => handleMessageChange(e.target.value)}
@@ -249,40 +323,40 @@ export default function MulticastMessage() {
                 ))}
               </div>
             </Box>
-          </Grid>
-        </Grid>
+
+                        {/* API Section */}
+                        <Box display="flex" alignItems="center" mt={2}>
+                          <Checkbox checked={useApi} onChange={handleCheckboxChange} />
+                          <Typography variant="body1" display="inline">
+                            Use API
+                          </Typography>
+                        </Box>
+            
+                        {useApi && (
+                          <Autocomplete
+                            options={apis}
+                            getOptionLabel={(option) => option.name || ""}
+                            value={selectedApi}
+                            onChange={handleApiChange}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Select API"
+                                variant="outlined"
+                                fullWidth
+                              />
+                            )}
+                          />
+                        )}
+                      </Grid>
+                    </Grid>
+                  </Box>
+
+      {/* Note */}
+      <Box mt={2} width="100%">
+        <Typography variant="caption">*หมายเหตุ</Typography>
       </Box>
 
-      {/* API Section */}
-      <Box mt={4} width="100%">
-        <Grid container alignItems="center" spacing={2}>
-          <Grid item xs={12} sm={3}>
-            <Checkbox checked={useApi} onChange={handleCheckboxChange} />
-            <Typography variant="body1" display="inline">
-              Use API
-            </Typography>
-          </Grid>
-
-          <Grid item xs={12} sm={9}>
-            {useApi && (
-              <Autocomplete
-                options={apis}
-                getOptionLabel={(option) => option.name || ""}
-                value={selectedApi}
-                onChange={handleApiChange}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Select API"
-                    variant="outlined"
-                    fullWidth
-                  />
-                )}
-              />
-            )}
-          </Grid>
-        </Grid>
-      </Box>
 
       {/* Send Button */}
       <Box mt={4} textAlign="right" width="100%">
