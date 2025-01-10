@@ -193,6 +193,31 @@ export default function BroadcastMessage() {
         </Grid>
       </Box>
 
+                  {/* Name Input */}
+                  <Box mt={3} width="100%">
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="h6" gutterBottom>
+                    Name
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    placeholder="Enter Name"
+                    variant="outlined"
+                  />
+                </Grid>
+      
+                {/* Description Input */}
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="h6" gutterBottom>
+                  Description
+                  </Typography>
+                  <TextField fullWidth placeholder="Enter Description" variant="outlined"/>
+                </Grid>
+              </Grid>
+            </Box>
+
+
       {/* Type Selection Section */}
       <Box mt={4} width="100%">
         <Typography variant="h6" gutterBottom>

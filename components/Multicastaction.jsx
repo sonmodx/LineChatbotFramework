@@ -186,6 +186,30 @@ export default function MulticastMessage() {
         ได้ทั้งหมดในทีเดียวโดยไม่จำเป็นต้องทำหลาย ๆ ครั้ง
       </Typography>
 
+                  {/* Name Input */}
+                  <Box mt={3} width="100%">
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="h6" gutterBottom>
+                    Name
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    placeholder="Enter Name"
+                    variant="outlined"
+                  />
+                </Grid>
+      
+                {/* Description Input */}
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="h6" gutterBottom>
+                  Description
+                  </Typography>
+                  <TextField fullWidth placeholder="Enter Description" variant="outlined"/>
+                </Grid>
+              </Grid>
+            </Box>
+
             {/* Message Type Selection Bar */}
             <Box mt={4} width="100%">
         <Typography variant="h6" gutterBottom>
@@ -232,7 +256,7 @@ export default function MulticastMessage() {
       </Box>
 
       {/* Text Message and User Areas */}
-      <Box mt={3} width="100%">
+      <Box mt={4} width="100%">
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <Typography

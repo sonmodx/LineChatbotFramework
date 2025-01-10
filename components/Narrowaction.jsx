@@ -112,6 +112,57 @@ export default function NarrowMessage() {
     handleGetAllApis();
   }, []);
 
+      useEffect(() => {
+        if (
+          selectedApi === null ||
+          typeof selectedApi !== "object" ||
+          Array.isArray(selectedApi)
+        )
+          return;
+        const keywordsObject = JSON.parse(selectedApi?.keywords);
+        const getAllKeyObjects = (obj, prefix = "") => {
+          return Object.keys(obj).map((key) => {
+            const value = obj[key];
+            const fullKey = prefix ? `${prefix}.${key}` : key;
+    
+            if (typeof value === "object" && !Array.isArray(value)) {
+              return getAllKeyObjects(value, fullKey);
+            } else {
+              return fullKey;
+            }
+          });
+        };
+        const result = getAllKeyObjects(keywordsObject);
+        setDynamicContents(result);
+    
+        console.log("MY KEY", keywordsObject);
+        console.log("MY result", result);
+      }, [selectedApi]);
+  
+        const renderButtons = (contents) => {
+          return contents.map((keyword, index) => {
+            if (Array.isArray(keyword)) {
+              return renderButtons(keyword);
+            }
+      
+            return (
+              <Button
+                key={index}
+                variant="outlined"
+                color="primary"
+                style={{ margin: "5px" }}
+                onClick={() => {
+                  let updatedMessages = messages;
+                  updatedMessages += `$(${keyword})`;
+                  setMessages(updatedMessages);
+                }}
+              >
+                {keyword}
+              </Button>
+            );
+          });
+        };
+
   return (
     <Box p={4} width="100%">
       {/* Title and Description */}
@@ -122,6 +173,30 @@ export default function NarrowMessage() {
       <Typography variant="body2" gutterBottom>
         วิธีใช้งาน : สามารถส่ง messages ไปหา user ทีละกลุ่มโดยระบุ audience
       </Typography>
+
+                  {/* Name Input */}
+                  <Box mt={3} width="100%">
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="h6" gutterBottom>
+                    Name
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    placeholder="Enter Name"
+                    variant="outlined"
+                  />
+                </Grid>
+      
+                {/* Description Input */}
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="h6" gutterBottom>
+                  Description
+                  </Typography>
+                  <TextField fullWidth placeholder="Enter Description" variant="outlined"/>
+                </Grid>
+              </Grid>
+            </Box>
 
       {/* Text Message and User Areas */}
       <Box mt={3} width="100%">
@@ -135,7 +210,6 @@ export default function NarrowMessage() {
             >
               Text Message
             </Typography>
-
             {/* Dynamically Created Message Fields */}
             {[...Array(messageCount)].map((_, index) => (
               <Box key={index} mt={2}>
@@ -164,6 +238,7 @@ export default function NarrowMessage() {
                     <MenuItem value="location">Location</MenuItem>
                   </Select>
                 </FormControl>
+                {dynamicContents.length > 0 && renderButtons(dynamicContents)}
               </Box>
             ))}
 

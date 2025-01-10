@@ -189,6 +189,30 @@ export default function Replyaction({ data, setState, state }) {
         </Grid>
       </Box>
 
+            {/* Name Input */}
+            <Box mt={3} width="100%">
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6" gutterBottom>
+              Name
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter Name"
+              variant="outlined"
+            />
+          </Grid>
+
+          {/* Description Input */}
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6" gutterBottom>
+            Description
+            </Typography>
+            <TextField fullWidth placeholder="Enter Description" variant="outlined"/>
+          </Grid>
+        </Grid>
+      </Box>
+
       {/* Keyword Input */}
       <Box mt={3} width="100%">
         <Grid container spacing={2} alignItems="center">
@@ -284,6 +308,7 @@ export default function Replyaction({ data, setState, state }) {
           value={messages}
           onChange={(e) => setMessages(e.target.value)}
         />
+        {dynamicContents.length > 0 && renderButtons(dynamicContents)}
       </Box>
 
       {/* Note */}

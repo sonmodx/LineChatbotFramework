@@ -148,7 +148,7 @@ export default function FlexMessage() {
         Format Flex Message JSON ที่ได้จาก LINE Bot Designer
       </Typography>
 
-            {/* API Section */}
+            {/* API Section 
             <Box mt={4}>
         <Checkbox
           checked={useApi}
@@ -174,7 +174,7 @@ export default function FlexMessage() {
             )}
           />
         )}
-      </Box>
+      </Box>*/}
 
       <Box mt={3}>
         <Grid container spacing={2}>
