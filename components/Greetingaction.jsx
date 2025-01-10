@@ -21,7 +21,7 @@ export default function Greetingaction({ data, setState, state }) {
   const [messages, setMessages] = useState(data?.message.join(",") || []);
   const [messageType, setMessageType] = useState("text"); // Default to "text"
   const searchParams = useSearchParams();
-
+  const [dynamicContents, setDynamicContents] = useState([]);
   const id = data?._id || null;
   const [apis, setApis] = useState([]);
 
@@ -85,6 +85,57 @@ export default function Greetingaction({ data, setState, state }) {
     handleGetAllApis();
   }, []);
 
+    useEffect(() => {
+      if (
+        selectedApi === null ||
+        typeof selectedApi !== "object" ||
+        Array.isArray(selectedApi)
+      )
+        return;
+      const keywordsObject = JSON.parse(selectedApi?.keywords);
+      const getAllKeyObjects = (obj, prefix = "") => {
+        return Object.keys(obj).map((key) => {
+          const value = obj[key];
+          const fullKey = prefix ? `${prefix}.${key}` : key;
+  
+          if (typeof value === "object" && !Array.isArray(value)) {
+            return getAllKeyObjects(value, fullKey);
+          } else {
+            return fullKey;
+          }
+        });
+      };
+      const result = getAllKeyObjects(keywordsObject);
+      setDynamicContents(result);
+  
+      console.log("MY KEY", keywordsObject);
+      console.log("MY result", result);
+    }, [selectedApi]);
+
+      const renderButtons = (contents) => {
+        return contents.map((keyword, index) => {
+          if (Array.isArray(keyword)) {
+            return renderButtons(keyword);
+          }
+    
+          return (
+            <Button
+              key={index}
+              variant="outlined"
+              color="primary"
+              style={{ margin: "5px" }}
+              onClick={() => {
+                let updatedMessages = messages;
+                updatedMessages += `$(${keyword})`;
+                setMessages(updatedMessages);
+              }}
+            >
+              {keyword}
+            </Button>
+          );
+        });
+      };
+
   return (
     <Box p={4} width="100%">
       {/* Title and Description */}
@@ -129,6 +180,30 @@ export default function Greetingaction({ data, setState, state }) {
           </Grid>
         </Grid>
       </Box>
+
+                        {/* Name Input */}
+                        <Box mt={3} width="100%">
+                    <Grid container spacing={2} alignItems="center">
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="h6" gutterBottom>
+                          Name
+                        </Typography>
+                        <TextField
+                          fullWidth
+                          placeholder="Enter Name"
+                          variant="outlined"
+                        />
+                      </Grid>
+            
+                      {/* Description Input */}
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="h6" gutterBottom>
+                        Description
+                        </Typography>
+                        <TextField fullWidth placeholder="Enter Description" variant="outlined"/>
+                      </Grid>
+                    </Grid>
+                  </Box>
 
       {/* Message Type Selection Bar */}
       <Box mt={4} width="100%">
@@ -197,6 +272,7 @@ export default function Greetingaction({ data, setState, state }) {
           value={messages}
           onChange={(e) => setMessages(e.target.value)}
         />
+        {dynamicContents.length > 0 && renderButtons(dynamicContents)}
       </Box>
 
       {/* Note */}
