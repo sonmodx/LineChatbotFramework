@@ -1,14 +1,14 @@
 "use client";
-
+import Autocomplete from "@mui/material/Autocomplete";
 import React, { useEffect, useState } from "react";
 import {
   Box,
   TextField,
   Checkbox,
   Typography,
-  Autocomplete,
   Grid,
   Button,
+  ButtonGroup,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import Notification from "./Notification";
@@ -21,6 +21,7 @@ export default function BroadcastMessage() {
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [openNotification, setOpenNotification] = useState(false);
   const [messages, setMessages] = useState("");
+  const [messageType, setMessageType] = useState("text"); // State for message type
   const searchParams = useSearchParams();
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("channel_id");
@@ -81,6 +82,11 @@ export default function BroadcastMessage() {
 
     console.log(_apis);
     setApis(JSON.parse(_apis));
+  };
+
+  const handleMessageTypeChange = (type) => {
+    setMessageType(type);
+    setMessages(""); // Reset messages when type changes
   };
 
   useEffect(() => {
@@ -167,35 +173,10 @@ export default function BroadcastMessage() {
         sx={{ mt: 2 }}
       />
 
-      {/* Text Message and Result Areas */}
-      <Box mt={3} width="100%">
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Typography
-              variant="h6"
-              gutterBottom
-              backgroundColor="primary.main"
-              style={{ color: "#fff", padding: "10px" }}
-            >
-              Text Message
-            </Typography>
-            <TextField
-              fullWidth
-              multiline
-              rows={8}
-              placeholder="Enter your message here"
-              variant="outlined"
-              value={messages}
-              onChange={(e) => handleMessageChange(e.target.value)}
-            />
-            {dynamicContents.length > 0 && renderButtons(dynamicContents)}
-          </Grid>
-        </Grid>
-      </Box>
-
+      
       {/* API Section */}
       <Box mt={4} width="100%">
-        <Grid container alignItems="center" spacing={2}>
+        <Grid container alignItems="center">
           <Grid item xs={12} sm={3}>
             <Checkbox checked={useApi} onChange={handleCheckboxChange} />
             <Typography variant="body1" display="inline">
@@ -223,6 +204,82 @@ export default function BroadcastMessage() {
           </Grid>
         </Grid>
       </Box>
+
+      {/* Type Selection Section */}
+      <Box mt={4} width="100%">
+        <Typography variant="h6" gutterBottom>
+          Message Type
+        </Typography>
+        <ButtonGroup variant="outlined" color="primary">
+          <Button
+            onClick={() => handleMessageTypeChange("text")}
+            variant={messageType === "text" ? "contained" : "outlined"}
+          >
+            Text
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("image")}
+            variant={messageType === "image" ? "contained" : "outlined"}
+          >
+            Image
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("sticker")}
+            variant={messageType === "sticker" ? "contained" : "outlined"}
+          >
+            Sticker
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("video")}
+            variant={messageType === "video" ? "contained" : "outlined"}
+          >
+            Video
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("audio")}
+            variant={messageType === "audio" ? "contained" : "outlined"}
+          >
+            Audio
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("location")}
+            variant={messageType === "location" ? "contained" : "outlined"}
+          >
+            Location
+          </Button>
+        </ButtonGroup>
+      </Box>
+
+      {/* Text Message and Result Areas */}
+      <Box mt={4} width="100%">
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              backgroundColor="primary.main"
+              style={{ color: "#fff", padding: "10px" }}
+            >
+              {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
+            </Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={8}
+              placeholder={`Enter your ${messageType} here`}
+              variant="outlined"
+              value={messages}
+              onChange={(e) => handleMessageChange(e.target.value)}
+            />
+            {dynamicContents.length > 0 && renderButtons(dynamicContents)}
+          </Grid>
+        </Grid>
+      </Box>
+
+            {/* Note */}
+            <Box mt={2} width="100%">
+              <Typography variant="caption">*หมายเหตุ</Typography>
+            </Box>
 
       {/* Send Button */}
       <Box mt={4} textAlign="right" width="100%">

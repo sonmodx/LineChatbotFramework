@@ -155,6 +155,34 @@ export default function FlexMessage() {
         </a>
       </Typography>
 
+            {/* API Section */}
+            <Box mt={4}>
+        <Checkbox
+          checked={useApi}
+          onChange={(e) => setUseApi(e.target.checked)}
+        />
+        <Typography variant="body1" display="inline">
+          Use API
+        </Typography>
+
+        {useApi && (
+          <Autocomplete
+            options={apis}
+            getOptionLabel={(option) => option.name || ""}
+            value={selectedApi}
+            onChange={(event, newValue) => setSelectedApi(newValue)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Select API"
+                variant="outlined"
+                fullWidth
+              />
+            )}
+          />
+        )}
+      </Box>
+
       <Box mt={3}>
         <Grid container spacing={2}>
           {/* Left side - Flex Message Designer input */}
@@ -232,33 +260,10 @@ export default function FlexMessage() {
         {renderPreview()}
       </Box>
 
-      {/* API Section */}
-      <Box mt={4}>
-        <Checkbox
-          checked={useApi}
-          onChange={(e) => setUseApi(e.target.checked)}
-        />
-        <Typography variant="body1" display="inline">
-          Use API
-        </Typography>
-
-        {useApi && (
-          <Autocomplete
-            options={apis}
-            getOptionLabel={(option) => option.name || ""}
-            value={selectedApi}
-            onChange={(event, newValue) => setSelectedApi(newValue)}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Select API"
-                variant="outlined"
-                fullWidth
-              />
-            )}
-          />
-        )}
-      </Box>
+            {/* Note */}
+            <Box mt={2} width="100%">
+              <Typography variant="caption">*หมายเหตุ</Typography>
+            </Box>
 
       {/* Send Button */}
       <Box mt={4} textAlign="right">
