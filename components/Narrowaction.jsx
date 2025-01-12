@@ -236,6 +236,8 @@ export default function NarrowMessage() {
                     <MenuItem value="video">Video</MenuItem>
                     <MenuItem value="audio">Audio</MenuItem>
                     <MenuItem value="location">Location</MenuItem>
+                    <MenuItem value="flex">Flex</MenuItem>
+                    <MenuItem value="template">Template</MenuItem>
                   </Select>
                 </FormControl>
                 {dynamicContents.length > 0 && renderButtons(dynamicContents)}

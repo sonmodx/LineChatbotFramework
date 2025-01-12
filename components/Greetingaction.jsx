@@ -247,33 +247,103 @@ export default function Greetingaction({ data, setState, state }) {
           >
             Location
           </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("flex")}
+            variant={messageType === "flex" ? "contained" : "outlined"}
+          >
+            Flex
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("template")}
+            variant={messageType === "template" ? "contained" : "outlined"}
+          >
+            Template
+          </Button>
+
         </ButtonGroup>
       </Box>
 
-      {/* Text Message Section */}
-      <Box mt={4} width="100%" backgroundColor="primary">
-        <Typography
-          variant="h6"
-          backgroundColor="primary.main"
-          gutterBottom
-          style={{
-            color: "#fff",
-            padding: "10px",
-          }}
-        >
-          {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
-        </Typography>
-        <TextField
-          fullWidth
-          multiline
-          rows={8}
-          placeholder={`Enter your ${messageType} here`}
-          variant="outlined"
-          value={messages}
-          onChange={(e) => setMessages(e.target.value)}
-        />
-        {dynamicContents.length > 0 && renderButtons(dynamicContents)}
-      </Box>
+{/* Text Message Section */}
+<Box mt={4} width="100%" backgroundColor="primary">
+  <Typography
+    variant="h6"
+    backgroundColor="primary.main"
+    gutterBottom
+    style={{
+      color: "#fff",
+      padding: "10px",
+    }}
+  >
+    {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
+  </Typography>
+  {Array.from(
+    {
+      length:
+        messageType === "sticker" || 
+        messageType === "image" || 
+        messageType === "video" || 
+        messageType === "audio"
+          ? 2
+          : messageType === "location"
+          ? 4
+          : 1, // Default 1 box for other message types
+    }
+  ).map((_, index) => {
+    // Determine placeholder based on messageType
+    let placeholder = `Enter ${messageType} #${index + 1} here`;
+    let rows = 4;
+    if (messageType === "location") {
+      const locationPlaceholders = ["Title", "Address", "Latitude", "Longitude"];
+      placeholder = locationPlaceholders[index];
+      rows = 1;
+    } else if (messageType === "image") {
+      const imagePlaceholders = ["Original Content URL", "Preview Image URL"];
+      placeholder = imagePlaceholders[index];
+      rows = 1;
+    } else if (messageType === "sticker") {
+      const imagePlaceholders = ["PackageId", "StickerId"];
+      placeholder = imagePlaceholders[index];
+      rows = 1;
+    } 
+    else if (messageType === "video") {
+      const imagePlaceholders = ["Original Content URL", "Preview Image URL"];
+      placeholder = imagePlaceholders[index];
+      rows = 1;
+    }
+    else if (messageType === "audio") {
+      const imagePlaceholders = ["Original Content URL", "Duration"];
+      placeholder = imagePlaceholders[index];
+      rows = 1;
+    }
+    else if (messageType === "flex") {
+      const imagePlaceholders = ["Json"];
+      placeholder = imagePlaceholders[index];
+    }
+   else if (messageType === "template") {
+      const imagePlaceholders = ["Json"];
+      placeholder = imagePlaceholders[index];
+    }
+
+    return (
+      <TextField
+        key={index}
+        fullWidth
+        multiline
+        rows={rows}
+        placeholder={placeholder}
+        variant="outlined"
+        value={messages[index] || ""}
+        onChange={(e) => {
+          const updatedMessages = [...messages];
+          updatedMessages[index] = e.target.value;
+          setMessages(updatedMessages);
+        }}
+        style={{ marginBottom: "16px" }}
+      />
+    );
+  })}
+  {dynamicContents.length > 0 && renderButtons(dynamicContents)}
+</Box>
 
       {/* Note */}
       <Box mt={2} width="100%">

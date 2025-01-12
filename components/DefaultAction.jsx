@@ -184,31 +184,34 @@ export default function DefaultAction({ data, setState, state }) {
         </Grid>
       </Box>
 
-                        {/* Name Input */}
-                        <Box mt={3} width="100%">
-                    <Grid container spacing={2} alignItems="center">
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="h6" gutterBottom>
-                          Name
-                        </Typography>
-                        <TextField
-                          fullWidth
-                          placeholder="Enter Name"
-                          variant="outlined"
-                        />
-                      </Grid>
-            
-                      {/* Description Input */}
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="h6" gutterBottom>
-                        Description
-                        </Typography>
-                        <TextField fullWidth placeholder="Enter Description" variant="outlined"/>
-                      </Grid>
-                    </Grid>
-                  </Box>
+      {/* Name and Description Inputs */}
+      <Box mt={3} width="100%">
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6" gutterBottom>
+              Name
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter Name"
+              variant="outlined"
+            />
+          </Grid>
 
-      {/* Type Selection Section */}
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6" gutterBottom>
+              Description
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter Description"
+              variant="outlined"
+            />
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Message Type Selection Bar */}
       <Box mt={4} width="100%">
         <Typography variant="h6" gutterBottom>
           Message Type
@@ -250,6 +253,18 @@ export default function DefaultAction({ data, setState, state }) {
           >
             Location
           </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("flex")}
+            variant={messageType === "flex" ? "contained" : "outlined"}
+          >
+            Flex
+          </Button>
+          <Button
+            onClick={() => handleMessageTypeChange("template")}
+            variant={messageType === "template" ? "contained" : "outlined"}
+          >
+            Template
+          </Button>
         </ButtonGroup>
       </Box>
 
@@ -266,15 +281,64 @@ export default function DefaultAction({ data, setState, state }) {
         >
           {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
         </Typography>
-        <TextField
-          fullWidth
-          multiline
-          rows={8}
-          placeholder={`Enter your ${messageType} here`}
-          variant="outlined"
-          value={messages}
-          onChange={(e) => setMessages(e.target.value)}
-        />
+        {Array.from(
+          {
+            length:
+              messageType === "sticker" ||
+              messageType === "image" ||
+              messageType === "video" ||
+              messageType === "audio"
+                ? 2
+                : messageType === "location"
+                ? 4
+                : 1,
+          }
+        ).map((_, index) => {
+          let placeholder = `Enter ${messageType} #${index + 1} here`;
+          let rows = 4;
+          if (messageType === "location") {
+            const locationPlaceholders = ["Title", "Address", "Latitude", "Longitude"];
+            placeholder = locationPlaceholders[index];
+            rows = 1;
+          } else if (messageType === "image") {
+            const imagePlaceholders = ["Original Content URL", "Preview Image URL"];
+            placeholder = imagePlaceholders[index];
+            rows = 1;
+          } else if (messageType === "sticker") {
+            const imagePlaceholders = ["PackageId", "StickerId"];
+            placeholder = imagePlaceholders[index];
+            rows = 1;
+          } else if (messageType === "video") {
+            const imagePlaceholders = ["Original Content URL", "Preview Image URL"];
+            placeholder = imagePlaceholders[index];
+            rows = 1;
+          } else if (messageType === "audio") {
+            const imagePlaceholders = ["Original Content URL", "Duration"];
+            placeholder = imagePlaceholders[index];
+            rows = 1;
+          } else if (messageType === "flex" || messageType === "template") {
+            const imagePlaceholders = ["Json"];
+            placeholder = imagePlaceholders[index];
+          }
+
+          return (
+            <TextField
+              key={index}
+              fullWidth
+              multiline
+              rows={rows}
+              placeholder={placeholder}
+              variant="outlined"
+              value={messages[index] || ""}
+              onChange={(e) => {
+                const updatedMessages = [...messages];
+                updatedMessages[index] = e.target.value;
+                setMessages(updatedMessages);
+              }}
+              style={{ marginBottom: "16px" }}
+            />
+          );
+        })}
         {dynamicContents.length > 0 && renderButtons(dynamicContents)}
       </Box>
 

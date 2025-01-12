@@ -20,19 +20,19 @@ import Notification from "./Notification";
 export default function MulticastMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
-  const [messages, setMessages] = useState("");
+  const [messages, setMessages] = useState([]); // Changed to an array for dynamic fields
   const [selectLineUser, setSelectLineUser] = useState(null);
   const [messageType, setMessageType] = useState("text"); // Default to "text"
   const [lineUsers, setLineUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [openNotification, setOpenNotification] = useState(false);
-  console.log(selectedUsers);
   const searchParams = useSearchParams();
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("channel_id");
   const typeMessage = "Multicast";
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
+
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
   };
@@ -43,12 +43,11 @@ export default function MulticastMessage() {
 
   const handleMessageTypeChange = (type) => {
     setMessageType(type);
+    setMessages([]); // Reset messages when the type changes
   };
 
   const handleGetAllLineUsers = async () => {
     const line_users = await getAllLineUsers(channelObjectId);
-
-    console.log(line_users);
     setLineUsers(JSON.parse(line_users));
   };
 
@@ -64,27 +63,21 @@ export default function MulticastMessage() {
     }
   };
 
-  const handleMessageChange = (value) => {
-    setMessages(value);
-  };
-
   const handleSendMessage = async () => {
-    if (messages.trim() === "" || messages === undefined) {
+    if (messages.some((msg) => !msg.trim())) {
       return;
     }
+
     const body = {
       type: typeMessage,
       destination: channelId,
       direct_config: {
         api_id: selectedApi?._id || null,
         user_id: selectedUsers.map((user) => user.line_user_id),
-        // message: messages
-        //   .filter((msg) => msg !== undefined && msg.trim() !== "")
-        //   .map((msg) => ({ type: "text", text: msg })),
-        message: [{ type: "text", text: messages }],
+        message: messages.map((msg) => ({ type: messageType, text: msg })),
       },
     };
-    console.log("body", body);
+
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/direct_message`,
@@ -97,8 +90,6 @@ export default function MulticastMessage() {
       if (res.status === 200) {
         setOpenNotification(true);
       }
-
-      console.log("Response from webhook:", res.data);
     } catch (error) {
       console.error(
         "Error sending request to webhook:",
@@ -109,67 +100,13 @@ export default function MulticastMessage() {
 
   const handleGetAllApis = async () => {
     const _apis = await getAllApis(channelObjectId);
-
-    console.log(_apis);
     setApis(JSON.parse(_apis));
   };
 
   useEffect(() => {
     handleGetAllLineUsers();
     handleGetAllApis();
-    console.log("HI");
   }, []);
-
-  useEffect(() => {
-    if (
-      selectedApi === null ||
-      typeof selectedApi !== "object" ||
-      Array.isArray(selectedApi)
-    )
-      return;
-    const keywordsObject = JSON.parse(selectedApi?.keywords);
-    const getAllKeyObjects = (obj, prefix = "") => {
-      return Object.keys(obj).map((key) => {
-        const value = obj[key];
-        const fullKey = prefix ? `${prefix}.${key}` : key;
-
-        if (typeof value === "object" && !Array.isArray(value)) {
-          return getAllKeyObjects(value, fullKey);
-        } else {
-          return fullKey;
-        }
-      });
-    };
-    const result = getAllKeyObjects(keywordsObject);
-    setDynamicContents(result);
-
-    console.log("MY KEY", keywordsObject);
-    console.log("MY result", result);
-  }, [selectedApi]);
-
-  const renderButtons = (contents) => {
-    return contents.map((keyword, index) => {
-      if (Array.isArray(keyword)) {
-        return renderButtons(keyword);
-      }
-
-      return (
-        <Button
-          key={index}
-          variant="outlined"
-          color="primary"
-          style={{ margin: "5px" }}
-          onClick={() => {
-            let updatedMessages = messages;
-            updatedMessages += `$(${keyword})`;
-            setMessages(updatedMessages);
-          }}
-        >
-          {keyword}
-        </Button>
-      );
-    });
-  };
 
   return (
     <Box p={4} width="100%">
@@ -178,7 +115,6 @@ export default function MulticastMessage() {
         Multicast Message
       </Typography>
 
-      {/* Thin Black Line */}
       <Box borderBottom={1} borderColor="black" mb={3} width="100%" />
 
       <Typography variant="body2" gutterBottom>
@@ -186,76 +122,34 @@ export default function MulticastMessage() {
         ได้ทั้งหมดในทีเดียวโดยไม่จำเป็นต้องทำหลาย ๆ ครั้ง
       </Typography>
 
-                  {/* Name Input */}
-                  <Box mt={3} width="100%">
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="h6" gutterBottom>
-                    Name
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    placeholder="Enter Name"
-                    variant="outlined"
-                  />
-                </Grid>
-      
-                {/* Description Input */}
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="h6" gutterBottom>
-                  Description
-                  </Typography>
-                  <TextField fullWidth placeholder="Enter Description" variant="outlined"/>
-                </Grid>
-              </Grid>
-            </Box>
-
-            {/* Message Type Selection Bar */}
-            <Box mt={4} width="100%">
+      {/* Message Type Selection Bar */}
+      <Box mt={4} width="100%">
         <Typography variant="h6" gutterBottom>
           Message Type
         </Typography>
         <ButtonGroup variant="outlined" color="primary">
-          <Button
-            onClick={() => handleMessageTypeChange("text")}
-            variant={messageType === "text" ? "contained" : "outlined"}
-          >
-            Text
-          </Button>
-          <Button
-            onClick={() => handleMessageTypeChange("image")}
-            variant={messageType === "image" ? "contained" : "outlined"}
-          >
-            Image
-          </Button>
-          <Button
-            onClick={() => handleMessageTypeChange("sticker")}
-            variant={messageType === "sticker" ? "contained" : "outlined"}
-          >
-            Sticker
-          </Button>
-          <Button
-            onClick={() => handleMessageTypeChange("video")}
-            variant={messageType === "video" ? "contained" : "outlined"}
-          >
-            Video
-          </Button>
-          <Button
-            onClick={() => handleMessageTypeChange("audio")}
-            variant={messageType === "audio" ? "contained" : "outlined"}
-          >
-            Audio
-          </Button>
-          <Button
-            onClick={() => handleMessageTypeChange("location")}
-            variant={messageType === "location" ? "contained" : "outlined"}
-          >
-            Location
-          </Button>
+          {[
+            "text",
+            "image",
+            "video",
+            "audio",
+            "sticker",
+            "location",
+            "flex",
+            "template",
+          ].map((type) => (
+            <Button
+              key={type}
+              onClick={() => handleMessageTypeChange(type)}
+              variant={messageType === type ? "contained" : "outlined"}
+            >
+              {type.charAt(0).toUpperCase() + type.slice(1)}
+            </Button>
+          ))}
         </ButtonGroup>
       </Box>
 
-      {/* Text Message and User Areas */}
+      {/* Dynamic Input Fields */}
       <Box mt={4} width="100%">
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
@@ -267,18 +161,66 @@ export default function MulticastMessage() {
             >
               {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
             </Typography>
-            <TextField
-              fullWidth
-              multiline
-              rows={6}
-              placeholder={`Enter your ${messageType} here`}
-              variant="outlined"
-              value={messages}
-              onChange={(e) => handleMessageChange(e.target.value)}
-            />
-            {dynamicContents.length > 0 && renderButtons(dynamicContents)}
+            {Array.from({
+              length:
+                ["sticker", "image", "video", "audio"].includes(messageType)
+                  ? 2
+                  : messageType === "location"
+                  ? 4
+                  : 1,
+            }).map((_, index) => {
+              let placeholder = `Enter ${messageType} #${index + 1} here`;
+              let rows = 4;
+
+              if (messageType === "location") {
+                const placeholders = [
+                  "Title",
+                  "Address",
+                  "Latitude",
+                  "Longitude",
+                ];
+                placeholder = placeholders[index];
+                rows = 1;
+              } else if (["image", "video"].includes(messageType)) {
+                const placeholders = [
+                  "Original Content URL",
+                  "Preview Image URL",
+                ];
+                placeholder = placeholders[index];
+                rows = 1;
+              } else if (messageType === "sticker") {
+                const placeholders = ["PackageId", "StickerId"];
+                placeholder = placeholders[index];
+                rows = 1;
+              } else if (messageType === "audio") {
+                const placeholders = ["Original Content URL", "Duration"];
+                placeholder = placeholders[index];
+                rows = 1;
+              } else if (["flex", "template"].includes(messageType)) {
+                placeholder = "JSON";
+              }
+
+              return (
+                <TextField
+                  key={index}
+                  fullWidth
+                  multiline={rows > 1}
+                  rows={rows}
+                  placeholder={placeholder}
+                  variant="outlined"
+                  value={messages[index] || ""}
+                  onChange={(e) => {
+                    const newMessages = [...messages];
+                    newMessages[index] = e.target.value;
+                    setMessages(newMessages);
+                  }}
+                  style={{ marginBottom: "10px" }}
+                />
+              );
+            })}
           </Grid>
 
+          {/* User Selection */}
           <Grid item xs={12} sm={6}>
             <Typography
               variant="h6"
@@ -293,7 +235,6 @@ export default function MulticastMessage() {
               getOptionLabel={(option) => option.display_name || ""}
               value={selectLineUser}
               onChange={(event, newValue) => handleSelectLineUser(newValue)}
-              // onSelect={handleSelectLineUser}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -304,59 +245,46 @@ export default function MulticastMessage() {
               )}
             />
             <Box mt={2}>
-              <div>
-                {selectedUsers.map((user) => (
-                  <Chip
-                    key={user.line_user_id}
-                    label={user.display_name}
-                    color="primary"
-                    onDelete={() => {
-                      // Remove user from selected list
-                      setSelectedUsers((prev) =>
-                        prev.filter((u) => u.line_user_id !== user.line_user_id)
-                      );
-                      // Add back to line users list
-                      setLineUsers((prev) => [...prev, user]);
-                    }}
-                    sx={{ marginRight: 1 }}
-                  />
-                ))}
-              </div>
+              {selectedUsers.map((user) => (
+                <Chip
+                  key={user.line_user_id}
+                  label={user.display_name}
+                  color="primary"
+                  onDelete={() => {
+                    setSelectedUsers((prev) =>
+                      prev.filter((u) => u.line_user_id !== user.line_user_id)
+                    );
+                    setLineUsers((prev) => [...prev, user]);
+                  }}
+                  sx={{ marginRight: 1 }}
+                />
+              ))}
             </Box>
-
-                        {/* API Section */}
-                        <Box display="flex" alignItems="center" mt={2}>
-                          <Checkbox checked={useApi} onChange={handleCheckboxChange} />
-                          <Typography variant="body1" display="inline">
-                            Use API
-                          </Typography>
-                        </Box>
-            
-                        {useApi && (
-                          <Autocomplete
-                            options={apis}
-                            getOptionLabel={(option) => option.name || ""}
-                            value={selectedApi}
-                            onChange={handleApiChange}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                label="Select API"
-                                variant="outlined"
-                                fullWidth
-                              />
-                            )}
-                          />
-                        )}
-                      </Grid>
-                    </Grid>
-                  </Box>
-
-      {/* Note */}
-      <Box mt={2} width="100%">
-        <Typography variant="caption">*หมายเหตุ</Typography>
+          </Grid>
+        </Grid>
       </Box>
 
+      {/* API Section */}
+      <Box display="flex" alignItems="center" mt={2}>
+        <Checkbox checked={useApi} onChange={handleCheckboxChange} />
+        <Typography variant="body1">Use API</Typography>
+      </Box>
+      {useApi && (
+        <Autocomplete
+          options={apis}
+          getOptionLabel={(option) => option.name || ""}
+          value={selectedApi}
+          onChange={handleApiChange}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Select API"
+              variant="outlined"
+              fullWidth
+            />
+          )}
+        />
+      )}
 
       {/* Send Button */}
       <Box mt={4} textAlign="right" width="100%">
