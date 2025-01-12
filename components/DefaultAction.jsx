@@ -9,24 +9,27 @@ import {
   Autocomplete,
   Grid,
   Button,
+  ButtonGroup,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
-import { getAllApis } from "@/actions";
+import { getAllApis, getApiById } from "@/actions";
+import SwitchInputComponent from "./SwitchInputComponent";
 
 export default function DefaultAction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
-  const [messages, setMessages] = useState(data?.message.join(",") || []);
+  const [messages, setMessages] = useState(
+    data?.message || [{ type: "text", text: "" }]
+  );
+  const [messageType, setMessageType] = useState("text"); // State for message type
   const searchParams = useSearchParams();
   const id = data?._id || null;
   const channelObjectId = searchParams.get("id");
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
-
-  // useEffect(() => {
-  //   setMessages(data.message);
-  // }, []);
+  const [name, setName] = useState(data?.name || "");
+  const [description, setDescription] = useState(data?.description || "");
 
   const channelId = searchParams.get("id");
 
@@ -38,15 +41,35 @@ export default function DefaultAction({ data, setState, state }) {
     setSelectedApi(newValue);
   };
 
+  const handleMessageTypeChange = (type) => {
+    setMessageType(type);
+    setMessages(""); // Reset messages when type changes
+  };
+
+  const handleMessageChange = (index, value, key) => {
+    const updatedMessages = [...messages];
+
+    if (key === "type") {
+      updatedMessages[index] = { type: value };
+    } else {
+      updatedMessages[index][key] = value;
+    }
+
+    setMessages(updatedMessages);
+  };
+
   const handleSave = async () => {
     try {
       const body = {
-        name: "Test default message",
-        type: "text",
+        name: name,
+        type: messages[0]?.type,
         type_action: "default",
+        description: description,
+        api_id: selectedApi?._id || "",
         channel_id: channelId,
-        message: messages.split(","),
+        message: messages[0],
       };
+      console.log("BODY", body);
       if (state === "create") {
         const res = await axios.post(
           "/api/Action?action_type=default_message",
@@ -79,9 +102,18 @@ export default function DefaultAction({ data, setState, state }) {
     console.log(_apis);
     setApis(JSON.parse(_apis));
   };
+  const handleGetApiById = async () => {
+    const _api = await getApiById(data?.api_id || null);
+    if (_api) {
+      setUseApi(true);
+      console.log("API ID", _api);
+      setSelectedApi(JSON.parse(_api));
+    }
+  };
 
   useEffect(() => {
     handleGetAllApis();
+    handleGetApiById();
   }, []);
 
   useEffect(() => {
@@ -111,10 +143,10 @@ export default function DefaultAction({ data, setState, state }) {
     console.log("MY result", result);
   }, [selectedApi]);
 
-  const renderButtons = (contents) => {
+  const renderButtons = (contents, messageIndex, field) => {
     return contents.map((keyword, index) => {
       if (Array.isArray(keyword)) {
-        return renderButtons(keyword);
+        return renderButtons(keyword, messageIndex, field);
       }
 
       return (
@@ -124,8 +156,11 @@ export default function DefaultAction({ data, setState, state }) {
           color="primary"
           style={{ margin: "5px" }}
           onClick={() => {
-            let updatedMessages = messages;
-            updatedMessages += `$(${keyword})`;
+            let updatedMessages = [...messages];
+            if (!updatedMessages[messageIndex][field]) {
+              updatedMessages[messageIndex][field] = "";
+            }
+            updatedMessages[messageIndex][field] += `$(${keyword})`;
             setMessages(updatedMessages);
           }}
         >
@@ -181,6 +216,85 @@ export default function DefaultAction({ data, setState, state }) {
         </Grid>
       </Box>
 
+      {/* Name Input */}
+      <Box mt={3} width="100%">
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6" gutterBottom>
+              Name
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter Name"
+              variant="outlined"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </Grid>
+
+          {/* Description Input */}
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6" gutterBottom>
+              Description
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter Description"
+              variant="outlined"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Type Selection Section */}
+      <Box mt={4} width="100%">
+        <Typography variant="h6" gutterBottom>
+          Message Type
+        </Typography>
+        <ButtonGroup variant="outlined" color="primary">
+          <Button
+            onClick={() => handleMessageChange(0, "text", "type")}
+            variant={messages[0]?.type === "text" ? "contained" : "outlined"}
+          >
+            Text
+          </Button>
+          <Button
+            onClick={() => handleMessageChange(0, "image", "type")}
+            variant={messages[0]?.type === "image" ? "contained" : "outlined"}
+          >
+            Image
+          </Button>
+          <Button
+            onClick={() => handleMessageChange(0, "sticker", "type")}
+            variant={messages[0]?.type === "sticker" ? "contained" : "outlined"}
+          >
+            Sticker
+          </Button>
+          <Button
+            onClick={() => handleMessageChange(0, "video", "type")}
+            variant={messages[0]?.type === "video" ? "contained" : "outlined"}
+          >
+            Video
+          </Button>
+          <Button
+            onClick={() => handleMessageChange(0, "audio", "type")}
+            variant={messages[0]?.type === "audio" ? "contained" : "outlined"}
+          >
+            Audio
+          </Button>
+          <Button
+            onClick={() => handleMessageChange(0, "location", "type")}
+            variant={
+              messages[0]?.type === "location" ? "contained" : "outlined"
+            }
+          >
+            Location
+          </Button>
+        </ButtonGroup>
+      </Box>
+
       {/* Text Message Section */}
       <Box mt={4} width="100%" backgroundColor="primary">
         <Typography
@@ -192,18 +306,19 @@ export default function DefaultAction({ data, setState, state }) {
             padding: "10px",
           }}
         >
-          Text Message
+          {messages[0]?.type.charAt(0).toUpperCase() +
+            messages[0]?.type.slice(1)}{" "}
+          Message
         </Typography>
-        <TextField
-          fullWidth
-          multiline
-          rows={8}
-          placeholder="Enter your message here"
-          variant="outlined"
-          value={messages}
-          onChange={(e) => setMessages(e.target.value)}
+
+        <SwitchInputComponent
+          index={0}
+          messages={messages}
+          maximumMessage={1}
+          handleMessageChange={handleMessageChange}
+          dynamicContents={dynamicContents}
+          renderButtons={renderButtons}
         />
-        {dynamicContents.length > 0 && renderButtons(dynamicContents)}
       </Box>
 
       {/* Note */}

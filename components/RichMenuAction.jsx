@@ -254,7 +254,11 @@ const compactTemplate = [
 export default function RichMenuDesigner() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
-  const [openNotification, setOpenNotification] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    statusMessage: "",
+  });
   const [chatBarTitle, setChatBarTitle] = useState("");
   const searchParams = useSearchParams();
   const channelObjectId = searchParams.get("id");
@@ -369,7 +373,11 @@ export default function RichMenuDesigner() {
         );
         if (res2.status === 200) {
           console.log("Response from webhook:", res.data);
-          setOpenNotification(true);
+          setNotification({
+            open: true,
+            message: "Successfully sent message",
+            statusMessage: "success",
+          });
         }
       }
 
@@ -491,72 +499,83 @@ export default function RichMenuDesigner() {
         />
       )}
 
-<Box mt={3} width="100%">
-<Typography
-              variant="h6"
-              gutterBottom
-              backgroundColor="primary.main"
-              style={{ color: "#fff", padding: "10px" }}
-            >
-              Preview Richmenu
-            </Typography>
+      <Box mt={3} width="100%">
+        <Typography
+          variant="h6"
+          gutterBottom
+          backgroundColor="primary.main"
+          style={{ color: "#fff", padding: "10px" }}
+        >
+          Preview Richmenu
+        </Typography>
 
-  {/* Preview Box */}
-  <Box
-    sx={{
-      position: "relative",
-      width: imagePreview
-        ? imagePreview.includes("template1L") || imagePreview.includes("template2L") || imagePreview.includes("template3L") || imagePreview.includes("template4L") || imagePreview.includes("template5L") || imagePreview.includes("template6L") || imagePreview.includes("template7L")// Check if large template
-          ? 2500 * 0.25 // Scale down to 50% for large templates
-          : 2500 * 0.25 // Scale down to 50% for compact templates
-        : 0, // Adjust width based on selected template
-      height: imagePreview
-        ? imagePreview.includes("template1L") || imagePreview.includes("template2L") || imagePreview.includes("template3L") || imagePreview.includes("template4L") || imagePreview.includes("template5L") || imagePreview.includes("template6L") || imagePreview.includes("template7L") // Check if large template
-          ? 1686 * 0.25 // Scale down to 50% for large templates
-          : 800 * 0.25 // Scale down to 50% for compact templates
-        : 0, // Adjust height based on selected template
-      maxWidth: "100%",
-      border: "2px dashed #ccc",
-      borderRadius: 2,
-      overflow: "hidden",
-      backgroundColor: "#f5f5f5",
-    }}
-  >
-    {/* Display uploaded image */}
-    {image && (
-      <img
-        src={image}
-        alt="Uploaded Preview"
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "85%",
-          objectFit: "cover",
-        }}
-      />
-    )}
+        {/* Preview Box */}
+        <Box
+          sx={{
+            position: "relative",
+            width: imagePreview
+              ? imagePreview.includes("template1L") ||
+                imagePreview.includes("template2L") ||
+                imagePreview.includes("template3L") ||
+                imagePreview.includes("template4L") ||
+                imagePreview.includes("template5L") ||
+                imagePreview.includes("template6L") ||
+                imagePreview.includes("template7L") // Check if large template
+                ? 2500 * 0.25 // Scale down to 50% for large templates
+                : 2500 * 0.25 // Scale down to 50% for compact templates
+              : 0, // Adjust width based on selected template
+            height: imagePreview
+              ? imagePreview.includes("template1L") ||
+                imagePreview.includes("template2L") ||
+                imagePreview.includes("template3L") ||
+                imagePreview.includes("template4L") ||
+                imagePreview.includes("template5L") ||
+                imagePreview.includes("template6L") ||
+                imagePreview.includes("template7L") // Check if large template
+                ? 1686 * 0.25 // Scale down to 50% for large templates
+                : 800 * 0.25 // Scale down to 50% for compact templates
+              : 0, // Adjust height based on selected template
+            maxWidth: "100%",
+            border: "2px dashed #ccc",
+            borderRadius: 2,
+            overflow: "hidden",
+            backgroundColor: "#f5f5f5",
+          }}
+        >
+          {/* Display uploaded image */}
+          {image && (
+            <img
+              src={image}
+              alt="Uploaded Preview"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "85%",
+                objectFit: "cover",
+              }}
+            />
+          )}
 
-    {/* Display selected template overlay */}
-    {imagePreview && (
-      <img
-        src={imagePreview}
-        alt="Template Preview"
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          opacity: 0.85, // 60% opacity
-        }}
-      />
-    )}
-  </Box>
-</Box>
-
+          {/* Display selected template overlay */}
+          {imagePreview && (
+            <img
+              src={imagePreview}
+              alt="Template Preview"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                opacity: 0.85, // 60% opacity
+              }}
+            />
+          )}
+        </Box>
+      </Box>
 
       <Typography mt={4}>Chat Bar Title</Typography>
       <TextField
@@ -578,6 +597,11 @@ export default function RichMenuDesigner() {
             imagePreview={imagePreview}
           />
         ))}
+
+        {/* Note */}
+        <Box mt={2} width="100%">
+          <Typography variant="caption">*หมายเหตุ</Typography>
+        </Box>
         {/* Send Button */}
         <Box mt={4} textAlign="right" width="100%">
           <Button
@@ -591,9 +615,10 @@ export default function RichMenuDesigner() {
       </Box>
 
       <Notification
-        openNotification={openNotification}
-        setOpenNotification={setOpenNotification}
-        message="Successful sent message"
+        openNotification={notification.open}
+        setOpenNotification={setNotification}
+        message={notification.message}
+        statusMessage={notification.statusMessage}
       />
       <Modal
         open={openModal}

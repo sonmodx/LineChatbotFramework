@@ -8,7 +8,6 @@ import { ListSubheader } from "@mui/material";
 const listAction = [
   "Greeting message",
   "Reply message",
-  "Flex message",
   "Push Message",
   "Multicast Message",
   "Narrow Message",

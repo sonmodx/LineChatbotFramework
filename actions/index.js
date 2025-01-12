@@ -2,6 +2,7 @@
 
 import { connectMongoDB } from "@/lib/mongodb";
 import API from "@/models/API";
+import Audience from "@/models/audience";
 import LineUser from "@/models/LineUser";
 
 export const getAllLineUsers = async (channelId) => {
@@ -43,6 +44,35 @@ export const getAllApis = async (channelId) => {
     return JSON.stringify(api);
   } catch (error) {
     console.error("Error Query API in DB:", error);
+    throw error; // Re-throw the error for better debugging
+  }
+};
+
+export const getApiById = async (apiId) => {
+  if (!apiId) return;
+  await connectMongoDB();
+
+  try {
+    // Explicitly ensure channelId is treated as a string
+    const api = await API.findById(apiId);
+
+    return JSON.stringify(api);
+  } catch (error) {
+    console.error("Error Query API in DB:", error);
+    throw error; // Re-throw the error for better debugging
+  }
+};
+
+export const getAllAudiences = async (channelId) => {
+  await connectMongoDB();
+
+  try {
+    // Explicitly ensure channelId is treated as a string
+    const api = await Audience.find({ channel_id: channelId });
+
+    return JSON.stringify(api);
+  } catch (error) {
+    console.error("Error Query Audience in DB:", error);
     throw error; // Re-throw the error for better debugging
   }
 };

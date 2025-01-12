@@ -10,28 +10,37 @@ import {
   Grid,
   Button,
   Chip,
+  ButtonGroup,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import { getAllApis, getAllLineUsers } from "@/actions";
 import axios from "axios";
 import Notification from "./Notification";
+import { getCurrentTime, parseDateTime } from "@/lib/utils";
+import SwitchInputComponent from "./SwitchInputComponent";
 
 export default function MulticastMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
-  const [messages, setMessages] = useState("");
+  const [messages, setMessages] = useState([{ type: "text", text: "" }]);
   const [selectLineUser, setSelectLineUser] = useState(null);
-
+  const [messageType, setMessageType] = useState("text"); // Default to "text"
   const [lineUsers, setLineUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
-  const [openNotification, setOpenNotification] = useState(false);
-  console.log(selectedUsers);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    statusMessage: "",
+  });
+  // console.log(selectedUsers);
+  console.log("msg", messages);
   const searchParams = useSearchParams();
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("channel_id");
   const typeMessage = "Multicast";
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
+  const [dateTime, setDateTime] = useState(null);
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
   };
@@ -59,24 +68,33 @@ export default function MulticastMessage() {
     }
   };
 
-  const handleMessageChange = (value) => {
-    setMessages(value);
+  const handleMessageChange = (index, value, key) => {
+    const updatedMessages = [...messages];
+
+    if (key === "type") {
+      updatedMessages[index] = { type: value };
+    } else {
+      updatedMessages[index][key] = value;
+    }
+
+    setMessages(updatedMessages);
   };
 
   const handleSendMessage = async () => {
-    if (messages.trim() === "" || messages === undefined) {
-      return;
-    }
+    // if (messages.trim() === "" || messages === undefined) {
+    //   return;
+    // }
     const body = {
       type: typeMessage,
       destination: channelId,
       direct_config: {
         api_id: selectedApi?._id || null,
         user_id: selectedUsers.map((user) => user.line_user_id),
+        ...parseDateTime(dateTime),
         // message: messages
         //   .filter((msg) => msg !== undefined && msg.trim() !== "")
         //   .map((msg) => ({ type: "text", text: msg })),
-        message: [{ type: "text", text: messages }],
+        message: messages,
       },
     };
     console.log("body", body);
@@ -90,15 +108,28 @@ export default function MulticastMessage() {
       );
 
       if (res.status === 200) {
-        setOpenNotification(true);
+        setNotification({
+          open: true,
+          message: "Successfully sent message",
+          statusMessage: "success",
+        });
+      } else {
+        setNotification({
+          open: true,
+          message: "Can't sent message",
+          statusMessage: "error",
+        });
       }
-
-      console.log("Response from webhook:", res.data);
     } catch (error) {
       console.error(
         "Error sending request to webhook:",
         error.response?.data || error.message
       );
+      setNotification({
+        open: true,
+        message: "Can't sent message",
+        statusMessage: "error",
+      });
     }
   };
 
@@ -112,6 +143,7 @@ export default function MulticastMessage() {
   useEffect(() => {
     handleGetAllLineUsers();
     handleGetAllApis();
+    setDateTime(getCurrentTime());
     console.log("HI");
   }, []);
 
@@ -142,10 +174,10 @@ export default function MulticastMessage() {
     console.log("MY result", result);
   }, [selectedApi]);
 
-  const renderButtons = (contents) => {
+  const renderButtons = (contents, messageIndex, field) => {
     return contents.map((keyword, index) => {
       if (Array.isArray(keyword)) {
-        return renderButtons(keyword);
+        return renderButtons(keyword, messageIndex, field);
       }
 
       return (
@@ -155,8 +187,11 @@ export default function MulticastMessage() {
           color="primary"
           style={{ margin: "5px" }}
           onClick={() => {
-            let updatedMessages = messages;
-            updatedMessages += `$(${keyword})`;
+            let updatedMessages = [...messages];
+            if (!updatedMessages[messageIndex][field]) {
+              updatedMessages[messageIndex][field] = "";
+            }
+            updatedMessages[messageIndex][field] += `$(${keyword})`;
             setMessages(updatedMessages);
           }}
         >
@@ -180,9 +215,64 @@ export default function MulticastMessage() {
         วิธีใช้งาน : สามารถ Multicast messages ไปหา user
         ได้ทั้งหมดในทีเดียวโดยไม่จำเป็นต้องทำหลาย ๆ ครั้ง
       </Typography>
+      <TextField
+        id="datetime-local"
+        label="Schedule"
+        type="datetime-local"
+        value={dateTime}
+        onChange={(e) => setDateTime(e.target.value)}
+        sx={{ mt: 2 }}
+      />
+
+      {/* Message Type Selection Bar */}
+      <Box mt={4} width="100%">
+        <Typography variant="h6" gutterBottom>
+          Message Type
+        </Typography>
+        <ButtonGroup variant="outlined" color="primary">
+          <Button
+            onClick={() => handleMessageChange(0, "text", "type")}
+            variant={messages[0]?.type === "text" ? "contained" : "outlined"}
+          >
+            Text
+          </Button>
+          <Button
+            onClick={() => handleMessageChange(0, "image", "type")}
+            variant={messages[0]?.type === "image" ? "contained" : "outlined"}
+          >
+            Image
+          </Button>
+          <Button
+            onClick={() => handleMessageChange(0, "sticker", "type")}
+            variant={messages[0]?.type === "sticker" ? "contained" : "outlined"}
+          >
+            Sticker
+          </Button>
+          <Button
+            onClick={() => handleMessageChange(0, "video", "type")}
+            variant={messages[0]?.type === "video" ? "contained" : "outlined"}
+          >
+            Video
+          </Button>
+          <Button
+            onClick={() => handleMessageChange(0, "audio", "type")}
+            variant={messages[0]?.type === "audio" ? "contained" : "outlined"}
+          >
+            Audio
+          </Button>
+          <Button
+            onClick={() => handleMessageChange(0, "location", "type")}
+            variant={
+              messages[0]?.type === "location" ? "contained" : "outlined"
+            }
+          >
+            Location
+          </Button>
+        </ButtonGroup>
+      </Box>
 
       {/* Text Message and User Areas */}
-      <Box mt={3} width="100%">
+      <Box mt={4} width="100%">
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <Typography
@@ -191,18 +281,27 @@ export default function MulticastMessage() {
               backgroundColor="primary.main"
               style={{ color: "#fff", padding: "10px" }}
             >
-              Text Message
+              {messages[0]?.type.charAt(0).toUpperCase() +
+                messages[0]?.type.slice(1)}{" "}
+              Message
             </Typography>
-            <TextField
+            {/* <TextField
               fullWidth
               multiline
               rows={6}
-              placeholder="Enter your message here"
+              placeholder={`Enter your ${messageType} here`}
               variant="outlined"
               value={messages}
               onChange={(e) => handleMessageChange(e.target.value)}
+            /> */}
+            <SwitchInputComponent
+              index={0}
+              messages={messages}
+              maximumMessage={1}
+              handleMessageChange={handleMessageChange}
+              dynamicContents={dynamicContents}
+              renderButtons={renderButtons}
             />
-            {dynamicContents.length > 0 && renderButtons(dynamicContents)}
           </Grid>
 
           <Grid item xs={12} sm={6}>
@@ -249,21 +348,15 @@ export default function MulticastMessage() {
                 ))}
               </div>
             </Box>
-          </Grid>
-        </Grid>
-      </Box>
 
-      {/* API Section */}
-      <Box mt={4} width="100%">
-        <Grid container alignItems="center" spacing={2}>
-          <Grid item xs={12} sm={3}>
-            <Checkbox checked={useApi} onChange={handleCheckboxChange} />
-            <Typography variant="body1" display="inline">
-              Use API
-            </Typography>
-          </Grid>
+            {/* API Section */}
+            <Box display="flex" alignItems="center" mt={2}>
+              <Checkbox checked={useApi} onChange={handleCheckboxChange} />
+              <Typography variant="body1" display="inline">
+                Use API
+              </Typography>
+            </Box>
 
-          <Grid item xs={12} sm={9}>
             {useApi && (
               <Autocomplete
                 options={apis}
@@ -284,6 +377,11 @@ export default function MulticastMessage() {
         </Grid>
       </Box>
 
+      {/* Note */}
+      <Box mt={2} width="100%">
+        <Typography variant="caption">*หมายเหตุ</Typography>
+      </Box>
+
       {/* Send Button */}
       <Box mt={4} textAlign="right" width="100%">
         <Button variant="contained" color="primary" onClick={handleSendMessage}>
@@ -292,9 +390,10 @@ export default function MulticastMessage() {
       </Box>
 
       <Notification
-        openNotification={openNotification}
-        setOpenNotification={setOpenNotification}
-        message="Successful sent message"
+        openNotification={notification.open}
+        setOpenNotification={setNotification}
+        message={notification.message}
+        statusMessage={notification.statusMessage}
       />
     </Box>
   );
