@@ -149,7 +149,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
         console.log("Successful delete audience");
         setNotification({
           open: true,
-          message: "Successfully sent message",
+          message: "Successfully delete audience",
           statusMessage: "success",
         });
         setDefaultValue();
