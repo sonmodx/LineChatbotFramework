@@ -175,6 +175,21 @@ export default function MulticastMessage() {
     });
   };
 
+  const getMessagePlaceholders = () => {
+    if (messageType === "location") {
+      return ["Title", "Address", "Latitude", "Longitude"];
+    } else if (messageType === "image" || messageType === "video") {
+      return ["Original Content URL", "Preview Image URL"];
+    } else if (messageType === "sticker") {
+      return ["PackageId", "StickerId"];
+    } else if (messageType === "audio") {
+      return ["Original Content URL", "Duration"];
+    } else if (messageType === "flex" || messageType === "template") {
+      return ["Json"];
+    }
+    return ["Enter Message"];
+  };
+
   return (
     <Box p={4} width="100%">
       {/* Title and Description */}
@@ -204,42 +219,15 @@ export default function MulticastMessage() {
           Message Type
         </Typography>
         <ButtonGroup variant="outlined" color="primary">
-          <Button
-            onClick={() => handleMessageTypeChange("text")}
-            variant={messageType === "text" ? "contained" : "outlined"}
-          >
-            Text
-          </Button>
-          <Button
-            onClick={() => handleMessageTypeChange("image")}
-            variant={messageType === "image" ? "contained" : "outlined"}
-          >
-            Image
-          </Button>
-          <Button
-            onClick={() => handleMessageTypeChange("sticker")}
-            variant={messageType === "sticker" ? "contained" : "outlined"}
-          >
-            Sticker
-          </Button>
-          <Button
-            onClick={() => handleMessageTypeChange("video")}
-            variant={messageType === "video" ? "contained" : "outlined"}
-          >
-            Video
-          </Button>
-          <Button
-            onClick={() => handleMessageTypeChange("audio")}
-            variant={messageType === "audio" ? "contained" : "outlined"}
-          >
-            Audio
-          </Button>
-          <Button
-            onClick={() => handleMessageTypeChange("location")}
-            variant={messageType === "location" ? "contained" : "outlined"}
-          >
-            Location
-          </Button>
+          {["text", "image", "sticker", "video", "audio", "location", "flex", "template"].map((type) => (
+            <Button
+              key={type}
+              onClick={() => handleMessageTypeChange(type)}
+              variant={messageType === type ? "contained" : "outlined"}
+            >
+              {type.charAt(0).toUpperCase() + type.slice(1)}
+            </Button>
+          ))}
         </ButtonGroup>
       </Box>
 
@@ -256,15 +244,32 @@ export default function MulticastMessage() {
               {messageType.charAt(0).toUpperCase() + messageType.slice(1)}{" "}
               Message
             </Typography>
+            {getMessagePlaceholders().map((placeholder, index) => {
+          let rows = 4;
+          if (messageType === "location" || messageType === "image" || messageType === "sticker" || messageType === "video" || messageType === "audio") {
+            rows = 1;
+          } else if (messageType === "flex" || messageType === "template") {
+            rows = 7;
+          }
+
+          return (
             <TextField
+             key={index}
               fullWidth
               multiline
-              rows={6}
-              placeholder={`Enter your ${messageType} here`}
+              rows={rows}
+              placeholder={placeholder}
               variant="outlined"
-              value={messages}
-              onChange={(e) => handleMessageChange(e.target.value)}
+              value={messages[index] || ""}
+              onChange={(e) => {
+                const updatedMessages = [...messages];
+                updatedMessages[index] = e.target.value;
+                setMessages(updatedMessages);
+              }}
+              style={{ marginBottom: "16px" }}
             />
+          );
+        })}
             {dynamicContents.length > 0 && renderButtons(dynamicContents)}
           </Grid>
 

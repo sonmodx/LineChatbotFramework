@@ -28,10 +28,8 @@ export default function PushMessage() {
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [messageCount, setMessageCount] = useState(1); // Track number of message boxes
   const maximumMessage = 5;
-  const [messages, setMessages] = useState(Array(messageCount).fill(""));
-  const [messageTypes, setMessageTypes] = useState(
-    Array(messageCount).fill("text")
-  );
+  const [messages, setMessages] = useState(Array(messageCount).fill("")); // Messages state
+  const [messageTypes, setMessageTypes] = useState(Array(messageCount).fill("text"));
   const [selectLineUser, setSelectLineUser] = useState(null);
   const [lineUsers, setLineUsers] = useState([]);
   const [openNotification, setOpenNotification] = useState(false);
@@ -42,8 +40,6 @@ export default function PushMessage() {
   const typeMessage = "Push";
   const [apis, setApis] = useState([]);
   const [dateTime, setDateTime] = useState(null);
-  console.log("date", dateTime);
-
   const [dynamicContents, setDynamicContents] = useState([]);
 
   const handleCheckboxChange = (event) => {
@@ -76,16 +72,11 @@ export default function PushMessage() {
     setLineUsers(JSON.parse(line_users));
   };
 
-  const handleMessageChange = (index, value) => {
+  const handleMessageChange = (index, placeholderIndex, value) => {
     const updatedMessages = [...messages];
-    updatedMessages[index] = value;
+    if (!updatedMessages[index]) updatedMessages[index] = [];
+    updatedMessages[index][placeholderIndex] = value;
     setMessages(updatedMessages);
-  };
-
-  const handleMessageTypeChange = (index, value) => {
-    const updatedMessageTypes = [...messageTypes];
-    updatedMessageTypes[index] = value;
-    setMessageTypes(updatedMessageTypes);
   };
 
   const handleSendMessage = async () => {
@@ -105,23 +96,6 @@ export default function PushMessage() {
       },
     };
     console.log("bodyu", body);
-    // try {
-    //   const res = await axios.post(
-    //     `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/direct_message`,
-    //     body,
-    //     {
-    //       headers: { "Content-Type": "application/json" },
-    //     }
-    //   );
-    //   if (res.status === 200) {
-    //     setOpenNotification(true);
-    //   }
-    // } catch (error) {
-    //   console.error(
-    //     "Error sending request to webhook:",
-    //     error.response?.data || error.message
-    //   );
-    // }
   };
 
   const handleGetAllApis = async () => {
@@ -158,29 +132,70 @@ export default function PushMessage() {
     setDynamicContents(result);
   }, [selectedApi]);
 
-  const renderButtons = (contents, messageIndex) => {
-    return contents.map((keyword, index) => {
-      if (Array.isArray(keyword)) {
-        return renderButtons(keyword, messageIndex);
-      }
-
-      return (
-        <Button
-          key={index}
-          variant="outlined"
-          color="primary"
-          style={{ margin: "5px" }}
-          onClick={() => {
-            const updatedMessages = [...messages];
-            updatedMessages[messageIndex] += `\${${keyword}}`;
-            setMessages(updatedMessages);
-          }}
-        >
-          {keyword}
-        </Button>
-      );
-    });
+  const getMessagePlaceholders = (messageType) => {
+    if (messageType === "location") {
+      return ["Title", "Address", "Latitude", "Longitude"];
+    } else if (messageType === "image" || messageType === "video") {
+      return ["Original Content URL", "Preview Image URL"];
+    } else if (messageType === "sticker") {
+      return ["PackageId", "StickerId"];
+    } else if (messageType === "audio") {
+      return ["Original Content URL", "Duration"];
+    } else if (messageType === "flex" || messageType === "template") {
+      return ["Json"];
+    }
+    return ["Enter Message"];
   };
+
+  const renderPlaceholders = (messageType, index) => {
+    const placeholders = getMessagePlaceholders(messageType);
+    
+    // Set the rows based on message type
+    let rows = 4;  // Default value
+    if (["location", "image", "sticker", "video", "audio"].includes(messageType)) {
+      rows = 1; // For these types, use only 1 row
+    } else if (["flex", "template"].includes(messageType)) {
+      rows = 7; // For these types, use 7 rows
+    }
+  
+    return placeholders.map((placeholder, idx) => (
+      <TextField
+        key={idx}
+        fullWidth
+        variant="outlined"
+        label={placeholder}
+        value={messages[index]?.[idx] || ""}
+        onChange={(e) => handleMessageChange(index, idx, e.target.value)}
+        multiline
+        rows={rows}  
+        sx={{ mt: 2 }}
+      />
+    ));
+  };
+
+    const renderButtons = (contents) => {
+      return contents.map((keyword, index) => {
+        if (Array.isArray(keyword)) {
+          return renderButtons(keyword);
+        }
+  
+        return (
+          <Button
+            key={index}
+            variant="outlined"
+            color="primary"
+            style={{ margin: "5px" }}
+            onClick={() => {
+              let updatedMessages = messages;
+              updatedMessages += `$(${keyword})`;
+              setMessages(updatedMessages);
+            }}
+          >
+            {keyword}
+          </Button>
+        );
+      });
+    };
 
   return (
     <Box p={4} width="100%">
@@ -216,28 +231,15 @@ export default function PushMessage() {
 
             {[...Array(messageCount)].map((_, index) => (
               <Box key={index} mt={2}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  placeholder={`Enter your message (${
-                    index + 1
-                  }/${maximumMessage})`}
-                  variant="outlined"
-                  value={messages[index]}
-                  onChange={(e) => handleMessageChange(index, e.target.value)}
-                />
-                <FormControl
-                  fullWidth
-                  variant="outlined"
-                  style={{ marginTop: "10px" }}
-                >
+                <FormControl fullWidth variant="outlined" style={{ marginTop: "10px" }}>
                   <InputLabel>Message Type</InputLabel>
                   <Select
                     value={messageTypes[index]}
-                    onChange={(e) =>
-                      handleMessageTypeChange(index, e.target.value)
-                    }
+                    onChange={(e) => setMessageTypes((prev) => {
+                      const newMessageTypes = [...prev];
+                      newMessageTypes[index] = e.target.value;
+                      return newMessageTypes;
+                    })}
                     label="Message Type"
                   >
                     <MenuItem value="text">Text</MenuItem>
@@ -246,10 +248,15 @@ export default function PushMessage() {
                     <MenuItem value="video">Video</MenuItem>
                     <MenuItem value="audio">Audio</MenuItem>
                     <MenuItem value="location">Location</MenuItem>
+                    <MenuItem value="flex">Flex</MenuItem>
+                    <MenuItem value="template">Template</MenuItem>
                   </Select>
                 </FormControl>
-                {dynamicContents.length > 0 &&
-                  renderButtons(dynamicContents, index)}
+
+                {/* Render individual placeholders based on the message type */}
+                {renderPlaceholders(messageTypes[index], index)}
+
+                {dynamicContents.length > 0 && renderButtons(dynamicContents, index)}
               </Box>
             ))}
 

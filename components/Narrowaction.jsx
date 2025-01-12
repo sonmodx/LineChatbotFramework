@@ -44,7 +44,7 @@ export default function NarrowMessage() {
   const [narrowFilterList, setNarrowFilterList] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
   const [dateTime, setDateTime] = useState(null);
-
+  const [messageTypes, setMessageTypes] = useState(Array(messageCount).fill("text"));
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
   };
@@ -193,6 +193,48 @@ export default function NarrowMessage() {
     });
   };
 
+  const getMessagePlaceholders = (messageType) => {
+    if (messageType === "location") {
+      return ["Title", "Address", "Latitude", "Longitude"];
+    } else if (messageType === "image" || messageType === "video") {
+      return ["Original Content URL", "Preview Image URL"];
+    } else if (messageType === "sticker") {
+      return ["PackageId", "StickerId"];
+    } else if (messageType === "audio") {
+      return ["Original Content URL", "Duration"];
+    } else if (messageType === "flex" || messageType === "template") {
+      return ["Json"];
+    }
+    return ["Enter Message"];
+  };
+
+  const renderPlaceholders = (messageType, index) => {
+    const placeholders = getMessagePlaceholders(messageType);
+    
+    // Set the rows based on message type
+    let rows = 4;  // Default value
+    if (["location", "image", "sticker", "video", "audio"].includes(messageType)) {
+      rows = 1; // For these types, use only 1 row
+    } else if (["flex", "template"].includes(messageType)) {
+      rows = 7; // For these types, use 7 rows
+    }
+  
+    return placeholders.map((placeholder, idx) => (
+      <TextField
+        key={idx}
+        fullWidth
+        variant="outlined"
+        label={placeholder}
+        value={messages[index]?.[idx] || ""}
+        onChange={(e) => handleMessageChange(index, idx, e.target.value)}
+        multiline
+        rows={rows}  // Set dynamic row count based on message type
+        sx={{ mt: 2 }}
+      />
+    ));
+  };
+
+
   return (
     <Box p={4} width="100%">
       {/* Title and Description */}
@@ -226,43 +268,35 @@ export default function NarrowMessage() {
             </Typography>
             {/* Dynamically Created Message Fields */}
             {[...Array(messageCount)].map((_, index) => (
-              <Box key={index} mt={2}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  placeholder={`Enter your message (${
-                    index + 1
-                  }/${maximumMessage})`}
-                  variant="outlined"
-                  value={messages[index].text}
-                  onChange={(e) => handleMessageChange(index, e.target.value)}
-                />
-                {/* Message Type Dropdown */}
-                <FormControl
-                  fullWidth
-                  variant="outlined"
-                  style={{ marginTop: "10px" }}
-                >
-                  <InputLabel>Message Type</InputLabel>
-                  <Select
-                    value={messages[index].type}
-                    onChange={(e) =>
-                      handleMessageTypeChange(index, e.target.value)
-                    }
-                    label="Message Type"
-                  >
-                    <MenuItem value="text">Text</MenuItem>
-                    <MenuItem value="image">Image</MenuItem>
-                    <MenuItem value="sticker">Sticker</MenuItem>
-                    <MenuItem value="video">Video</MenuItem>
-                    <MenuItem value="audio">Audio</MenuItem>
-                    <MenuItem value="location">Location</MenuItem>
-                  </Select>
-                </FormControl>
-                {dynamicContents.length > 0 && renderButtons(dynamicContents)}
-              </Box>
-            ))}
+                          <Box key={index} mt={2}>
+                            <FormControl fullWidth variant="outlined" style={{ marginTop: "10px" }}>
+                              <InputLabel>Message Type</InputLabel>
+                              <Select
+                                value={messageTypes[index]}
+                                onChange={(e) => setMessageTypes((prev) => {
+                                  const newMessageTypes = [...prev];
+                                  newMessageTypes[index] = e.target.value;
+                                  return newMessageTypes;
+                                })}
+                                label="Message Type"
+                              >
+                                <MenuItem value="text">Text</MenuItem>
+                                <MenuItem value="image">Image</MenuItem>
+                                <MenuItem value="sticker">Sticker</MenuItem>
+                                <MenuItem value="video">Video</MenuItem>
+                                <MenuItem value="audio">Audio</MenuItem>
+                                <MenuItem value="location">Location</MenuItem>
+                                <MenuItem value="flex">Flex</MenuItem>
+                                <MenuItem value="template">Template</MenuItem>
+                              </Select>
+                            </FormControl>
+            
+                            {/* Render individual placeholders based on the message type */}
+                            {renderPlaceholders(messageTypes[index], index)}
+            
+                            {dynamicContents.length > 0 && renderButtons(dynamicContents, index)}
+                          </Box>
+                        ))}
 
             {/* ADD and REMOVE Buttons */}
             <Box mt={2}>
