@@ -25,6 +25,8 @@ export default function DefaultAction({ data, setState, state }) {
   const channelObjectId = searchParams.get("id");
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
 
   const channelId = searchParams.get("id");
 
@@ -44,9 +46,10 @@ export default function DefaultAction({ data, setState, state }) {
   const handleSave = async () => {
     try {
       const body = {
-        name: "Test default message",
+        name: name,
         type: messageType,
         type_action: "default",
+        description: description,
         channel_id: channelId,
         message: messages.split(","),
       };
@@ -184,29 +187,37 @@ export default function DefaultAction({ data, setState, state }) {
         </Grid>
       </Box>
 
-                        {/* Name Input */}
-                        <Box mt={3} width="100%">
-                    <Grid container spacing={2} alignItems="center">
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="h6" gutterBottom>
-                          Name
-                        </Typography>
-                        <TextField
-                          fullWidth
-                          placeholder="Enter Name"
-                          variant="outlined"
-                        />
-                      </Grid>
-            
-                      {/* Description Input */}
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="h6" gutterBottom>
-                        Description
-                        </Typography>
-                        <TextField fullWidth placeholder="Enter Description" variant="outlined"/>
-                      </Grid>
-                    </Grid>
-                  </Box>
+      {/* Name Input */}
+      <Box mt={3} width="100%">
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6" gutterBottom>
+              Name
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter Name"
+              variant="outlined"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </Grid>
+
+          {/* Description Input */}
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6" gutterBottom>
+              Description
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter Description"
+              variant="outlined"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </Grid>
+        </Grid>
+      </Box>
 
       {/* Type Selection Section */}
       <Box mt={4} width="100%">

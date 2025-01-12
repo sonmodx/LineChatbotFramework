@@ -18,9 +18,12 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import Notification from "./Notification";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
-import { getAllApis } from "@/actions";
+import { getAllApis, getAllAudiences } from "@/actions";
+import { getCurrentTime, parseDateTime } from "@/lib/utils";
 
-const narrowFilterList = [{ type: "audience", audienceGroupId: 6618080771019 }];
+// const narrowFilterList = [
+//   { description: "audience", audienceGroupId: 6618080771019 },
+// ];
 
 export default function NarrowMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -28,7 +31,9 @@ export default function NarrowMessage() {
   const [selectedGroups, setSelectedGroups] = useState(null); // State for selected group
   const [messageCount, setMessageCount] = useState(1); // Track number of message boxes
   const maximumMessage = 5;
-  const [messages, setMessages] = useState(Array(messageCount).fill({ text: "", type: "text" }));
+  const [messages, setMessages] = useState(
+    Array(messageCount).fill({ text: "", type: "text" })
+  );
   const [selectAudience, setSelectAudience] = useState(null);
   const [openNotification, setOpenNotification] = useState(false);
   const searchParams = useSearchParams();
@@ -36,7 +41,9 @@ export default function NarrowMessage() {
   const channelId = searchParams.get("channel_id");
   const typeMessage = "Narrowcast";
   const [apis, setApis] = useState([]);
+  const [narrowFilterList, setNarrowFilterList] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
+  const [dateTime, setDateTime] = useState(null);
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
@@ -81,7 +88,18 @@ export default function NarrowMessage() {
       type: typeMessage,
       destination: channelId,
       direct_config: {
-        narrow_filter: selectAudience,
+        recipient: {
+          type: "audience",
+          audienceGroupId: selectAudience.audienceGroupId,
+        },
+        ...parseDateTime(dateTime),
+        api_id: selectedApi?._id || null,
+        // recipient: {
+        //   audienceGroup: {
+        //     audienceGroupId: Number(selectAudience.audienceGroupId),
+        //   },
+        // },
+
         message: messages
           .filter((msg) => msg.text !== undefined && msg.text.trim() !== "")
           .map((msg) => ({ type: msg.type, text: msg.text })),
@@ -99,7 +117,10 @@ export default function NarrowMessage() {
         setOpenNotification(true);
       }
     } catch (error) {
-      console.error("Error sending request to webhook:", error.response?.data || error.message);
+      console.error(
+        "Error sending request to webhook:",
+        error.response?.data || error.message
+      );
     }
   };
 
@@ -108,60 +129,69 @@ export default function NarrowMessage() {
     setApis(JSON.parse(_apis));
   };
 
+  const handleGetAllAudiences = async () => {
+    const _audiences = await getAllAudiences(channelObjectId);
+
+    console.log(_audiences);
+    setNarrowFilterList(JSON.parse(_audiences));
+  };
+
   useEffect(() => {
     handleGetAllApis();
+    handleGetAllAudiences();
+    setDateTime(getCurrentTime());
   }, []);
 
-      useEffect(() => {
-        if (
-          selectedApi === null ||
-          typeof selectedApi !== "object" ||
-          Array.isArray(selectedApi)
-        )
-          return;
-        const keywordsObject = JSON.parse(selectedApi?.keywords);
-        const getAllKeyObjects = (obj, prefix = "") => {
-          return Object.keys(obj).map((key) => {
-            const value = obj[key];
-            const fullKey = prefix ? `${prefix}.${key}` : key;
-    
-            if (typeof value === "object" && !Array.isArray(value)) {
-              return getAllKeyObjects(value, fullKey);
-            } else {
-              return fullKey;
-            }
-          });
-        };
-        const result = getAllKeyObjects(keywordsObject);
-        setDynamicContents(result);
-    
-        console.log("MY KEY", keywordsObject);
-        console.log("MY result", result);
-      }, [selectedApi]);
-  
-        const renderButtons = (contents) => {
-          return contents.map((keyword, index) => {
-            if (Array.isArray(keyword)) {
-              return renderButtons(keyword);
-            }
-      
-            return (
-              <Button
-                key={index}
-                variant="outlined"
-                color="primary"
-                style={{ margin: "5px" }}
-                onClick={() => {
-                  let updatedMessages = messages;
-                  updatedMessages += `$(${keyword})`;
-                  setMessages(updatedMessages);
-                }}
-              >
-                {keyword}
-              </Button>
-            );
-          });
-        };
+  useEffect(() => {
+    if (
+      selectedApi === null ||
+      typeof selectedApi !== "object" ||
+      Array.isArray(selectedApi)
+    )
+      return;
+    const keywordsObject = JSON.parse(selectedApi?.keywords);
+    const getAllKeyObjects = (obj, prefix = "") => {
+      return Object.keys(obj).map((key) => {
+        const value = obj[key];
+        const fullKey = prefix ? `${prefix}.${key}` : key;
+
+        if (typeof value === "object" && !Array.isArray(value)) {
+          return getAllKeyObjects(value, fullKey);
+        } else {
+          return fullKey;
+        }
+      });
+    };
+    const result = getAllKeyObjects(keywordsObject);
+    setDynamicContents(result);
+
+    console.log("MY KEY", keywordsObject);
+    console.log("MY result", result);
+  }, [selectedApi]);
+
+  const renderButtons = (contents) => {
+    return contents.map((keyword, index) => {
+      if (Array.isArray(keyword)) {
+        return renderButtons(keyword);
+      }
+
+      return (
+        <Button
+          key={index}
+          variant="outlined"
+          color="primary"
+          style={{ margin: "5px" }}
+          onClick={() => {
+            let updatedMessages = messages;
+            updatedMessages += `$(${keyword})`;
+            setMessages(updatedMessages);
+          }}
+        >
+          {keyword}
+        </Button>
+      );
+    });
+  };
 
   return (
     <Box p={4} width="100%">
@@ -173,30 +203,14 @@ export default function NarrowMessage() {
       <Typography variant="body2" gutterBottom>
         วิธีใช้งาน : สามารถส่ง messages ไปหา user ทีละกลุ่มโดยระบุ audience
       </Typography>
-
-                  {/* Name Input */}
-                  <Box mt={3} width="100%">
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="h6" gutterBottom>
-                    Name
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    placeholder="Enter Name"
-                    variant="outlined"
-                  />
-                </Grid>
-      
-                {/* Description Input */}
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="h6" gutterBottom>
-                  Description
-                  </Typography>
-                  <TextField fullWidth placeholder="Enter Description" variant="outlined"/>
-                </Grid>
-              </Grid>
-            </Box>
+      <TextField
+        id="datetime-local"
+        label="Schedule"
+        type="datetime-local"
+        value={dateTime}
+        onChange={(e) => setDateTime(e.target.value)}
+        sx={{ mt: 2 }}
+      />
 
       {/* Text Message and User Areas */}
       <Box mt={3} width="100%">
@@ -217,17 +231,25 @@ export default function NarrowMessage() {
                   fullWidth
                   multiline
                   rows={4}
-                  placeholder={`Enter your message (${index + 1}/${maximumMessage})`}
+                  placeholder={`Enter your message (${
+                    index + 1
+                  }/${maximumMessage})`}
                   variant="outlined"
                   value={messages[index].text}
                   onChange={(e) => handleMessageChange(index, e.target.value)}
                 />
                 {/* Message Type Dropdown */}
-                <FormControl fullWidth variant="outlined" style={{ marginTop: "10px" }}>
+                <FormControl
+                  fullWidth
+                  variant="outlined"
+                  style={{ marginTop: "10px" }}
+                >
                   <InputLabel>Message Type</InputLabel>
                   <Select
                     value={messages[index].type}
-                    onChange={(e) => handleMessageTypeChange(index, e.target.value)}
+                    onChange={(e) =>
+                      handleMessageTypeChange(index, e.target.value)
+                    }
                     label="Message Type"
                   >
                     <MenuItem value="text">Text</MenuItem>
@@ -271,11 +293,16 @@ export default function NarrowMessage() {
             {/* Group Selection */}
             <Autocomplete
               options={narrowFilterList}
-              getOptionLabel={(option) => option.type || ""}
+              getOptionLabel={(option) => option.description || ""}
               value={selectAudience}
               onChange={(event, newValue) => setSelectAudience(newValue)}
               renderInput={(params) => (
-                <TextField {...params} label="Select Group" variant="outlined" fullWidth />
+                <TextField
+                  {...params}
+                  label="Select Group"
+                  variant="outlined"
+                  fullWidth
+                />
               )}
             />
 
@@ -294,7 +321,12 @@ export default function NarrowMessage() {
                 value={selectedApi}
                 onChange={handleApiChange}
                 renderInput={(params) => (
-                  <TextField {...params} label="Select API" variant="outlined" fullWidth />
+                  <TextField
+                    {...params}
+                    label="Select API"
+                    variant="outlined"
+                    fullWidth
+                  />
                 )}
               />
             )}
@@ -302,10 +334,10 @@ export default function NarrowMessage() {
         </Grid>
       </Box>
 
-            {/* Note */}
-            <Box mt={2} width="100%">
-              <Typography variant="caption">*หมายเหตุ</Typography>
-            </Box>
+      {/* Note */}
+      <Box mt={2} width="100%">
+        <Typography variant="caption">*หมายเหตุ</Typography>
+      </Box>
 
       {/* Send Button */}
       <Box mt={4} textAlign="right" width="100%">

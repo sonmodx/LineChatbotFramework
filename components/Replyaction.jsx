@@ -13,13 +13,15 @@ import {
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
-import { getAllApis } from "@/actions";
+import { getAllApis, getApiById } from "@/actions";
 
 export default function Replyaction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [keywords, setKeywords] = useState(data?.keyword.join(",") || []);
-  const [messages, setMessages] = useState(data?.message.join(",") || []);
+  const [messages, setMessages] = useState(
+    data?.message.map((item) => item.text).join(", ") || []
+  );
   const [errorKeyword, setErrorKeyword] = useState(false);
   const [messageType, setMessageType] = useState("text"); // State for selected message type
   const searchParams = useSearchParams();
@@ -29,6 +31,8 @@ export default function Replyaction({ data, setState, state }) {
   const id = data?._id || null;
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
+  const [name, setName] = useState(data?.name || "");
+  const [description, setDescription] = useState(data?.description || "");
   console.log("GETDATA", data);
 
   const handleCheckboxChange = (event) => {
@@ -49,12 +53,15 @@ export default function Replyaction({ data, setState, state }) {
       setErrorKeyword(false);
 
       const body = {
-        name: "Reply message",
+        name: name,
         type: "text",
         type_action: "reply",
-        api_id: selectedApi._id || "",
+        description: description,
+        api_id: selectedApi?._id || "",
         channel_id: channelObjectId,
-        message: messages.split(","),
+        message: messages
+          .split(",")
+          .map((msg) => ({ type: "text", text: msg })),
         keyword: keywords.split(","),
       };
       if (state === "create") {
@@ -88,12 +95,22 @@ export default function Replyaction({ data, setState, state }) {
     setApis(JSON.parse(_apis));
   };
 
+  const handleGetApiById = async () => {
+    const _api = await getApiById(data?.api_id || null);
+    if (_api) {
+      setUseApi(true);
+      console.log("API ID", _api);
+      setSelectedApi(JSON.parse(_api));
+    }
+  };
+
   const handleMessageTypeChange = (type) => {
     setMessageType(type); // Update message type
   };
 
   useEffect(() => {
     handleGetAllApis();
+    handleGetApiById();
   }, []);
 
   useEffect(() => {
@@ -189,8 +206,8 @@ export default function Replyaction({ data, setState, state }) {
         </Grid>
       </Box>
 
-            {/* Name Input */}
-            <Box mt={3} width="100%">
+      {/* Name Input */}
+      <Box mt={3} width="100%">
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={6}>
             <Typography variant="h6" gutterBottom>
@@ -200,15 +217,23 @@ export default function Replyaction({ data, setState, state }) {
               fullWidth
               placeholder="Enter Name"
               variant="outlined"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </Grid>
 
           {/* Description Input */}
           <Grid item xs={12} sm={6}>
             <Typography variant="h6" gutterBottom>
-            Description
+              Description
             </Typography>
-            <TextField fullWidth placeholder="Enter Description" variant="outlined"/>
+            <TextField
+              fullWidth
+              placeholder="Enter Description"
+              variant="outlined"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
           </Grid>
         </Grid>
       </Box>
@@ -236,7 +261,11 @@ export default function Replyaction({ data, setState, state }) {
             <Typography variant="h6" gutterBottom>
               Params
             </Typography>
-            <TextField fullWidth placeholder="Enter parameters" variant="outlined" />
+            <TextField
+              fullWidth
+              placeholder="Enter parameters"
+              variant="outlined"
+            />
           </Grid>
         </Grid>
       </Box>

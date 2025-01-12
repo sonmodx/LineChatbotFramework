@@ -174,7 +174,6 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
     if (mode === "create") {
       requestData.channel_id = channelId;
     }
-    console.log("data,", requestData.api_body);
 
     try {
       setLoading(true);
@@ -183,12 +182,13 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
         return;
       }
       const responseUserApiData = responseUserAPI.data;
-      let keywordApi;
+      let keywordApi = responseUserApiData;
       if (Array.isArray(responseUserApiData)) {
         keywordApi = responseUserApiData[0];
       }
 
       requestData.keywords = JSON.stringify(keywordApi);
+      console.log("request data", requestData);
 
       const response = await axios({
         method: mode === "edit" ? "put" : "post",

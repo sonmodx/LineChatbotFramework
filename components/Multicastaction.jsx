@@ -16,6 +16,7 @@ import { useSearchParams } from "next/navigation";
 import { getAllApis, getAllLineUsers } from "@/actions";
 import axios from "axios";
 import Notification from "./Notification";
+import { getCurrentTime, parseDateTime } from "@/lib/utils";
 
 export default function MulticastMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -33,6 +34,7 @@ export default function MulticastMessage() {
   const typeMessage = "Multicast";
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
+  const [dateTime, setDateTime] = useState(null);
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
   };
@@ -78,6 +80,7 @@ export default function MulticastMessage() {
       direct_config: {
         api_id: selectedApi?._id || null,
         user_id: selectedUsers.map((user) => user.line_user_id),
+        ...parseDateTime(dateTime),
         // message: messages
         //   .filter((msg) => msg !== undefined && msg.trim() !== "")
         //   .map((msg) => ({ type: "text", text: msg })),
@@ -117,6 +120,7 @@ export default function MulticastMessage() {
   useEffect(() => {
     handleGetAllLineUsers();
     handleGetAllApis();
+    setDateTime(getCurrentTime());
     console.log("HI");
   }, []);
 
@@ -185,33 +189,17 @@ export default function MulticastMessage() {
         วิธีใช้งาน : สามารถ Multicast messages ไปหา user
         ได้ทั้งหมดในทีเดียวโดยไม่จำเป็นต้องทำหลาย ๆ ครั้ง
       </Typography>
+      <TextField
+        id="datetime-local"
+        label="Schedule"
+        type="datetime-local"
+        value={dateTime}
+        onChange={(e) => setDateTime(e.target.value)}
+        sx={{ mt: 2 }}
+      />
 
-                  {/* Name Input */}
-                  <Box mt={3} width="100%">
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="h6" gutterBottom>
-                    Name
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    placeholder="Enter Name"
-                    variant="outlined"
-                  />
-                </Grid>
-      
-                {/* Description Input */}
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="h6" gutterBottom>
-                  Description
-                  </Typography>
-                  <TextField fullWidth placeholder="Enter Description" variant="outlined"/>
-                </Grid>
-              </Grid>
-            </Box>
-
-            {/* Message Type Selection Bar */}
-            <Box mt={4} width="100%">
+      {/* Message Type Selection Bar */}
+      <Box mt={4} width="100%">
         <Typography variant="h6" gutterBottom>
           Message Type
         </Typography>
@@ -265,7 +253,8 @@ export default function MulticastMessage() {
               backgroundColor="primary.main"
               style={{ color: "#fff", padding: "10px" }}
             >
-              {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
+              {messageType.charAt(0).toUpperCase() + messageType.slice(1)}{" "}
+              Message
             </Typography>
             <TextField
               fullWidth
@@ -324,39 +313,38 @@ export default function MulticastMessage() {
               </div>
             </Box>
 
-                        {/* API Section */}
-                        <Box display="flex" alignItems="center" mt={2}>
-                          <Checkbox checked={useApi} onChange={handleCheckboxChange} />
-                          <Typography variant="body1" display="inline">
-                            Use API
-                          </Typography>
-                        </Box>
-            
-                        {useApi && (
-                          <Autocomplete
-                            options={apis}
-                            getOptionLabel={(option) => option.name || ""}
-                            value={selectedApi}
-                            onChange={handleApiChange}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                label="Select API"
-                                variant="outlined"
-                                fullWidth
-                              />
-                            )}
-                          />
-                        )}
-                      </Grid>
-                    </Grid>
-                  </Box>
+            {/* API Section */}
+            <Box display="flex" alignItems="center" mt={2}>
+              <Checkbox checked={useApi} onChange={handleCheckboxChange} />
+              <Typography variant="body1" display="inline">
+                Use API
+              </Typography>
+            </Box>
+
+            {useApi && (
+              <Autocomplete
+                options={apis}
+                getOptionLabel={(option) => option.name || ""}
+                value={selectedApi}
+                onChange={handleApiChange}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Select API"
+                    variant="outlined"
+                    fullWidth
+                  />
+                )}
+              />
+            )}
+          </Grid>
+        </Grid>
+      </Box>
 
       {/* Note */}
       <Box mt={2} width="100%">
         <Typography variant="caption">*หมายเหตุ</Typography>
       </Box>
-
 
       {/* Send Button */}
       <Box mt={4} textAlign="right" width="100%">

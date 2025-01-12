@@ -219,10 +219,13 @@ export async function PUT(req) {
       type_action,
       description,
       channel_id: new mongoose.Types.ObjectId(channel_id),
-      api_id: new mongoose.Types.ObjectId(api_id),
       message,
       keyword,
     };
+
+    if (api_id) {
+      updateData.api_id = new mongoose.Types.ObjectId(api_id);
+    }
 
     const updatedAction = await Action.findByIdAndUpdate(id, updateData, {
       new: true,
