@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
-import { getAllApis } from "@/actions";
+import { getAllApis, getApiById } from "@/actions";
 
 export default function Replyaction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -31,6 +31,8 @@ export default function Replyaction({ data, setState, state }) {
   const id = data?._id || null;
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
+  const [name, setName] = useState(data?.name || "");
+  const [description, setDescription] = useState(data?.description || "");
   console.log("GETDATA", data);
 
   const handleCheckboxChange = (event) => {
@@ -51,9 +53,10 @@ export default function Replyaction({ data, setState, state }) {
       setErrorKeyword(false);
 
       const body = {
-        name: "Reply messageX",
+        name: name,
         type: "text",
         type_action: "reply",
+        description: description,
         api_id: selectedApi?._id || "",
         channel_id: channelObjectId,
         message: messages
@@ -92,12 +95,19 @@ export default function Replyaction({ data, setState, state }) {
     setApis(JSON.parse(_apis));
   };
 
+  const handleGetApiById = async () => {
+    const _api = await getApiById(data?.api_id || null);
+    if (_api) setUseApi(true);
+    setApis(JSON.parse(_api));
+  };
+
   const handleMessageTypeChange = (type) => {
     setMessageType(type); // Update message type
   };
 
   useEffect(() => {
     handleGetAllApis();
+    handleGetApiById();
   }, []);
 
   useEffect(() => {
@@ -193,6 +203,38 @@ export default function Replyaction({ data, setState, state }) {
         </Grid>
       </Box>
 
+      {/* Name Input */}
+      <Box mt={3} width="100%">
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6" gutterBottom>
+              Name
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter Name"
+              variant="outlined"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </Grid>
+
+          {/* Description Input */}
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6" gutterBottom>
+              Description
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder="Enter Description"
+              variant="outlined"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </Grid>
+        </Grid>
+      </Box>
+
       {/* Keyword Input */}
       <Box mt={3} width="100%">
         <Grid container spacing={2} alignItems="center">
@@ -216,7 +258,11 @@ export default function Replyaction({ data, setState, state }) {
             <Typography variant="h6" gutterBottom>
               Params
             </Typography>
-            <TextField fullWidth placeholder="Enter parameters" variant="outlined" />
+            <TextField
+              fullWidth
+              placeholder="Enter parameters"
+              variant="outlined"
+            />
           </Grid>
         </Grid>
       </Box>
@@ -288,6 +334,7 @@ export default function Replyaction({ data, setState, state }) {
           value={messages}
           onChange={(e) => setMessages(e.target.value)}
         />
+        {dynamicContents.length > 0 && renderButtons(dynamicContents)}
       </Box>
 
       {/* Note */}

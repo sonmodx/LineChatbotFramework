@@ -48,6 +48,21 @@ export const getAllApis = async (channelId) => {
   }
 };
 
+export const getApiById = async (apiId) => {
+  if (!apiId) return;
+  await connectMongoDB();
+
+  try {
+    // Explicitly ensure channelId is treated as a string
+    const api = await API.findById(apiId);
+
+    return JSON.stringify(api);
+  } catch (error) {
+    console.error("Error Query API in DB:", error);
+    throw error; // Re-throw the error for better debugging
+  }
+};
+
 export const getAllAudiences = async (channelId) => {
   await connectMongoDB();
 

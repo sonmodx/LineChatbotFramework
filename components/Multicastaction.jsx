@@ -244,7 +244,7 @@ export default function MulticastMessage() {
       </Box>
 
       {/* Text Message and User Areas */}
-      <Box mt={3} width="100%">
+      <Box mt={4} width="100%">
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <Typography

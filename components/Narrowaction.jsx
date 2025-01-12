@@ -31,7 +31,9 @@ export default function NarrowMessage() {
   const [selectedGroups, setSelectedGroups] = useState(null); // State for selected group
   const [messageCount, setMessageCount] = useState(1); // Track number of message boxes
   const maximumMessage = 5;
-  const [messages, setMessages] = useState(Array(messageCount).fill({ text: "", type: "text" }));
+  const [messages, setMessages] = useState(
+    Array(messageCount).fill({ text: "", type: "text" })
+  );
   const [selectAudience, setSelectAudience] = useState(null);
   const [openNotification, setOpenNotification] = useState(false);
   const searchParams = useSearchParams();
@@ -115,7 +117,10 @@ export default function NarrowMessage() {
         setOpenNotification(true);
       }
     } catch (error) {
-      console.error("Error sending request to webhook:", error.response?.data || error.message);
+      console.error(
+        "Error sending request to webhook:",
+        error.response?.data || error.message
+      );
     }
   };
 
@@ -136,6 +141,57 @@ export default function NarrowMessage() {
     handleGetAllAudiences();
     setDateTime(getCurrentTime());
   }, []);
+
+  useEffect(() => {
+    if (
+      selectedApi === null ||
+      typeof selectedApi !== "object" ||
+      Array.isArray(selectedApi)
+    )
+      return;
+    const keywordsObject = JSON.parse(selectedApi?.keywords);
+    const getAllKeyObjects = (obj, prefix = "") => {
+      return Object.keys(obj).map((key) => {
+        const value = obj[key];
+        const fullKey = prefix ? `${prefix}.${key}` : key;
+
+        if (typeof value === "object" && !Array.isArray(value)) {
+          return getAllKeyObjects(value, fullKey);
+        } else {
+          return fullKey;
+        }
+      });
+    };
+    const result = getAllKeyObjects(keywordsObject);
+    setDynamicContents(result);
+
+    console.log("MY KEY", keywordsObject);
+    console.log("MY result", result);
+  }, [selectedApi]);
+
+  const renderButtons = (contents) => {
+    return contents.map((keyword, index) => {
+      if (Array.isArray(keyword)) {
+        return renderButtons(keyword);
+      }
+
+      return (
+        <Button
+          key={index}
+          variant="outlined"
+          color="primary"
+          style={{ margin: "5px" }}
+          onClick={() => {
+            let updatedMessages = messages;
+            updatedMessages += `$(${keyword})`;
+            setMessages(updatedMessages);
+          }}
+        >
+          {keyword}
+        </Button>
+      );
+    });
+  };
 
   return (
     <Box p={4} width="100%">
@@ -168,7 +224,6 @@ export default function NarrowMessage() {
             >
               Text Message
             </Typography>
-
             {/* Dynamically Created Message Fields */}
             {[...Array(messageCount)].map((_, index) => (
               <Box key={index} mt={2}>
@@ -176,17 +231,25 @@ export default function NarrowMessage() {
                   fullWidth
                   multiline
                   rows={4}
-                  placeholder={`Enter your message (${index + 1}/${maximumMessage})`}
+                  placeholder={`Enter your message (${
+                    index + 1
+                  }/${maximumMessage})`}
                   variant="outlined"
                   value={messages[index].text}
                   onChange={(e) => handleMessageChange(index, e.target.value)}
                 />
                 {/* Message Type Dropdown */}
-                <FormControl fullWidth variant="outlined" style={{ marginTop: "10px" }}>
+                <FormControl
+                  fullWidth
+                  variant="outlined"
+                  style={{ marginTop: "10px" }}
+                >
                   <InputLabel>Message Type</InputLabel>
                   <Select
                     value={messages[index].type}
-                    onChange={(e) => handleMessageTypeChange(index, e.target.value)}
+                    onChange={(e) =>
+                      handleMessageTypeChange(index, e.target.value)
+                    }
                     label="Message Type"
                   >
                     <MenuItem value="text">Text</MenuItem>
@@ -197,6 +260,7 @@ export default function NarrowMessage() {
                     <MenuItem value="location">Location</MenuItem>
                   </Select>
                 </FormControl>
+                {dynamicContents.length > 0 && renderButtons(dynamicContents)}
               </Box>
             ))}
 
@@ -233,7 +297,12 @@ export default function NarrowMessage() {
               value={selectAudience}
               onChange={(event, newValue) => setSelectAudience(newValue)}
               renderInput={(params) => (
-                <TextField {...params} label="Select Group" variant="outlined" fullWidth />
+                <TextField
+                  {...params}
+                  label="Select Group"
+                  variant="outlined"
+                  fullWidth
+                />
               )}
             />
 
@@ -252,7 +321,12 @@ export default function NarrowMessage() {
                 value={selectedApi}
                 onChange={handleApiChange}
                 renderInput={(params) => (
-                  <TextField {...params} label="Select API" variant="outlined" fullWidth />
+                  <TextField
+                    {...params}
+                    label="Select API"
+                    variant="outlined"
+                    fullWidth
+                  />
                 )}
               />
             )}
@@ -260,10 +334,10 @@ export default function NarrowMessage() {
         </Grid>
       </Box>
 
-            {/* Note */}
-            <Box mt={2} width="100%">
-              <Typography variant="caption">*หมายเหตุ</Typography>
-            </Box>
+      {/* Note */}
+      <Box mt={2} width="100%">
+        <Typography variant="caption">*หมายเหตุ</Typography>
+      </Box>
 
       {/* Send Button */}
       <Box mt={4} textAlign="right" width="100%">

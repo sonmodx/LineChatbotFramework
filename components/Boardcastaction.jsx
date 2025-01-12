@@ -173,7 +173,6 @@ export default function BroadcastMessage() {
         sx={{ mt: 2 }}
       />
 
-      
       {/* API Section */}
       <Box mt={4} width="100%">
         <Grid container alignItems="center">
@@ -260,7 +259,8 @@ export default function BroadcastMessage() {
               backgroundColor="primary.main"
               style={{ color: "#fff", padding: "10px" }}
             >
-              {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
+              {messageType.charAt(0).toUpperCase() + messageType.slice(1)}{" "}
+              Message
             </Typography>
             <TextField
               fullWidth
@@ -276,10 +276,10 @@ export default function BroadcastMessage() {
         </Grid>
       </Box>
 
-            {/* Note */}
-            <Box mt={2} width="100%">
-              <Typography variant="caption">*หมายเหตุ</Typography>
-            </Box>
+      {/* Note */}
+      <Box mt={2} width="100%">
+        <Typography variant="caption">*หมายเหตุ</Typography>
+      </Box>
 
       {/* Send Button */}
       <Box mt={4} textAlign="right" width="100%">

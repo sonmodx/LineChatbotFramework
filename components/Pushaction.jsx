@@ -29,7 +29,9 @@ export default function PushMessage() {
   const [messageCount, setMessageCount] = useState(1); // Track number of message boxes
   const maximumMessage = 5;
   const [messages, setMessages] = useState(Array(messageCount).fill(""));
-  const [messageTypes, setMessageTypes] = useState(Array(messageCount).fill("text"));
+  const [messageTypes, setMessageTypes] = useState(
+    Array(messageCount).fill("text")
+  );
   const [selectLineUser, setSelectLineUser] = useState(null);
   const [lineUsers, setLineUsers] = useState([]);
   const [openNotification, setOpenNotification] = useState(false);
@@ -102,20 +104,24 @@ export default function PushMessage() {
           })),
       },
     };
-    try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/direct_message`,
-        body,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-      if (res.status === 200) {
-        setOpenNotification(true);
-      }
-    } catch (error) {
-      console.error("Error sending request to webhook:", error.response?.data || error.message);
-    }
+    console.log("bodyu", body);
+    // try {
+    //   const res = await axios.post(
+    //     `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/direct_message`,
+    //     body,
+    //     {
+    //       headers: { "Content-Type": "application/json" },
+    //     }
+    //   );
+    //   if (res.status === 200) {
+    //     setOpenNotification(true);
+    //   }
+    // } catch (error) {
+    //   console.error(
+    //     "Error sending request to webhook:",
+    //     error.response?.data || error.message
+    //   );
+    // }
   };
 
   const handleGetAllApis = async () => {
@@ -124,12 +130,18 @@ export default function PushMessage() {
   };
 
   useEffect(() => {
+    handleGetAllLineUsers();
     handleGetAllApis();
     setDateTime(getCurrentTime());
   }, []);
 
   useEffect(() => {
-    if (selectedApi === null || typeof selectedApi !== "object" || Array.isArray(selectedApi)) return;
+    if (
+      selectedApi === null ||
+      typeof selectedApi !== "object" ||
+      Array.isArray(selectedApi)
+    )
+      return;
     const keywordsObject = JSON.parse(selectedApi?.keywords);
     const getAllKeyObjects = (obj, prefix = "") => {
       return Object.keys(obj).map((key) => {
@@ -193,7 +205,12 @@ export default function PushMessage() {
       <Box mt={3} width="100%">
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-            <Typography variant="h6" gutterBottom backgroundColor="primary.main" style={{ color: "#fff", padding: "10px" }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              backgroundColor="primary.main"
+              style={{ color: "#fff", padding: "10px" }}
+            >
               Text Message
             </Typography>
 
@@ -203,16 +220,24 @@ export default function PushMessage() {
                   fullWidth
                   multiline
                   rows={4}
-                  placeholder={`Enter your message (${index + 1}/${maximumMessage})`}
+                  placeholder={`Enter your message (${
+                    index + 1
+                  }/${maximumMessage})`}
                   variant="outlined"
                   value={messages[index]}
                   onChange={(e) => handleMessageChange(index, e.target.value)}
                 />
-                <FormControl fullWidth variant="outlined" style={{ marginTop: "10px" }}>
+                <FormControl
+                  fullWidth
+                  variant="outlined"
+                  style={{ marginTop: "10px" }}
+                >
                   <InputLabel>Message Type</InputLabel>
                   <Select
                     value={messageTypes[index]}
-                    onChange={(e) => handleMessageTypeChange(index, e.target.value)}
+                    onChange={(e) =>
+                      handleMessageTypeChange(index, e.target.value)
+                    }
                     label="Message Type"
                   >
                     <MenuItem value="text">Text</MenuItem>
@@ -223,7 +248,8 @@ export default function PushMessage() {
                     <MenuItem value="location">Location</MenuItem>
                   </Select>
                 </FormControl>
-                {dynamicContents.length > 0 && renderButtons(dynamicContents, index)}
+                {dynamicContents.length > 0 &&
+                  renderButtons(dynamicContents, index)}
               </Box>
             ))}
 
@@ -243,7 +269,12 @@ export default function PushMessage() {
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <Typography variant="h6" gutterBottom backgroundColor="primary.main" style={{ color: "#fff", padding: "10px" }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              backgroundColor="primary.main"
+              style={{ color: "#fff", padding: "10px" }}
+            >
               User
             </Typography>
             <Autocomplete
@@ -251,12 +282,21 @@ export default function PushMessage() {
               getOptionLabel={(option) => option.display_name || ""}
               value={selectLineUser}
               onChange={(event, newValue) => setSelectLineUser(newValue)}
-              renderInput={(params) => <TextField {...params} label="Select Line User" variant="outlined" fullWidth />}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Select Line User"
+                  variant="outlined"
+                  fullWidth
+                />
+              )}
             />
             {/* API Section */}
             <Box display="flex" alignItems="center" mt={2}>
               <Checkbox checked={useApi} onChange={handleCheckboxChange} />
-              <Typography variant="body1" display="inline">Use API</Typography>
+              <Typography variant="body1" display="inline">
+                Use API
+              </Typography>
             </Box>
 
             {useApi && (
@@ -265,24 +305,35 @@ export default function PushMessage() {
                 getOptionLabel={(option) => option.name || ""}
                 value={selectedApi}
                 onChange={handleApiChange}
-                renderInput={(params) => <TextField {...params} label="Select API" variant="outlined" fullWidth />}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Select API"
+                    variant="outlined"
+                    fullWidth
+                  />
+                )}
               />
             )}
           </Grid>
         </Grid>
       </Box>
 
-            {/* Note */}
-            <Box mt={2} width="100%">
-              <Typography variant="caption">*หมายเหตุ</Typography>
-            </Box>
+      {/* Note */}
+      <Box mt={2} width="100%">
+        <Typography variant="caption">*หมายเหตุ</Typography>
+      </Box>
 
       <Box mt={4} textAlign="right" width="100%">
         <Button variant="contained" color="primary" onClick={handleSendMessage}>
           Send
         </Button>
       </Box>
-      <Notification openNotification={openNotification} setOpenNotification={setOpenNotification} message="Successful sent message" />
+      <Notification
+        openNotification={openNotification}
+        setOpenNotification={setOpenNotification}
+        message="Successful sent message"
+      />
     </Box>
   );
 }

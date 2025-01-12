@@ -155,7 +155,7 @@ export default function FlexMessage() {
         </a>
       </Typography>
 
-            {/* API Section */}
+            {/* API Section 
             <Box mt={4}>
         <Checkbox
           checked={useApi}
@@ -181,7 +181,7 @@ export default function FlexMessage() {
             )}
           />
         )}
-      </Box>
+      </Box>*/}
 
       <Box mt={3}>
         <Grid container spacing={2}>
