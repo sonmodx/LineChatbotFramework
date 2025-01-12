@@ -97,8 +97,11 @@ export default function Replyaction({ data, setState, state }) {
 
   const handleGetApiById = async () => {
     const _api = await getApiById(data?.api_id || null);
-    if (_api) setUseApi(true);
-    setApis(JSON.parse(_api));
+    if (_api) {
+      setUseApi(true);
+      console.log("API ID", _api);
+      setSelectedApi(JSON.parse(_api));
+    }
   };
 
   const handleMessageTypeChange = (type) => {
