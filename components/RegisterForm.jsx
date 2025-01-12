@@ -1,5 +1,5 @@
 "use client";
-
+import Image from 'next/image';
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -43,6 +43,12 @@ const ContentBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(4), // Adjust padding as needed
 }));
 
+// Email validation function
+const isValidEmail = (email) => {
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic regex for email validation
+  return emailPattern.test(email);
+};
+
 export default function RegisterForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -60,6 +66,12 @@ export default function RegisterForm() {
     // Validate form fields
     if (!name || !email || !password || !confirmPassword) {
       setError("All fields are required.");
+      return;
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      setError("Invalid email format.");
       return;
     }
 
@@ -121,10 +133,12 @@ export default function RegisterForm() {
         <Grid item xs={12} md={6}>
           <ContentBox>
             <Box sx={{ textAlign: "center", mb: 5 }}>
-              <img
-                src="https://cdn.discordapp.com/attachments/1268217881657737236/1272507012432920598/copy.png?ex=66e4c141&is=66e36fc1&hm=e9f52b52addefbd74e97b4817bf8eb51df6423e903434c61f059077c507600d7&"
+              <Image
+                src="/logo.png" // Ensure this path is correct
                 alt="logo"
-                style={{ width: "185px" }}
+                width={185}
+                height={185}
+                layout="intrinsic" // Optional: Use layout for better image handling
               />
               <Typography variant="h4" sx={{ mt: 1, mb: 5, pb: 1 }}>
                 Join FRONTEND FRAMEWORK
@@ -205,7 +219,7 @@ export default function RegisterForm() {
               }}
             >
               <Typography>Already have an account?</Typography>
-              <Link href="/" passHref>
+              <Link href="/login" passHref>
                 <Button variant="outlined" color="blue">
                   Login
                 </Button>
@@ -220,7 +234,7 @@ export default function RegisterForm() {
                 Welcome to our community!
               </Typography>
               <Typography variant="body2">
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+              We are excited to have you here! Our platform is dedicated to line middleware, providing powerful solutions for seamless integration and communication. If you would like to join us, you’ll find a space where innovation meets collaboration, enabling you to enhance your projects and streamline your processes. Thank you for being a part of our community!
               </Typography>
             </Box>
           </GradientBox>

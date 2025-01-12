@@ -45,11 +45,12 @@ export default function CustomTable({
   setAnchorEl,
   isOpenSnackbar,
   setIsOpenSnackbar,
+  session,
+  page,
+  setPage,
+  rowsPerPage,
+  setRowsPerPage,
 }) {
-  const { data: session } = useSession(authOptions);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-
   const [selectId, setSelectId] = useState();
 
   const emptyRows = page > 0 ? Math.max(0, rowsPerPage - data.length) : 0;
@@ -131,19 +132,19 @@ export default function CustomTable({
                 ))}
                 {statusState.length !== 0 && (
                   <TableCell>
-                    {row["status"] === 0 ? statusState[0] : statusState[1]}
+                    {row["status"] === "false"
+                      ? statusState[0]
+                      : statusState[1]}
                   </TableCell>
                 )}
 
                 {canSetting && (
                   <TableCell width={120}>
                     <IconButton>
-                      <EditOutlinedIcon
-                        onClick={() => callbackEditData(row._id)}
-                      />
+                      <EditOutlinedIcon onClick={() => callbackEditData(row)} />
                     </IconButton>
                     <IconButton
-                      onClick={(e) => handleClick(e, row._id)}
+                      onClick={(e) => handleClick(e, row)}
                       aria-describedby={id}
                     >
                       <DeleteOutlineOutlinedIcon />
@@ -201,7 +202,7 @@ export default function CustomTable({
 
       <Snackbar
         open={isOpenSnackbar}
-        autoHideDuration={6000}
+        autoHideDuration={4000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >

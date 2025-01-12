@@ -1,6 +1,5 @@
 import mongoose, { Schema, models } from "mongoose";
 
-
 // ยังไม่เสร็จ
 const lineUserSchema = new Schema(
   {
@@ -8,6 +7,10 @@ const lineUserSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       unique: true,
+    },
+    line_user_id: {
+      type: String,
+      require: true,
     },
     display_name: {
       type: String,

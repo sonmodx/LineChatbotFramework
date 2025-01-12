@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import CustomTable from "../../components/CustomTable";
 import { useState } from "react";
 import axios from "axios";
+import { useSession } from "next-auth/react";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export default function Channels() {
   const router = useRouter();
@@ -12,7 +14,10 @@ export default function Channels() {
   const [total, setTotal] = useState();
   const [isOpenSnackbar, setIsOpenSnackbar] = useState(false);
   const [anchorEl, setAnchorEl] = useState();
-  const getAllChannels = async (session, page, rowsPerPage) => {
+  const { data: session } = useSession(authOptions);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const getAllChannels = async () => {
     try {
       setIsLoading(true);
       const res = await axios.get(
@@ -35,7 +40,7 @@ export default function Channels() {
   const handleDeleteChannel = async (selectId) => {
     try {
       console.log(selectId);
-      const res = await axios.delete(`/api/Channel?id=${selectId}`);
+      const res = await axios.delete(`/api/Channel?id=${selectId._id}`);
       if (res.status === 200) {
         getAllChannels();
         setAnchorEl(null);
@@ -47,12 +52,12 @@ export default function Channels() {
     }
   };
 
-  const handleEditChannel = (id) => {
-    router.push(`/channels/edit?channelId=${id}`);
+  const handleEditChannel = (item) => {
+    router.push(`/channels/edit?channelId=${item._id}`);
   };
 
   const handleHeaderLink = (row) => {
-    return `/channels/detail?id=${row._id}&channelName=${row.name}`;
+    return `/channels/detail?id=${row._id}&channelName=${row.name}&channel_id=${row.channel_id}`;
   };
 
   return (
@@ -93,6 +98,11 @@ export default function Channels() {
         setAnchorEl={setAnchorEl}
         isOpenSnackbar={isOpenSnackbar}
         setIsOpenSnackbar={setIsOpenSnackbar}
+        session={session}
+        page={page}
+        setPage={setPage}
+        rowsPerPage={rowsPerPage}
+        setRowsPerPage={setRowsPerPage}
       />
     </Container>
   );
