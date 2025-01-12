@@ -13,20 +13,23 @@ import {
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
-import { getAllApis } from "@/actions";
+import { getAllApis, getApiById } from "@/actions";
+import SwitchInputComponent from "./SwitchInputComponent";
 
 export default function Greetingaction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false);
   const [selectedApi, setSelectedApi] = useState(null);
-  const [messages, setMessages] = useState(data?.message.join(",") || []);
+  const [messages, setMessages] = useState(
+    data?.message || [{ type: "text", text: "" }]
+  );
   const [messageType, setMessageType] = useState("text"); // Default to "text"
   const searchParams = useSearchParams();
   const [dynamicContents, setDynamicContents] = useState([]);
   const id = data?._id || null;
   const [apis, setApis] = useState([]);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-
+  const [name, setName] = useState(data?.name || "");
+  const [description, setDescription] = useState(data?.description || "");
+  console.log("GET DATA", data);
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("id");
 
@@ -38,20 +41,30 @@ export default function Greetingaction({ data, setState, state }) {
     setSelectedApi(newValue);
   };
 
-  const handleMessageTypeChange = (type) => {
-    setMessageType(type);
+  const handleMessageChange = (index, value, key) => {
+    const updatedMessages = [...messages];
+
+    if (key === "type") {
+      updatedMessages[index] = { type: value };
+    } else {
+      updatedMessages[index][key] = value;
+    }
+
+    setMessages(updatedMessages);
   };
 
   const handleSave = async () => {
     try {
       const body = {
         name: name,
-        type: messageType,
+        type: messages[0]?.type,
         type_action: "greeting",
         description: description,
+        api_id: selectedApi?._id || "",
         channel_id: channelId,
-        message: messages.split(","),
+        message: messages[0],
       };
+      console.log("BODY", body);
       if (state === "create") {
         const res = await axios.post(
           "/api/Action?action_type=greeting_message",
@@ -84,8 +97,18 @@ export default function Greetingaction({ data, setState, state }) {
     setApis(JSON.parse(_apis));
   };
 
+  const handleGetApiById = async () => {
+    const _api = await getApiById(data?.api_id || null);
+    if (_api) {
+      setUseApi(true);
+      console.log("API ID", _api);
+      setSelectedApi(JSON.parse(_api));
+    }
+  };
+
   useEffect(() => {
     handleGetAllApis();
+    handleGetApiById();
   }, []);
 
   useEffect(() => {
@@ -115,10 +138,10 @@ export default function Greetingaction({ data, setState, state }) {
     console.log("MY result", result);
   }, [selectedApi]);
 
-  const renderButtons = (contents) => {
+  const renderButtons = (contents, messageIndex, field) => {
     return contents.map((keyword, index) => {
       if (Array.isArray(keyword)) {
-        return renderButtons(keyword);
+        return renderButtons(keyword, messageIndex, field);
       }
 
       return (
@@ -128,8 +151,11 @@ export default function Greetingaction({ data, setState, state }) {
           color="primary"
           style={{ margin: "5px" }}
           onClick={() => {
-            let updatedMessages = messages;
-            updatedMessages += `$(${keyword})`;
+            let updatedMessages = [...messages];
+            if (!updatedMessages[messageIndex][field]) {
+              updatedMessages[messageIndex][field] = "";
+            }
+            updatedMessages[messageIndex][field] += `$(${keyword})`;
             setMessages(updatedMessages);
           }}
         >
@@ -223,38 +249,40 @@ export default function Greetingaction({ data, setState, state }) {
         </Typography>
         <ButtonGroup variant="outlined" color="primary">
           <Button
-            onClick={() => handleMessageTypeChange("text")}
-            variant={messageType === "text" ? "contained" : "outlined"}
+            onClick={() => handleMessageChange(0, "text", "type")}
+            variant={messages[0]?.type === "text" ? "contained" : "outlined"}
           >
             Text
           </Button>
           <Button
-            onClick={() => handleMessageTypeChange("image")}
-            variant={messageType === "image" ? "contained" : "outlined"}
+            onClick={() => handleMessageChange(0, "image", "type")}
+            variant={messages[0]?.type === "image" ? "contained" : "outlined"}
           >
             Image
           </Button>
           <Button
-            onClick={() => handleMessageTypeChange("sticker")}
-            variant={messageType === "sticker" ? "contained" : "outlined"}
+            onClick={() => handleMessageChange(0, "sticker", "type")}
+            variant={messages[0]?.type === "sticker" ? "contained" : "outlined"}
           >
             Sticker
           </Button>
           <Button
-            onClick={() => handleMessageTypeChange("video")}
-            variant={messageType === "video" ? "contained" : "outlined"}
+            onClick={() => handleMessageChange(0, "video", "type")}
+            variant={messages[0]?.type === "video" ? "contained" : "outlined"}
           >
             Video
           </Button>
           <Button
-            onClick={() => handleMessageTypeChange("audio")}
-            variant={messageType === "audio" ? "contained" : "outlined"}
+            onClick={() => handleMessageChange(0, "audio", "type")}
+            variant={messages[0]?.type === "audio" ? "contained" : "outlined"}
           >
             Audio
           </Button>
           <Button
-            onClick={() => handleMessageTypeChange("location")}
-            variant={messageType === "location" ? "contained" : "outlined"}
+            onClick={() => handleMessageChange(0, "location", "type")}
+            variant={
+              messages[0]?.type === "location" ? "contained" : "outlined"
+            }
           >
             Location
           </Button>
@@ -272,18 +300,18 @@ export default function Greetingaction({ data, setState, state }) {
             padding: "10px",
           }}
         >
-          {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
+          {messages[0]?.type.charAt(0).toUpperCase() +
+            messages[0]?.type.slice(1)}{" "}
+          Message
         </Typography>
-        <TextField
-          fullWidth
-          multiline
-          rows={8}
-          placeholder={`Enter your ${messageType} here`}
-          variant="outlined"
-          value={messages}
-          onChange={(e) => setMessages(e.target.value)}
+        <SwitchInputComponent
+          index={0}
+          messages={messages}
+          maximumMessage={1}
+          handleMessageChange={handleMessageChange}
+          dynamicContents={dynamicContents}
+          renderButtons={renderButtons}
         />
-        {dynamicContents.length > 0 && renderButtons(dynamicContents)}
       </Box>
 
       {/* Note */}

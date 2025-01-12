@@ -22,19 +22,24 @@ import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import Notification from "./Notification";
 import { getCurrentTime, parseDateTime } from "@/lib/utils";
+import SwitchInputComponent from "./SwitchInputComponent";
 
 export default function PushMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [messageCount, setMessageCount] = useState(1); // Track number of message boxes
   const maximumMessage = 5;
-  const [messages, setMessages] = useState(Array(messageCount).fill(""));
-  const [messageTypes, setMessageTypes] = useState(
-    Array(messageCount).fill("text")
+  const [messages, setMessages] = useState(
+    Array(messageCount).fill({ type: "text", text: "" })
   );
+
   const [selectLineUser, setSelectLineUser] = useState(null);
   const [lineUsers, setLineUsers] = useState([]);
-  const [openNotification, setOpenNotification] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    statusMessage: "",
+  });
 
   const searchParams = useSearchParams();
   const channelObjectId = searchParams.get("id");
@@ -58,8 +63,7 @@ export default function PushMessage() {
   const addMessageBox = () => {
     if (messageCount < 5) {
       setMessageCount(messageCount + 1);
-      setMessages((prev) => [...prev, ""]);
-      setMessageTypes((prev) => [...prev, "text"]);
+      setMessages((prev) => [...prev, { text: "", type: "text" }]);
     }
   };
 
@@ -67,7 +71,6 @@ export default function PushMessage() {
     if (messageCount > 1) {
       setMessageCount(messageCount - 1);
       setMessages(messages.slice(0, messageCount - 1));
-      setMessageTypes(messageTypes.slice(0, messageCount - 1));
     }
   };
 
@@ -76,16 +79,16 @@ export default function PushMessage() {
     setLineUsers(JSON.parse(line_users));
   };
 
-  const handleMessageChange = (index, value) => {
+  const handleMessageChange = (index, value, key) => {
     const updatedMessages = [...messages];
-    updatedMessages[index] = value;
-    setMessages(updatedMessages);
-  };
 
-  const handleMessageTypeChange = (index, value) => {
-    const updatedMessageTypes = [...messageTypes];
-    updatedMessageTypes[index] = value;
-    setMessageTypes(updatedMessageTypes);
+    if (key === "type") {
+      updatedMessages[index] = { type: value };
+    } else {
+      updatedMessages[index][key] = value;
+    }
+
+    setMessages(updatedMessages);
   };
 
   const handleSendMessage = async () => {
@@ -96,32 +99,42 @@ export default function PushMessage() {
         api_id: selectedApi?._id || null,
         user_id: selectLineUser?.line_user_id || null,
         ...parseDateTime(dateTime),
-        message: messages
-          .filter((msg) => msg !== undefined && msg.trim() !== "")
-          .map((msg, index) => ({
-            type: messageTypes[index],
-            content: msg,
-          })),
+        message: messages,
       },
     };
     console.log("bodyu", body);
-    // try {
-    //   const res = await axios.post(
-    //     `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/direct_message`,
-    //     body,
-    //     {
-    //       headers: { "Content-Type": "application/json" },
-    //     }
-    //   );
-    //   if (res.status === 200) {
-    //     setOpenNotification(true);
-    //   }
-    // } catch (error) {
-    //   console.error(
-    //     "Error sending request to webhook:",
-    //     error.response?.data || error.message
-    //   );
-    // }
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/direct_message`,
+        body,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (res.status === 200) {
+        setNotification({
+          open: true,
+          message: "Successfully sent message",
+          statusMessage: "success",
+        });
+      } else {
+        setNotification({
+          open: true,
+          message: "Can't sent message",
+          statusMessage: "error",
+        });
+      }
+    } catch (error) {
+      console.error(
+        "Error sending request to webhook:",
+        error.response?.data || error.message
+      );
+      setNotification({
+        open: true,
+        message: "Can't sent message",
+        statusMessage: "error",
+      });
+    }
   };
 
   const handleGetAllApis = async () => {
@@ -158,10 +171,10 @@ export default function PushMessage() {
     setDynamicContents(result);
   }, [selectedApi]);
 
-  const renderButtons = (contents, messageIndex) => {
+  const renderButtons = (contents, messageIndex, field) => {
     return contents.map((keyword, index) => {
       if (Array.isArray(keyword)) {
-        return renderButtons(keyword, messageIndex);
+        return renderButtons(keyword, messageIndex, field);
       }
 
       return (
@@ -171,8 +184,11 @@ export default function PushMessage() {
           color="primary"
           style={{ margin: "5px" }}
           onClick={() => {
-            const updatedMessages = [...messages];
-            updatedMessages[messageIndex] += `\${${keyword}}`;
+            let updatedMessages = [...messages];
+            if (!updatedMessages[messageIndex][field]) {
+              updatedMessages[messageIndex][field] = "";
+            }
+            updatedMessages[messageIndex][field] += `$(${keyword})`;
             setMessages(updatedMessages);
           }}
         >
@@ -214,29 +230,16 @@ export default function PushMessage() {
               Text Message
             </Typography>
 
+            {/* Dynamically Created Message Fields */}
             {[...Array(messageCount)].map((_, index) => (
               <Box key={index} mt={2}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  placeholder={`Enter your message (${
-                    index + 1
-                  }/${maximumMessage})`}
-                  variant="outlined"
-                  value={messages[index]}
-                  onChange={(e) => handleMessageChange(index, e.target.value)}
-                />
-                <FormControl
-                  fullWidth
-                  variant="outlined"
-                  style={{ marginTop: "10px" }}
-                >
+                {/* Message Type Dropdown */}
+                <FormControl fullWidth variant="outlined" style={{}}>
                   <InputLabel>Message Type</InputLabel>
                   <Select
-                    value={messageTypes[index]}
+                    value={messages[index].type}
                     onChange={(e) =>
-                      handleMessageTypeChange(index, e.target.value)
+                      handleMessageChange(index, e.target.value, "type")
                     }
                     label="Message Type"
                   >
@@ -248,8 +251,14 @@ export default function PushMessage() {
                     <MenuItem value="location">Location</MenuItem>
                   </Select>
                 </FormControl>
-                {dynamicContents.length > 0 &&
-                  renderButtons(dynamicContents, index)}
+                <SwitchInputComponent
+                  index={index}
+                  messages={messages}
+                  maximumMessage={maximumMessage}
+                  handleMessageChange={handleMessageChange}
+                  dynamicContents={dynamicContents}
+                  renderButtons={renderButtons}
+                />
               </Box>
             ))}
 
@@ -330,9 +339,10 @@ export default function PushMessage() {
         </Button>
       </Box>
       <Notification
-        openNotification={openNotification}
-        setOpenNotification={setOpenNotification}
-        message="Successful sent message"
+        openNotification={notification.open}
+        setOpenNotification={setNotification}
+        message={notification.message}
+        statusMessage={notification.statusMessage}
       />
     </Box>
   );

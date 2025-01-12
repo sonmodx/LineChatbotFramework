@@ -14,18 +14,24 @@ import { useSearchParams } from "next/navigation";
 import Notification from "./Notification";
 import axios from "axios";
 import { getAllApis } from "@/actions";
-import { getCurrentTime } from "@/lib/utils";
+import { getCurrentTime, parseDateTime } from "@/lib/utils";
+import SwitchInputComponent from "./SwitchInputComponent";
 
 export default function BroadcastMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
-  const [openNotification, setOpenNotification] = useState(false);
-  const [messages, setMessages] = useState("");
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    statusMessage: "",
+  });
+  const [messages, setMessages] = useState([{ type: "text", text: "" }]);
   const [messageType, setMessageType] = useState("text"); // State for message type
   const searchParams = useSearchParams();
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("channel_id");
   const typeMessage = "Broadcast";
+  console.log("Msg", messages);
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
   const [dateTime, setDateTime] = useState(null);
@@ -38,19 +44,24 @@ export default function BroadcastMessage() {
     setSelectedApi(newValue);
   };
 
-  const handleMessageChange = (value) => {
-    setMessages(value);
+  const handleMessageChange = (index, value, key) => {
+    const updatedMessages = [...messages];
+
+    if (key === "type") {
+      updatedMessages[index] = { type: value };
+    } else {
+      updatedMessages[index][key] = value;
+    }
+
+    setMessages(updatedMessages);
   };
 
   const handleSendMessage = async () => {
-    if (messages.trim() === "" || messages === undefined) {
-      return;
-    }
     const body = {
       type: typeMessage,
       destination: channelId,
       direct_config: {
-        message: [{ type: "text", text: messages }],
+        message: messages,
         ...parseDateTime(dateTime),
       },
     };
@@ -65,15 +76,28 @@ export default function BroadcastMessage() {
       );
 
       if (res.status === 200) {
-        setOpenNotification(true);
+        setNotification({
+          open: true,
+          message: "Successfully sent message",
+          statusMessage: "success",
+        });
+      } else {
+        setNotification({
+          open: true,
+          message: "Can't sent message",
+          statusMessage: "error",
+        });
       }
-
-      console.log("Response from webhook:", res.data);
     } catch (error) {
       console.error(
         "Error sending request to webhook:",
         error.response?.data || error.message
       );
+      setNotification({
+        open: true,
+        message: "Can't sent message",
+        statusMessage: "error",
+      });
     }
   };
 
@@ -82,11 +106,6 @@ export default function BroadcastMessage() {
 
     console.log(_apis);
     setApis(JSON.parse(_apis));
-  };
-
-  const handleMessageTypeChange = (type) => {
-    setMessageType(type);
-    setMessages(""); // Reset messages when type changes
   };
 
   useEffect(() => {
@@ -121,10 +140,10 @@ export default function BroadcastMessage() {
     console.log("MY result", result);
   }, [selectedApi]);
 
-  const renderButtons = (contents) => {
+  const renderButtons = (contents, messageIndex, field) => {
     return contents.map((keyword, index) => {
       if (Array.isArray(keyword)) {
-        return renderButtons(keyword);
+        return renderButtons(keyword, messageIndex, field);
       }
 
       return (
@@ -134,8 +153,11 @@ export default function BroadcastMessage() {
           color="primary"
           style={{ margin: "5px" }}
           onClick={() => {
-            let updatedMessages = messages;
-            updatedMessages += `$(${keyword})`;
+            let updatedMessages = [...messages];
+            if (!updatedMessages[messageIndex][field]) {
+              updatedMessages[messageIndex][field] = "";
+            }
+            updatedMessages[messageIndex][field] += `$(${keyword})`;
             setMessages(updatedMessages);
           }}
         >
@@ -144,7 +166,6 @@ export default function BroadcastMessage() {
       );
     });
   };
-
   return (
     <Box p={4} width="100%">
       {/* Title and Description */}
@@ -211,38 +232,40 @@ export default function BroadcastMessage() {
         </Typography>
         <ButtonGroup variant="outlined" color="primary">
           <Button
-            onClick={() => handleMessageTypeChange("text")}
-            variant={messageType === "text" ? "contained" : "outlined"}
+            onClick={() => handleMessageChange(0, "text", "type")}
+            variant={messages[0]?.type === "text" ? "contained" : "outlined"}
           >
             Text
           </Button>
           <Button
-            onClick={() => handleMessageTypeChange("image")}
-            variant={messageType === "image" ? "contained" : "outlined"}
+            onClick={() => handleMessageChange(0, "image", "type")}
+            variant={messages[0]?.type === "image" ? "contained" : "outlined"}
           >
             Image
           </Button>
           <Button
-            onClick={() => handleMessageTypeChange("sticker")}
-            variant={messageType === "sticker" ? "contained" : "outlined"}
+            onClick={() => handleMessageChange(0, "sticker", "type")}
+            variant={messages[0]?.type === "sticker" ? "contained" : "outlined"}
           >
             Sticker
           </Button>
           <Button
-            onClick={() => handleMessageTypeChange("video")}
-            variant={messageType === "video" ? "contained" : "outlined"}
+            onClick={() => handleMessageChange(0, "video", "type")}
+            variant={messages[0]?.type === "video" ? "contained" : "outlined"}
           >
             Video
           </Button>
           <Button
-            onClick={() => handleMessageTypeChange("audio")}
-            variant={messageType === "audio" ? "contained" : "outlined"}
+            onClick={() => handleMessageChange(0, "audio", "type")}
+            variant={messages[0]?.type === "audio" ? "contained" : "outlined"}
           >
             Audio
           </Button>
           <Button
-            onClick={() => handleMessageTypeChange("location")}
-            variant={messageType === "location" ? "contained" : "outlined"}
+            onClick={() => handleMessageChange(0, "location", "type")}
+            variant={
+              messages[0]?.type === "location" ? "contained" : "outlined"
+            }
           >
             Location
           </Button>
@@ -259,19 +282,19 @@ export default function BroadcastMessage() {
               backgroundColor="primary.main"
               style={{ color: "#fff", padding: "10px" }}
             >
-              {messageType.charAt(0).toUpperCase() + messageType.slice(1)}{" "}
+              {messages[0]?.type.charAt(0).toUpperCase() +
+                messages[0]?.type.slice(1)}{" "}
               Message
             </Typography>
-            <TextField
-              fullWidth
-              multiline
-              rows={8}
-              placeholder={`Enter your ${messageType} here`}
-              variant="outlined"
-              value={messages}
-              onChange={(e) => handleMessageChange(e.target.value)}
+
+            <SwitchInputComponent
+              index={0}
+              messages={messages}
+              maximumMessage={1}
+              handleMessageChange={handleMessageChange}
+              dynamicContents={dynamicContents}
+              renderButtons={renderButtons}
             />
-            {dynamicContents.length > 0 && renderButtons(dynamicContents)}
           </Grid>
         </Grid>
       </Box>
@@ -288,9 +311,10 @@ export default function BroadcastMessage() {
         </Button>
       </Box>
       <Notification
-        openNotification={openNotification}
-        setOpenNotification={setOpenNotification}
-        message="Successful sent message"
+        openNotification={notification.open}
+        setOpenNotification={setNotification}
+        message={notification.message}
+        statusMessage={notification.statusMessage}
       />
     </Box>
   );
