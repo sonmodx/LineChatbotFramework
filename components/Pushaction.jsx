@@ -22,17 +22,24 @@ import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import Notification from "./Notification";
 import { getCurrentTime, parseDateTime } from "@/lib/utils";
+import SwitchInputComponent from "./SwitchInputComponent";
 
 export default function PushMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [messageCount, setMessageCount] = useState(1); // Track number of message boxes
   const maximumMessage = 5;
-  const [messages, setMessages] = useState(Array(messageCount).fill("")); // Messages state
-  const [messageTypes, setMessageTypes] = useState(Array(messageCount).fill("text"));
+  const [messages, setMessages] = useState(
+    Array(messageCount).fill({ type: "text", text: "" })
+  );
+
   const [selectLineUser, setSelectLineUser] = useState(null);
   const [lineUsers, setLineUsers] = useState([]);
-  const [openNotification, setOpenNotification] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    statusMessage: "",
+  });
 
   const searchParams = useSearchParams();
   const channelObjectId = searchParams.get("id");
@@ -54,8 +61,7 @@ export default function PushMessage() {
   const addMessageBox = () => {
     if (messageCount < 5) {
       setMessageCount(messageCount + 1);
-      setMessages((prev) => [...prev, ""]);
-      setMessageTypes((prev) => [...prev, "text"]);
+      setMessages((prev) => [...prev, { text: "", type: "text" }]);
     }
   };
 
@@ -63,7 +69,6 @@ export default function PushMessage() {
     if (messageCount > 1) {
       setMessageCount(messageCount - 1);
       setMessages(messages.slice(0, messageCount - 1));
-      setMessageTypes(messageTypes.slice(0, messageCount - 1));
     }
   };
 
@@ -72,10 +77,15 @@ export default function PushMessage() {
     setLineUsers(JSON.parse(line_users));
   };
 
-  const handleMessageChange = (index, placeholderIndex, value) => {
+  const handleMessageChange = (index, value, key) => {
     const updatedMessages = [...messages];
-    if (!updatedMessages[index]) updatedMessages[index] = [];
-    updatedMessages[index][placeholderIndex] = value;
+
+    if (key === "type") {
+      updatedMessages[index] = { type: value };
+    } else {
+      updatedMessages[index][key] = value;
+    }
+
     setMessages(updatedMessages);
   };
 
@@ -87,15 +97,42 @@ export default function PushMessage() {
         api_id: selectedApi?._id || null,
         user_id: selectLineUser?.line_user_id || null,
         ...parseDateTime(dateTime),
-        message: messages
-          .filter((msg) => msg !== undefined && msg.trim() !== "")
-          .map((msg, index) => ({
-            type: messageTypes[index],
-            content: msg,
-          })),
+        message: messages,
       },
     };
     console.log("bodyu", body);
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/direct_message`,
+        body,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (res.status === 200) {
+        setNotification({
+          open: true,
+          message: "Successfully sent message",
+          statusMessage: "success",
+        });
+      } else {
+        setNotification({
+          open: true,
+          message: "Can't sent message",
+          statusMessage: "error",
+        });
+      }
+    } catch (error) {
+      console.error(
+        "Error sending request to webhook:",
+        error.response?.data || error.message
+      );
+      setNotification({
+        open: true,
+        message: "Can't sent message",
+        statusMessage: "error",
+      });
+    }
   };
 
   const handleGetAllApis = async () => {
@@ -132,70 +169,32 @@ export default function PushMessage() {
     setDynamicContents(result);
   }, [selectedApi]);
 
-  const getMessagePlaceholders = (messageType) => {
-    if (messageType === "location") {
-      return ["Title", "Address", "Latitude", "Longitude"];
-    } else if (messageType === "image" || messageType === "video") {
-      return ["Original Content URL", "Preview Image URL"];
-    } else if (messageType === "sticker") {
-      return ["PackageId", "StickerId"];
-    } else if (messageType === "audio") {
-      return ["Original Content URL", "Duration"];
-    } else if (messageType === "flex" || messageType === "template") {
-      return ["Json"];
-    }
-    return ["Enter Message"];
-  };
+  const renderButtons = (contents, messageIndex, field) => {
+    return contents.map((keyword, index) => {
+      if (Array.isArray(keyword)) {
+        return renderButtons(keyword, messageIndex, field);
+      }
 
-  const renderPlaceholders = (messageType, index) => {
-    const placeholders = getMessagePlaceholders(messageType);
-    
-    // Set the rows based on message type
-    let rows = 4;  // Default value
-    if (["location", "image", "sticker", "video", "audio"].includes(messageType)) {
-      rows = 1; // For these types, use only 1 row
-    } else if (["flex", "template"].includes(messageType)) {
-      rows = 7; // For these types, use 7 rows
-    }
-  
-    return placeholders.map((placeholder, idx) => (
-      <TextField
-        key={idx}
-        fullWidth
-        variant="outlined"
-        label={placeholder}
-        value={messages[index]?.[idx] || ""}
-        onChange={(e) => handleMessageChange(index, idx, e.target.value)}
-        multiline
-        rows={rows}  
-        sx={{ mt: 2 }}
-      />
-    ));
+      return (
+        <Button
+          key={index}
+          variant="outlined"
+          color="primary"
+          style={{ margin: "5px" }}
+          onClick={() => {
+            let updatedMessages = [...messages];
+            if (!updatedMessages[messageIndex][field]) {
+              updatedMessages[messageIndex][field] = "";
+            }
+            updatedMessages[messageIndex][field] += `$(${keyword})`;
+            setMessages(updatedMessages);
+          }}
+        >
+          {keyword}
+        </Button>
+      );
+    });
   };
-
-    const renderButtons = (contents) => {
-      return contents.map((keyword, index) => {
-        if (Array.isArray(keyword)) {
-          return renderButtons(keyword);
-        }
-  
-        return (
-          <Button
-            key={index}
-            variant="outlined"
-            color="primary"
-            style={{ margin: "5px" }}
-            onClick={() => {
-              let updatedMessages = messages;
-              updatedMessages += `$(${keyword})`;
-              setMessages(updatedMessages);
-            }}
-          >
-            {keyword}
-          </Button>
-        );
-      });
-    };
 
   return (
     <Box p={4} width="100%">
@@ -229,17 +228,17 @@ export default function PushMessage() {
               Text Message
             </Typography>
 
+            {/* Dynamically Created Message Fields */}
             {[...Array(messageCount)].map((_, index) => (
               <Box key={index} mt={2}>
-                <FormControl fullWidth variant="outlined" style={{ marginTop: "10px" }}>
+                {/* Message Type Dropdown */}
+                <FormControl fullWidth variant="outlined" style={{}}>
                   <InputLabel>Message Type</InputLabel>
                   <Select
-                    value={messageTypes[index]}
-                    onChange={(e) => setMessageTypes((prev) => {
-                      const newMessageTypes = [...prev];
-                      newMessageTypes[index] = e.target.value;
-                      return newMessageTypes;
-                    })}
+                    value={messages[index].type}
+                    onChange={(e) =>
+                      handleMessageChange(index, e.target.value, "type")
+                    }
                     label="Message Type"
                   >
                     <MenuItem value="text">Text</MenuItem>
@@ -252,11 +251,14 @@ export default function PushMessage() {
                     <MenuItem value="template">Template</MenuItem>
                   </Select>
                 </FormControl>
-
-                {/* Render individual placeholders based on the message type */}
-                {renderPlaceholders(messageTypes[index], index)}
-
-                {dynamicContents.length > 0 && renderButtons(dynamicContents, index)}
+                <SwitchInputComponent
+                  index={index}
+                  messages={messages}
+                  maximumMessage={maximumMessage}
+                  handleMessageChange={handleMessageChange}
+                  dynamicContents={dynamicContents}
+                  renderButtons={renderButtons}
+                />
               </Box>
             ))}
 
@@ -337,9 +339,10 @@ export default function PushMessage() {
         </Button>
       </Box>
       <Notification
-        openNotification={openNotification}
-        setOpenNotification={setOpenNotification}
-        message="Successful sent message"
+        openNotification={notification.open}
+        setOpenNotification={setNotification}
+        message={notification.message}
+        statusMessage={notification.statusMessage}
       />
     </Box>
   );

@@ -30,14 +30,22 @@ export default function ListAudience({ channelId, channelIdLine }) {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [openNotification, setOpenNotification] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    statusMessage: "",
+  });
   const [description, setDescription] = useState("");
   const [lineUsers, setLineUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   console.log(selectedUsers);
   const [selectLineUser, setSelectLineUser] = useState(null);
   const [openUpdate, setOpenUpdate] = useState(false);
-  const [openNotificationUpdate, setOpenNotificationUpdate] = useState(false);
+  const [notificationUpdate, setNotificationUpdate] = useState({
+    open: false,
+    message: "",
+    statusMessage: "",
+  });
   const [selectAudienceId, setSelectAudienceId] = useState(null);
 
   const audienceConfig = {
@@ -107,7 +115,11 @@ export default function ListAudience({ channelId, channelIdLine }) {
         }
       );
       if (res.status === 200) {
-        setOpenNotification(true);
+        setNotification({
+          open: true,
+          message: "Successfully create audience",
+          statusMessage: "success",
+        });
         setOpen(false);
         setDefaultValue();
         getAllAudiences();
@@ -135,7 +147,11 @@ export default function ListAudience({ channelId, channelIdLine }) {
       if (res.status === 200) {
         getAllAudiences();
         console.log("Successful delete audience");
-        setOpenNotification(true);
+        setNotification({
+          open: true,
+          message: "Successfully delete audience",
+          statusMessage: "success",
+        });
         setDefaultValue();
       }
     } catch (error) {
@@ -160,7 +176,11 @@ export default function ListAudience({ channelId, channelIdLine }) {
         }
       );
       if (res.status === 200) {
-        setOpenNotificationUpdate(true);
+        setNotificationUpdate({
+          open: true,
+          message: "Successfully update audience",
+          statusMessage: "success",
+        });
         setOpenUpdate(false);
         setDefaultValue();
         getAllAudiences();
@@ -488,14 +508,16 @@ export default function ListAudience({ channelId, channelIdLine }) {
         </Box>
       </Modal>
       <Notification
-        openNotification={openNotificationUpdate}
-        setOpenNotification={setOpenNotificationUpdate}
-        message="Successful update audience"
+        openNotification={notificationUpdate.open}
+        setOpenNotification={setNotificationUpdate}
+        message={notificationUpdate.message}
+        statusMessage={notificationUpdate.statusMessage}
       />
       <Notification
-        openNotification={openNotification}
-        setOpenNotification={setOpenNotification}
-        message="Successful sent message"
+        openNotification={notification.open}
+        setOpenNotification={setNotification}
+        message={notification.message}
+        statusMessage={notification.statusMessage}
       />
     </Box>
   );

@@ -14,13 +14,14 @@ import {
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import { getAllApis, getApiById } from "@/actions";
+import SwitchInputComponent from "./SwitchInputComponent";
 
 export default function Replyaction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [keywords, setKeywords] = useState(data?.keyword.join(",") || []);
   const [messages, setMessages] = useState(
-    data?.message.map((item) => item.text).join(", ") || []
+    data?.message || [{ type: "text", text: "" }]
   );
   const [errorKeyword, setErrorKeyword] = useState(false);
   const [messageType, setMessageType] = useState("text"); // State for selected message type
@@ -44,6 +45,18 @@ export default function Replyaction({ data, setState, state }) {
     setSelectedApi(newValue);
   };
 
+  const handleMessageChange = (index, value, key) => {
+    const updatedMessages = [...messages];
+
+    if (key === "type") {
+      updatedMessages[index] = { type: value };
+    } else {
+      updatedMessages[index][key] = value;
+    }
+
+    setMessages(updatedMessages);
+  };
+
   const handleSave = async () => {
     try {
       if (keywords.length === 0) {
@@ -54,16 +67,15 @@ export default function Replyaction({ data, setState, state }) {
 
       const body = {
         name: name,
-        type: "text",
+        type: messages[0]?.type,
         type_action: "reply",
         description: description,
         api_id: selectedApi?._id || "",
         channel_id: channelObjectId,
-        message: messages
-          .split(",")
-          .map((msg) => ({ type: "text", text: msg })),
+        message: messages[0],
         keyword: keywords.split(","),
       };
+      console.log("BODY", body);
       if (state === "create") {
         const res = await axios.post(
           "/api/Action?action_type=reply_message",
@@ -137,10 +149,10 @@ export default function Replyaction({ data, setState, state }) {
     setDynamicContents(result);
   }, [selectedApi]);
 
-  const renderButtons = (contents) => {
+  const renderButtons = (contents, messageIndex, field) => {
     return contents.map((keyword, index) => {
       if (Array.isArray(keyword)) {
-        return renderButtons(keyword);
+        return renderButtons(keyword, messageIndex, field);
       }
 
       return (
@@ -150,8 +162,11 @@ export default function Replyaction({ data, setState, state }) {
           color="primary"
           style={{ margin: "5px" }}
           onClick={() => {
-            let updatedMessages = messages;
-            updatedMessages += `$(${keyword})`;
+            let updatedMessages = [...messages];
+            if (!updatedMessages[messageIndex][field]) {
+              updatedMessages[messageIndex][field] = "";
+            }
+            updatedMessages[messageIndex][field] += `$(${keyword})`;
             setMessages(updatedMessages);
           }}
         >
@@ -160,22 +175,6 @@ export default function Replyaction({ data, setState, state }) {
       );
     });
   };
-
-  const getMessagePlaceholders = () => {
-    if (messageType === "location") {
-      return ["Title", "Address", "Latitude", "Longitude"];
-    } else if (messageType === "image" || messageType === "video") {
-      return ["Original Content URL", "Preview Image URL"];
-    } else if (messageType === "sticker") {
-      return ["PackageId", "StickerId"];
-    } else if (messageType === "audio") {
-      return ["Original Content URL", "Duration"];
-    } else if (messageType === "flex" || messageType === "template") {
-      return ["Json"];
-    }
-    return ["Enter Message"];
-  };
-
   return (
     <Box p={4} width="100%">
       {/* Title and Description */}
@@ -291,15 +290,44 @@ export default function Replyaction({ data, setState, state }) {
           Message Type
         </Typography>
         <ButtonGroup variant="outlined" color="primary">
-          {["text", "image", "sticker", "video", "audio", "location", "flex", "template"].map((type) => (
-            <Button
-              key={type}
-              onClick={() => handleMessageTypeChange(type)}
-              variant={messageType === type ? "contained" : "outlined"}
-            >
-              {type.charAt(0).toUpperCase() + type.slice(1)}
-            </Button>
-          ))}
+          <Button
+            onClick={() => handleMessageChange(0, "text", "type")}
+            variant={messages[0]?.type === "text" ? "contained" : "outlined"}
+          >
+            Text
+          </Button>
+          <Button
+            onClick={() => handleMessageChange(0, "image", "type")}
+            variant={messages[0]?.type === "image" ? "contained" : "outlined"}
+          >
+            Image
+          </Button>
+          <Button
+            onClick={() => handleMessageChange(0, "sticker", "type")}
+            variant={messages[0]?.type === "sticker" ? "contained" : "outlined"}
+          >
+            Sticker
+          </Button>
+          <Button
+            onClick={() => handleMessageChange(0, "video", "type")}
+            variant={messages[0]?.type === "video" ? "contained" : "outlined"}
+          >
+            Video
+          </Button>
+          <Button
+            onClick={() => handleMessageChange(0, "audio", "type")}
+            variant={messages[0]?.type === "audio" ? "contained" : "outlined"}
+          >
+            Audio
+          </Button>
+          <Button
+            onClick={() => handleMessageChange(0, "location", "type")}
+            variant={
+              messages[0]?.type === "location" ? "contained" : "outlined"
+            }
+          >
+            Location
+          </Button>
         </ButtonGroup>
       </Box>
 
@@ -314,35 +342,18 @@ export default function Replyaction({ data, setState, state }) {
             padding: "10px",
           }}
         >
-          {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
+          {messages[0]?.type.charAt(0).toUpperCase() +
+            messages[0]?.type.slice(1)}{" "}
+          Message
         </Typography>
-        {getMessagePlaceholders().map((placeholder, index) => {
-          let rows = 4;
-          if (messageType === "location" || messageType === "image" || messageType === "sticker" || messageType === "video" || messageType === "audio") {
-            rows = 1;
-          } else if (messageType === "flex" || messageType === "template") {
-            rows = 7;
-          }
-
-          return (
-        <TextField
-          key={index}
-          fullWidth
-          multiline
-          rows={rows}
-          placeholder={placeholder}
-          variant="outlined"
-          value={messages[index] || ""}
-          onChange={(e) => {
-            const updatedMessages = [...messages];
-            updatedMessages[index] = e.target.value;
-            setMessages(updatedMessages);
-          }}
-          style={{ marginBottom: "16px" }}
+        <SwitchInputComponent
+          index={0}
+          messages={messages}
+          maximumMessage={1}
+          handleMessageChange={handleMessageChange}
+          dynamicContents={dynamicContents}
+          renderButtons={renderButtons}
         />
-      );
-    })}
-        {dynamicContents.length > 0 && renderButtons(dynamicContents)}
       </Box>
 
       {/* Note */}

@@ -4,24 +4,30 @@ export default function Notification({
   openNotification,
   setOpenNotification,
   message,
+  statusMessage = "success",
 }) {
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
       return;
     }
 
-    setOpenNotification(false);
+    setOpenNotification({
+      open: false,
+      statusMessage: statusMessage,
+      message: message,
+    });
   };
+
   return (
     <Snackbar
       open={openNotification}
-      autoHideDuration={4000}
+      autoHideDuration={3000}
       onClose={handleCloseSnackbar}
       anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
     >
       <Alert
         onClose={handleCloseSnackbar}
-        severity="success"
+        severity={statusMessage}
         variant="filled"
         sx={{ width: "100%" }}
       >

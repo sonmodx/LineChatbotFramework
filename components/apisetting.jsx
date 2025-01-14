@@ -44,9 +44,17 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
   const [scripts, setScripts] = useState("");
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [openNotification, setOpenNotification] = useState(false);
-  const [openNotificationRequest, setOpenNotificationRequest] = useState(false);
 
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    statusMessage: "",
+  });
+  const [notificationRequest, setNotificationRequest] = useState({
+    open: false,
+    message: "",
+    statusMessage: "",
+  });
   const [name, setName] = useState("");
   const [keywords, setKeywords] = useState([]);
 
@@ -566,15 +574,19 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
           </Stack>
         </Box>
       </Box>
+
       <Notification
-        openNotification={openNotification}
-        setOpenNotification={setOpenNotification}
-        message={`Successful ${mode === "edit" ? "update API" : "create API"}`}
+        openNotification={notificationRequest.open}
+        setOpenNotification={setNotificationRequest}
+        message={notificationRequest.message}
+        statusMessage={notificationRequest.statusMessage}
       />
+
       <Notification
-        openNotification={openNotificationRequest}
-        setOpenNotification={setOpenNotificationRequest}
-        message={`Successful request API`}
+        openNotification={notification.open}
+        setOpenNotification={setNotification}
+        message={notification.message}
+        statusMessage={notification.statusMessage}
       />
     </Container>
   );
