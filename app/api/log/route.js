@@ -112,10 +112,7 @@ export async function GET(req) {
           }
 
           // Join the content array with a comma separator if it contains more than 1 value
-          const joinedContent =
-            Array.isArray(log.content) && log.content.length > 1
-              ? log.content.join(", ") // Join array with comma separator
-              : log.content.join(""); // For single value, keep as it is
+          const joinedContent = JSON.stringify(log.content, null, 2);
 
           return {
             ...log.toObject(),

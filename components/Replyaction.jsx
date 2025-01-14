@@ -9,9 +9,15 @@ import {
   Autocomplete,
   Grid,
   Button,
-  ButtonGroup, // Import ButtonGroup for message type selection
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import axios from "axios";
 import { getAllApis, getApiById } from "@/actions";
 import SwitchInputComponent from "./SwitchInputComponent";
@@ -19,9 +25,10 @@ import SwitchInputComponent from "./SwitchInputComponent";
 export default function Replyaction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
+  const [messageCount, setMessageCount] = useState(data?.message.length || 1); // Track number o
   const [keywords, setKeywords] = useState(data?.keyword.join(",") || []);
   const [messages, setMessages] = useState(
-    data?.message || [{ type: "text", text: "" }]
+    data?.message || Array(messageCount).fill({ type: "text", text: "" })
   );
   const [errorKeyword, setErrorKeyword] = useState(false);
   const [messageType, setMessageType] = useState("text"); // State for selected message type
@@ -30,6 +37,7 @@ export default function Replyaction({ data, setState, state }) {
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("channel_id");
   const id = data?._id || null;
+  const maximumMessage = 5;
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
   const [name, setName] = useState(data?.name || "");
@@ -56,6 +64,19 @@ export default function Replyaction({ data, setState, state }) {
 
     setMessages(updatedMessages);
   };
+  const addMessageBox = () => {
+    if (messageCount < 5) {
+      setMessageCount(messageCount + 1);
+      setMessages((prev) => [...prev, { text: "", type: "text" }]);
+    }
+  };
+
+  const removeMessageBox = () => {
+    if (messageCount > 1) {
+      setMessageCount(messageCount - 1);
+      setMessages(messages.slice(0, messageCount - 1));
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -63,8 +84,21 @@ export default function Replyaction({ data, setState, state }) {
         setErrorKeyword(true);
         return;
       }
-      setErrorKeyword(false);
 
+      setErrorKeyword(false);
+      const newMessages = messages.map((msg) => {
+        if (msg.type === "template") {
+          return JSON.parse(msg.template);
+        }
+        if (msg.type === "imagemap") {
+          return JSON.parse(msg.imagemap);
+        }
+        if (msg.type === "flex") {
+          return JSON.parse(msg.flex);
+        }
+
+        return msg;
+      });
       const body = {
         name: name,
         type: messages[0]?.type,
@@ -72,7 +106,7 @@ export default function Replyaction({ data, setState, state }) {
         description: description,
         api_id: selectedApi?._id || "",
         channel_id: channelObjectId,
-        message: messages[0],
+        message: newMessages,
         keyword: keywords.split(","),
       };
       console.log("BODY", body);
@@ -284,77 +318,65 @@ export default function Replyaction({ data, setState, state }) {
         </Grid>
       </Box>
 
-      {/* Message Type Selection Bar */}
-      <Box mt={4} width="100%">
-        <Typography variant="h6" gutterBottom>
-          Message Type
-        </Typography>
-        <ButtonGroup variant="outlined" color="primary">
-          <Button
-            onClick={() => handleMessageChange(0, "text", "type")}
-            variant={messages[0]?.type === "text" ? "contained" : "outlined"}
-          >
-            Text
-          </Button>
-          <Button
-            onClick={() => handleMessageChange(0, "image", "type")}
-            variant={messages[0]?.type === "image" ? "contained" : "outlined"}
-          >
-            Image
-          </Button>
-          <Button
-            onClick={() => handleMessageChange(0, "sticker", "type")}
-            variant={messages[0]?.type === "sticker" ? "contained" : "outlined"}
-          >
-            Sticker
-          </Button>
-          <Button
-            onClick={() => handleMessageChange(0, "video", "type")}
-            variant={messages[0]?.type === "video" ? "contained" : "outlined"}
-          >
-            Video
-          </Button>
-          <Button
-            onClick={() => handleMessageChange(0, "audio", "type")}
-            variant={messages[0]?.type === "audio" ? "contained" : "outlined"}
-          >
-            Audio
-          </Button>
-          <Button
-            onClick={() => handleMessageChange(0, "location", "type")}
-            variant={
-              messages[0]?.type === "location" ? "contained" : "outlined"
-            }
-          >
-            Location
-          </Button>
-        </ButtonGroup>
-      </Box>
-
-      {/* Text Message Section */}
-      <Box mt={4} width="100%" backgroundColor="primary">
+      <Grid item xs={12} sm={12}>
         <Typography
           variant="h6"
-          backgroundColor="primary.main"
           gutterBottom
-          style={{
-            color: "#fff",
-            padding: "10px",
-          }}
+          backgroundColor="primary.main"
+          style={{ color: "#fff", padding: "10px", marginTop: 16 }}
         >
-          {messages[0]?.type.charAt(0).toUpperCase() +
-            messages[0]?.type.slice(1)}{" "}
-          Message
+          Text Message
         </Typography>
-        <SwitchInputComponent
-          index={0}
-          messages={messages}
-          maximumMessage={1}
-          handleMessageChange={handleMessageChange}
-          dynamicContents={dynamicContents}
-          renderButtons={renderButtons}
-        />
-      </Box>
+        {/* Dynamically Created Message Fields */}
+        {[...Array(messageCount)].map((_, index) => (
+          <Box key={index} mt={2}>
+            {/* Message Type Dropdown */}
+            <FormControl fullWidth variant="outlined" style={{}}>
+              <InputLabel>Message Type</InputLabel>
+              <Select
+                value={messages[index].type}
+                onChange={(e) =>
+                  handleMessageChange(index, e.target.value, "type")
+                }
+                label="Message Type"
+              >
+                <MenuItem value="text">Text</MenuItem>
+                <MenuItem value="image">Image</MenuItem>
+                <MenuItem value="sticker">Sticker</MenuItem>
+                <MenuItem value="video">Video</MenuItem>
+                <MenuItem value="audio">Audio</MenuItem>
+                <MenuItem value="location">Location</MenuItem>
+                <MenuItem value="flex">Flex</MenuItem>
+                <MenuItem value="template">Template</MenuItem>
+                <MenuItem value="imagemap">Imagemap</MenuItem>
+              </Select>
+            </FormControl>
+            <SwitchInputComponent
+              index={index}
+              messages={messages}
+              maximumMessage={maximumMessage}
+              handleMessageChange={handleMessageChange}
+              dynamicContents={dynamicContents}
+              renderButtons={renderButtons}
+            />
+          </Box>
+        ))}
+
+        {/* ADD and REMOVE Buttons */}
+        <Box mt={2}>
+          {messageCount < 5 && (
+            <IconButton onClick={addMessageBox}>
+              <AddCircleOutlineIcon />
+            </IconButton>
+          )}
+          {messageCount > 1 && (
+            <IconButton onClick={removeMessageBox}>
+              <RemoveCircleOutlineIcon />
+            </IconButton>
+          )}
+          <Typography variant="caption">ADD / REMOVE</Typography>
+        </Box>
+      </Grid>
 
       {/* Note */}
       <Box mt={2} width="100%">
