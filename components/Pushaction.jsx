@@ -92,6 +92,19 @@ export default function PushMessage() {
   };
 
   const handleSendMessage = async () => {
+    const newMessages = messages.map((msg) => {
+      if (msg.type === "template") {
+        return JSON.parse(msg.template);
+      }
+      if (msg.type === "imagemap") {
+        return JSON.parse(msg.imagemap);
+      }
+      if (msg.type === "flex") {
+        return JSON.parse(msg.flex);
+      }
+
+      return msg;
+    });
     const body = {
       type: typeMessage,
       destination: channelId,
@@ -99,7 +112,7 @@ export default function PushMessage() {
         api_id: selectedApi?._id || null,
         user_id: selectLineUser?.line_user_id || null,
         ...parseDateTime(dateTime),
-        message: messages,
+        message: newMessages,
       },
     };
     console.log("bodyu", body);
@@ -249,6 +262,9 @@ export default function PushMessage() {
                     <MenuItem value="video">Video</MenuItem>
                     <MenuItem value="audio">Audio</MenuItem>
                     <MenuItem value="location">Location</MenuItem>
+                    <MenuItem value="flex">Flex</MenuItem>
+                    <MenuItem value="template">Template</MenuItem>
+                    <MenuItem value="imagemap">Imagemap</MenuItem>
                   </Select>
                 </FormControl>
                 <SwitchInputComponent

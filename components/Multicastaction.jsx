@@ -10,10 +10,16 @@ import {
   Grid,
   Button,
   Chip,
-  ButtonGroup,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import { getAllApis, getAllLineUsers } from "@/actions";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import axios from "axios";
 import Notification from "./Notification";
 import { getCurrentTime, parseDateTime } from "@/lib/utils";
@@ -22,8 +28,11 @@ import SwitchInputComponent from "./SwitchInputComponent";
 export default function MulticastMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
-  const [messages, setMessages] = useState([{ type: "text", text: "" }]);
   const [selectLineUser, setSelectLineUser] = useState(null);
+  const [messageCount, setMessageCount] = useState(1); // Track number of message boxes
+  const [messages, setMessages] = useState(
+    Array(messageCount).fill({ type: "text", text: "" })
+  );
   const [messageType, setMessageType] = useState("text"); // Default to "text"
   const [lineUsers, setLineUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -32,6 +41,7 @@ export default function MulticastMessage() {
     message: "",
     statusMessage: "",
   });
+  const maximumMessage = 5;
   // console.log(selectedUsers);
   console.log("msg", messages);
   const searchParams = useSearchParams();
@@ -68,6 +78,20 @@ export default function MulticastMessage() {
     }
   };
 
+  const addMessageBox = () => {
+    if (messageCount < 5) {
+      setMessageCount(messageCount + 1);
+      setMessages((prev) => [...prev, { text: "", type: "text" }]);
+    }
+  };
+
+  const removeMessageBox = () => {
+    if (messageCount > 1) {
+      setMessageCount(messageCount - 1);
+      setMessages(messages.slice(0, messageCount - 1));
+    }
+  };
+
   const handleMessageChange = (index, value, key) => {
     const updatedMessages = [...messages];
 
@@ -84,6 +108,19 @@ export default function MulticastMessage() {
     // if (messages.trim() === "" || messages === undefined) {
     //   return;
     // }
+    const newMessages = messages.map((msg) => {
+      if (msg.type === "template") {
+        return JSON.parse(msg.template);
+      }
+      if (msg.type === "imagemap") {
+        return JSON.parse(msg.imagemap);
+      }
+      if (msg.type === "flex") {
+        return JSON.parse(msg.flex);
+      }
+
+      return msg;
+    });
     const body = {
       type: typeMessage,
       destination: channelId,
@@ -94,7 +131,7 @@ export default function MulticastMessage() {
         // message: messages
         //   .filter((msg) => msg !== undefined && msg.trim() !== "")
         //   .map((msg) => ({ type: "text", text: msg })),
-        message: messages,
+        message: newMessages,
       },
     };
     console.log("body", body);
@@ -224,53 +261,6 @@ export default function MulticastMessage() {
         sx={{ mt: 2 }}
       />
 
-      {/* Message Type Selection Bar */}
-      <Box mt={4} width="100%">
-        <Typography variant="h6" gutterBottom>
-          Message Type
-        </Typography>
-        <ButtonGroup variant="outlined" color="primary">
-          <Button
-            onClick={() => handleMessageChange(0, "text", "type")}
-            variant={messages[0]?.type === "text" ? "contained" : "outlined"}
-          >
-            Text
-          </Button>
-          <Button
-            onClick={() => handleMessageChange(0, "image", "type")}
-            variant={messages[0]?.type === "image" ? "contained" : "outlined"}
-          >
-            Image
-          </Button>
-          <Button
-            onClick={() => handleMessageChange(0, "sticker", "type")}
-            variant={messages[0]?.type === "sticker" ? "contained" : "outlined"}
-          >
-            Sticker
-          </Button>
-          <Button
-            onClick={() => handleMessageChange(0, "video", "type")}
-            variant={messages[0]?.type === "video" ? "contained" : "outlined"}
-          >
-            Video
-          </Button>
-          <Button
-            onClick={() => handleMessageChange(0, "audio", "type")}
-            variant={messages[0]?.type === "audio" ? "contained" : "outlined"}
-          >
-            Audio
-          </Button>
-          <Button
-            onClick={() => handleMessageChange(0, "location", "type")}
-            variant={
-              messages[0]?.type === "location" ? "contained" : "outlined"
-            }
-          >
-            Location
-          </Button>
-        </ButtonGroup>
-      </Box>
-
       {/* Text Message and User Areas */}
       <Box mt={4} width="100%">
         <Grid container spacing={2}>
@@ -281,27 +271,57 @@ export default function MulticastMessage() {
               backgroundColor="primary.main"
               style={{ color: "#fff", padding: "10px" }}
             >
-              {messages[0]?.type.charAt(0).toUpperCase() +
-                messages[0]?.type.slice(1)}{" "}
-              Message
+              Text Message
             </Typography>
-            {/* <TextField
-              fullWidth
-              multiline
-              rows={6}
-              placeholder={`Enter your ${messageType} here`}
-              variant="outlined"
-              value={messages}
-              onChange={(e) => handleMessageChange(e.target.value)}
-            /> */}
-            <SwitchInputComponent
-              index={0}
-              messages={messages}
-              maximumMessage={1}
-              handleMessageChange={handleMessageChange}
-              dynamicContents={dynamicContents}
-              renderButtons={renderButtons}
-            />
+            {/* Dynamically Created Message Fields */}
+            {[...Array(messageCount)].map((_, index) => (
+              <Box key={index} mt={2}>
+                {/* Message Type Dropdown */}
+                <FormControl fullWidth variant="outlined" style={{}}>
+                  <InputLabel>Message Type</InputLabel>
+                  <Select
+                    value={messages[index].type}
+                    onChange={(e) =>
+                      handleMessageChange(index, e.target.value, "type")
+                    }
+                    label="Message Type"
+                  >
+                    <MenuItem value="text">Text</MenuItem>
+                    <MenuItem value="image">Image</MenuItem>
+                    <MenuItem value="sticker">Sticker</MenuItem>
+                    <MenuItem value="video">Video</MenuItem>
+                    <MenuItem value="audio">Audio</MenuItem>
+                    <MenuItem value="location">Location</MenuItem>
+                    <MenuItem value="flex">Flex</MenuItem>
+                    <MenuItem value="template">Template</MenuItem>
+                    <MenuItem value="imagemap">Imagemap</MenuItem>
+                  </Select>
+                </FormControl>
+                <SwitchInputComponent
+                  index={index}
+                  messages={messages}
+                  maximumMessage={maximumMessage}
+                  handleMessageChange={handleMessageChange}
+                  dynamicContents={dynamicContents}
+                  renderButtons={renderButtons}
+                />
+              </Box>
+            ))}
+
+            {/* ADD and REMOVE Buttons */}
+            <Box mt={2}>
+              {messageCount < 5 && (
+                <IconButton onClick={addMessageBox}>
+                  <AddCircleOutlineIcon />
+                </IconButton>
+              )}
+              {messageCount > 1 && (
+                <IconButton onClick={removeMessageBox}>
+                  <RemoveCircleOutlineIcon />
+                </IconButton>
+              )}
+              <Typography variant="caption">ADD / REMOVE</Typography>
+            </Box>
           </Grid>
 
           <Grid item xs={12} sm={6}>
