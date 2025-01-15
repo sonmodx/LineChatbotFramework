@@ -1,17 +1,18 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { Box, Grid, Typography, Paper } from '@mui/material';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+import React, { useState, useEffect } from "react";
+import { Box, Grid, Typography, Paper, CircularProgress } from "@mui/material";
+import { Line } from "react-chartjs-2";
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
 import axios from "axios";
 
-// Data configuration
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+// Chart configuration
 const staticsOptions = {
   responsive: true,
   plugins: {
     legend: {
-      position: 'top',
+      position: "top",
     },
   },
 };
@@ -19,70 +20,92 @@ const staticsOptions = {
 // Function to generate line colors dynamically
 const getLineColor = (index) => {
   const colors = [
-    'rgba(75, 192, 192, 1)',   // Teal
-    'rgba(255, 99, 132, 1)',   // Red
-    'rgba(54, 162, 235, 1)',   // Blue
-    'rgba(255, 159, 64, 1)',   // Orange
-    'rgba(153, 102, 255, 1)',  // Purple
-    'rgba(255, 205, 86, 1)',   // Yellow
+    "rgba(75, 192, 192, 1)", // Teal
+    "rgba(255, 99, 132, 1)", // Red
+    "rgba(54, 162, 235, 1)", // Blue
+    "rgba(255, 159, 64, 1)", // Orange
+    "rgba(153, 102, 255, 1)", // Purple
+    "rgba(255, 205, 86, 1)", // Yellow
   ];
-  return colors[index % colors.length];  // Cycle through colors if more than 6 datasets
+  return colors[index % colors.length];
 };
 
+// Function to generate chart data
 const chartData = (data, color) => ({
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+  labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
   datasets: [
     {
-      label: "count",
+      label: "Count",
       data: data,
       borderColor: color,
-      backgroundColor: color.replace('1)', '0.2)'), // Slightly transparent background
+      backgroundColor: color.replace("1)", "0.2)"),
       fill: true,
     },
   ],
 });
 
+
 export default function ChannelStatics({ listTitle, channelId }) {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [logs, setLogs] = useState([]);
-  const [total, setTotal] = useState();
   const [users, setUsers] = useState(0);
   const [sent, setSent] = useState(0);
   const [received, setReceived] = useState(0);
   const [actionTypes, setActionTypes] = useState({});
-  const [block, setBlock] = useState(0);  // Added state for Block
+  const [block, setBlock] = useState(0);
 
+
+  // Fetch logs
   const getAllLogs = async () => {
     try {
-      setIsLoading(true);
       const res = await axios.get(`/api/log?channel_id=${channelId}`);
       if (res.status === 200) {
-        const data = res.data;
-        setLogs(data.log);
-        setTotal(data.Total);
+        const { log } = res.data;
+        console.log("L:", log);
+        setLogs(log);
 
-        // Filter logs based on 'direction' or whatever property exists for 'sent' and 'received'
-        const sentLogs = data.log.filter(log => log.direction === "send_Reply");
-        const receivedLogs = data.log.filter(log => log.direction === "receive");
-
+        // Filter logs
+        const sentLogs = log.filter((l) => l.direction === "send");
+        console.log("S:", sentLogs);
+        const receivedLogs = log.filter((l) => l.direction === "receive");
+        console.log("R:", receivedLogs);
         setSent(sentLogs.length);
         setReceived(receivedLogs.length);
-        setBlock(data.blocked || 0);  // Set Block count if it exists in the response
       }
     } catch (error) {
-      console.error("Error when getting logs:", error);
-    } finally {
-      setIsLoading(false);
+      console.error("Error fetching logs:", error);
     }
   };
 
+  // Fetch users
+  const getAllUsers = async () => {
+    try {
+      const res = await axios.get(`/api/User?channel_id=${channelId}`);
+      if (res.status === 200) {
+        const data = res.data;
+        console.log("User:", data);
+  
+        // Check if data.user is an array and set its length, or use an appropriate field for count
+        if (Array.isArray(data.user)) {
+          setUsers(data.user.length); // Assuming `data.user` is an array of user objects
+        } else if (typeof data.user === "number") {
+          setUsers(data.user); // If `data.user` is already the user count
+        } else {
+          console.warn("Unexpected user data structure:", data.user);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+
+  // Initial data load
   useEffect(() => {
-    getAllLogs();
+      getAllLogs(),
+      getAllUsers()  
   }, [channelId]);
 
   useEffect(() => {
-    // You can replace the following static data with real data if available
-    setUsers(1234);  // Replace with real API data
     setActionTypes({
       totalMessages: [12, 19, 3, 5, 2, 3],
       broadcast: [2, 3, 2, 5, 1, 4],
@@ -100,48 +123,55 @@ export default function ChannelStatics({ listTitle, channelId }) {
       <Typography variant="h4" gutterBottom>
         {listTitle} Overview
       </Typography>
-      <Grid container spacing={3}>
-        {/* User, Sent, Received, Block Boxes */}
-        <Grid item xs={12} sm={3}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Users</Typography>
-            <Typography variant="h5">{users}</Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} sm={3}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Sent</Typography>
-            <Typography variant="h5">{sent}</Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} sm={3}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Received</Typography>
-            <Typography variant="h5">{received}</Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} sm={3}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Blocked</Typography>
-            <Typography variant="h5">{block}</Typography>
-          </Paper>
-        </Grid>
-      </Grid>
 
-      {/* Action Types Charts */}
-      <Grid container spacing={3} sx={{ mt: 3 }}>
-        {Object.keys(actionTypes).map((key, index) => {
-          const color = getLineColor(index);  // Get color for each chart
-          return (
-            <Grid item xs={12} sm={4} key={index}>
-              <Paper sx={{ p: 2 }}>
-                <Typography variant="h6">{key.charAt(0).toUpperCase() + key.slice(1)}</Typography>
-                <Line data={chartData(actionTypes[key], color)} options={staticsOptions} />
+      {isLoading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={3}>
+              <Paper sx={{ p: 2, textAlign: "center" }}>
+                <Typography variant="h6">Users</Typography>
+                <Typography variant="h5">{users}</Typography>
               </Paper>
             </Grid>
-          );
-        })}
-      </Grid>
+            <Grid item xs={12} sm={3}>
+              <Paper sx={{ p: 2, textAlign: "center" }}>
+                <Typography variant="h6">Sent</Typography>
+                <Typography variant="h5">{sent}</Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <Paper sx={{ p: 2, textAlign: "center" }}>
+                <Typography variant="h6">Received</Typography>
+                <Typography variant="h5">{received}</Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <Paper sx={{ p: 2, textAlign: "center" }}>
+                <Typography variant="h6">Blocked</Typography>
+                <Typography variant="h5">{block}</Typography>
+              </Paper>
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={3} sx={{ mt: 3 }}>
+            {Object.keys(actionTypes).map((key, index) => {
+              const color = getLineColor(index);
+              return (
+                <Grid item xs={12} sm={4} key={index}>
+                  <Paper sx={{ p: 2 }}>
+                    <Typography variant="h6">{key.charAt(0).toUpperCase() + key.slice(1)}</Typography>
+                    <Line data={chartData(actionTypes[key], color)} options={staticsOptions} />
+                  </Paper>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </>
+      )}
     </Box>
   );
 }
