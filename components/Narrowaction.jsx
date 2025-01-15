@@ -232,48 +232,6 @@ export default function NarrowMessage() {
     });
   };
 
-  const getMessagePlaceholders = (messageType) => {
-    if (messageType === "location") {
-      return ["Title", "Address", "Latitude", "Longitude"];
-    } else if (messageType === "image" || messageType === "video") {
-      return ["Original Content URL", "Preview Image URL"];
-    } else if (messageType === "sticker") {
-      return ["PackageId", "StickerId"];
-    } else if (messageType === "audio") {
-      return ["Original Content URL", "Duration"];
-    } else if (messageType === "flex" || messageType === "template") {
-      return ["Json"];
-    }
-    return ["Enter Message"];
-  };
-
-  const renderPlaceholders = (messageType, index) => {
-    const placeholders = getMessagePlaceholders(messageType);
-    
-    // Set the rows based on message type
-    let rows = 4;  // Default value
-    if (["location", "image", "sticker", "video", "audio"].includes(messageType)) {
-      rows = 1; // For these types, use only 1 row
-    } else if (["flex", "template"].includes(messageType)) {
-      rows = 7; // For these types, use 7 rows
-    }
-  
-    return placeholders.map((placeholder, idx) => (
-      <TextField
-        key={idx}
-        fullWidth
-        variant="outlined"
-        label={placeholder}
-        value={messages[index]?.[idx] || ""}
-        onChange={(e) => handleMessageChange(index, idx, e.target.value)}
-        multiline
-        rows={rows}  // Set dynamic row count based on message type
-        sx={{ mt: 2 }}
-      />
-    ));
-  };
-
-
   return (
     <Box p={4} width="100%">
       {/* Title and Description */}
