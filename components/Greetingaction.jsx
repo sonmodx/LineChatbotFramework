@@ -199,6 +199,21 @@ export default function Greetingaction({ data, setState, state }) {
     });
   };
 
+  const getMessagePlaceholders = () => {
+    if (messageType === "location") {
+      return ["Title", "Address", "Latitude", "Longitude"];
+    } else if (messageType === "image" || messageType === "video") {
+      return ["Original Content URL", "Preview Image URL"];
+    } else if (messageType === "sticker") {
+      return ["PackageId", "StickerId"];
+    } else if (messageType === "audio") {
+      return ["Original Content URL", "Duration"];
+    } else if (messageType === "flex" || messageType === "template") {
+      return ["Json"];
+    }
+    return ["Enter Message"];
+  };
+
   return (
     <Box p={4} width="100%">
       {/* Title and Description */}

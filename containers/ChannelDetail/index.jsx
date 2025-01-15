@@ -6,9 +6,11 @@ import ChannelAPI from "../ChannelAPI";
 import ChannelUser from "../ChannelUser";
 import ChannelAction from "../ChannelAction";
 import ChannelLog from "../ChannelLog";
+import ChannelStatics from "../ChannelStatics";
+
 
 function ManageShowTable({ tab, id, channelId }) {
-  const listTitle = ["Action", "User", "API", "Log"];
+  const listTitle = ["Action", "User", "API", "Log","Statics"];
   if (tab === 0) {
     return <ChannelAction listTitle={listTitle[tab]} channelId={id} />;
   } else if (tab === 1) {
@@ -35,6 +37,7 @@ export default function ChannelDetail({ id, channelName, channelId }) {
     { id: 1, label: "user" },
     { id: 2, label: "api" },
     { id: 3, label: "log" },
+    { id: 4, label: "Statics"},
   ];
 
   return (
