@@ -18,7 +18,7 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import Notification from "./Notification";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
-import { getAllApis } from "@/actions";
+import { getAllApis, getAllAudiences } from "@/actions";
 import SwitchInputComponent from "./SwitchInputComponent";
 import { getCurrentTime, parseDateTime } from "@/lib/utils";
 
@@ -30,6 +30,7 @@ export default function NarrowMessage() {
   const [selectedGroups, setSelectedGroups] = useState(null); // State for selected group
   const [messageCount, setMessageCount] = useState(1); // Track number of message boxes
   const maximumMessage = 5;
+  const [narrowFilterList, setNarrowFilterList] = useState([]);
   const [messages, setMessages] = useState(
     Array(messageCount).fill({ type: "text", text: "" })
   );
@@ -90,12 +91,32 @@ export default function NarrowMessage() {
   };
 
   const handleSendMessage = async () => {
+    const newMessages = messages.map((msg) => {
+      if (msg.type === "template") {
+        return JSON.parse(msg.template);
+      }
+      if (msg.type === "imagemap") {
+        return JSON.parse(msg.imagemap);
+      }
+      if (msg.type === "flex") {
+        return JSON.parse(msg.flex);
+      }
+
+      return msg;
+    });
     const body = {
       type: typeMessage,
       destination: channelId,
       direct_config: {
-        narrow_filter: selectAudience,
-        message: messages,
+        recipient: {
+          type: "audience",
+          audienceGroupId: selectAudience.audienceGroupId,
+        },
+        limit: { max: 1, upToRemainingQuota: false },
+        notificationDisabled: true,
+        message: newMessages,
+        api_id: selectedApi?._id || null,
+
         ...parseDateTime(dateTime),
       },
     };
@@ -135,6 +156,13 @@ export default function NarrowMessage() {
     }
   };
 
+  const handleGetAllAudiences = async () => {
+    const _audiences = await getAllAudiences(channelObjectId);
+
+    console.log(_audiences);
+    setNarrowFilterList(JSON.parse(_audiences));
+  };
+
   const handleGetAllApis = async () => {
     const _apis = await getAllApis(channelObjectId);
     setApis(JSON.parse(_apis));
@@ -142,6 +170,7 @@ export default function NarrowMessage() {
 
   useEffect(() => {
     handleGetAllApis();
+    handleGetAllAudiences();
     setDateTime(getCurrentTime());
   }, []);
 
@@ -291,6 +320,9 @@ export default function NarrowMessage() {
                     <MenuItem value="video">Video</MenuItem>
                     <MenuItem value="audio">Audio</MenuItem>
                     <MenuItem value="location">Location</MenuItem>
+                    <MenuItem value="flex">Flex</MenuItem>
+                    <MenuItem value="template">Template</MenuItem>
+                    <MenuItem value="imagemap">Imagemap</MenuItem>
                   </Select>
                 </FormControl>
                 <SwitchInputComponent
@@ -333,7 +365,7 @@ export default function NarrowMessage() {
             {/* Group Selection */}
             <Autocomplete
               options={narrowFilterList}
-              getOptionLabel={(option) => option.type || ""}
+              getOptionLabel={(option) => option.description || ""}
               value={selectAudience}
               onChange={(event, newValue) => setSelectAudience(newValue)}
               renderInput={(params) => (

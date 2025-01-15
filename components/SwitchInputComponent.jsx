@@ -247,8 +247,73 @@ export default function SwitchInputComponent({
             renderButtons(dynamicContents, index, focusField)}
         </>
       )}
-      {messages[index].type === "flex" && <></>}
-      {messages[index].type === "template" && <></>}
+      {messages[index].type === "flex" && (
+        <>
+          <TextField
+            fullWidth
+            multiline
+            rows={6}
+            style={{ marginTop: 16 }}
+            placeholder={`Enter your JSON (${index + 1}/${maximumMessage})`}
+            variant="outlined"
+            defaultValue={
+              typeof messages[index].flex !== "string"
+                ? JSON.stringify(messages[index], null, 2)
+                : messages[index]
+            }
+            onChange={(e) => handleMessageChange(index, e.target.value, "flex")}
+            onFocus={() => setFoucusField("flex")}
+          />
+          {dynamicContents.length > 0 &&
+            renderButtons(dynamicContents, index, focusField)}
+        </>
+      )}
+      {messages[index].type === "template" && (
+        <>
+          <TextField
+            fullWidth
+            multiline
+            rows={6}
+            style={{ marginTop: 16 }}
+            placeholder={`Enter your JSON (${index + 1}/${maximumMessage})`}
+            variant="outlined"
+            defaultValue={
+              typeof messages[index].template !== "string"
+                ? JSON.stringify(messages[index], null, 2)
+                : messages[index]
+            }
+            onChange={(e) =>
+              handleMessageChange(index, e.target.value, "template")
+            }
+            onFocus={() => setFoucusField("template")}
+          />
+          {dynamicContents.length > 0 &&
+            renderButtons(dynamicContents, index, focusField)}
+        </>
+      )}
+      {messages[index].type === "imagemap" && (
+        <>
+          <TextField
+            fullWidth
+            multiline
+            rows={6}
+            style={{ marginTop: 16 }}
+            placeholder={`Enter your JSON (${index + 1}/${maximumMessage})`}
+            variant="outlined"
+            defaultValue={
+              typeof messages[index].imagemap !== "string"
+                ? JSON.stringify(messages[index], null, 2)
+                : messages[index]
+            }
+            onChange={(e) =>
+              handleMessageChange(index, e.target.value, "imagemap")
+            }
+            onFocus={() => setFoucusField("imagemap")}
+          />
+          {dynamicContents.length > 0 &&
+            renderButtons(dynamicContents, index, focusField)}
+        </>
+      )}
     </>
   );
 }
