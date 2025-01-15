@@ -4,6 +4,7 @@ import { connectMongoDB } from "@/lib/mongodb";
 import API from "@/models/API";
 import Audience from "@/models/audience";
 import LineUser from "@/models/LineUser";
+import RichMenu from "@/models/richmenu";
 
 export const getAllLineUsers = async (channelId) => {
   await connectMongoDB();
@@ -73,6 +74,20 @@ export const getAllAudiences = async (channelId) => {
     return JSON.stringify(api);
   } catch (error) {
     console.error("Error Query Audience in DB:", error);
+    throw error; // Re-throw the error for better debugging
+  }
+};
+
+export const getAllRichMenus = async (channelId) => {
+  await connectMongoDB();
+
+  try {
+    // Explicitly ensure channelId is treated as a string
+    const api = await RichMenu.find({ channel_id: channelId });
+
+    return JSON.stringify(api);
+  } catch (error) {
+    console.error("Error Query Rich menu in DB:", error);
     throw error; // Re-throw the error for better debugging
   }
 };

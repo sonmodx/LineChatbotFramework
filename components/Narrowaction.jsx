@@ -12,6 +12,7 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Stack,
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
@@ -48,6 +49,9 @@ export default function NarrowMessage() {
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
   const [dateTime, setDateTime] = useState(null);
+  const [maxReciever, setMaxReceiver] = useState();
+  const [remainingQuota, setRemainingQuota] = useState(false);
+  const [notificationDisabled, setNotificationDisabled] = useState(false);
   /*
   
   */
@@ -112,8 +116,8 @@ export default function NarrowMessage() {
           type: "audience",
           audienceGroupId: selectAudience.audienceGroupId,
         },
-        limit: { max: 1, upToRemainingQuota: false },
-        notificationDisabled: true,
+        limit: { max: maxReciever, upToRemainingQuota: remainingQuota },
+        notificationDisabled: notificationDisabled,
         message: newMessages,
         api_id: selectedApi?._id || null,
 
@@ -228,48 +232,6 @@ export default function NarrowMessage() {
     });
   };
 
-  const getMessagePlaceholders = (messageType) => {
-    if (messageType === "location") {
-      return ["Title", "Address", "Latitude", "Longitude"];
-    } else if (messageType === "image" || messageType === "video") {
-      return ["Original Content URL", "Preview Image URL"];
-    } else if (messageType === "sticker") {
-      return ["PackageId", "StickerId"];
-    } else if (messageType === "audio") {
-      return ["Original Content URL", "Duration"];
-    } else if (messageType === "flex" || messageType === "template") {
-      return ["Json"];
-    }
-    return ["Enter Message"];
-  };
-
-  const renderPlaceholders = (messageType, index) => {
-    const placeholders = getMessagePlaceholders(messageType);
-    
-    // Set the rows based on message type
-    let rows = 4;  // Default value
-    if (["location", "image", "sticker", "video", "audio"].includes(messageType)) {
-      rows = 1; // For these types, use only 1 row
-    } else if (["flex", "template"].includes(messageType)) {
-      rows = 7; // For these types, use 7 rows
-    }
-  
-    return placeholders.map((placeholder, idx) => (
-      <TextField
-        key={idx}
-        fullWidth
-        variant="outlined"
-        label={placeholder}
-        value={messages[index]?.[idx] || ""}
-        onChange={(e) => handleMessageChange(index, idx, e.target.value)}
-        multiline
-        rows={rows}  // Set dynamic row count based on message type
-        sx={{ mt: 2 }}
-      />
-    ));
-  };
-
-
   return (
     <Box p={4} width="100%">
       {/* Title and Description */}
@@ -288,6 +250,33 @@ export default function NarrowMessage() {
         onChange={(e) => setDateTime(e.target.value)}
         sx={{ mt: 2 }}
       />
+      <Stack direction="row" spacing={5}>
+        <Box display="flex" alignItems="center" mt={2}>
+          <Checkbox
+            checked={notificationDisabled}
+            onChange={(event) => setNotificationDisabled(event.target.checked)}
+          />
+          <Typography variant="body1" display="inline">
+            Disable Notification
+          </Typography>
+        </Box>
+        <Box display="flex" alignItems="center" mt={2}>
+          <Checkbox
+            checked={remainingQuota}
+            onChange={(event) => setRemainingQuota(event.target.checked)}
+          />
+          <Typography variant="body1" display="inline">
+            Up To Remaining Quota
+          </Typography>
+          <TextField
+            label="Maximum Receiver"
+            type="number"
+            value={maxReciever}
+            onChange={(e) => setMaxReceiver(e.target.value)}
+            sx={{ ml: 2 }}
+          />
+        </Box>
+      </Stack>
 
       {/* Text Message and User Areas */}
       <Box mt={3} width="100%">

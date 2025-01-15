@@ -3,14 +3,10 @@ import mongoose, { Schema, models } from "mongoose";
 // ยังไม่เสร็จ
 const lineUserSchema = new Schema(
   {
-    _id: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      unique: true,
-    },
     line_user_id: {
       type: String,
-      require: true,
+      required: true,
+      unique: true,
     },
     display_name: {
       type: String,
@@ -20,7 +16,7 @@ const lineUserSchema = new Schema(
       type: String,
       required: false,
     },
-    image_profile: {
+    pictureUrl: {
       type: String,
       required: false,
     },
@@ -34,6 +30,10 @@ const lineUserSchema = new Schema(
     },
     groups: {
       type: [String],
+      required: false,
+    },
+    status: {
+      type: String,
       required: false,
     },
     channel_id: {

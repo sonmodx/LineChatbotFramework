@@ -50,6 +50,7 @@ export default function CustomTable({
   setPage,
   rowsPerPage,
   setRowsPerPage,
+  search = null,
 }) {
   const [selectId, setSelectId] = useState();
 
@@ -82,7 +83,7 @@ export default function CustomTable({
 
   useEffect(() => {
     callbackGetData(session, page, rowsPerPage);
-  }, [session, page, rowsPerPage]);
+  }, [session, page, rowsPerPage, search]);
 
   if (isLoading) return <Loading />;
 

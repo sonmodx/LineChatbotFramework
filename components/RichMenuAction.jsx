@@ -273,17 +273,20 @@ export default function RichMenuDesigner() {
   });
   console.log("image", image);
   const [imagePreview, setImagePreview] = useState(null);
+  const [richMenuAlias, setRichMenuAlias] = useState(null);
   console.log("template area", selectedAreaTemplate);
+  const [richMenuId, setRichMenuId] = useState();
 
   const richmenuconfig = {
     richmenu: {
       size: selectedSizeTemplate,
       selected: false,
-      name: "Rich menu",
+      name: richMenuAlias,
       chatBarText: chatBarTitle,
       areas: selectedAreaTemplate,
     },
-    // richmenu_id: "richmenu-b78718c4de8e4de2cd5dad2c630e0e3e",
+    richmenuAlias: richMenuAlias,
+    // richmenu_id: "richmenu-4898296a626d2b4bc29aa3fdb17203cc",
     image: image,
   };
 
@@ -328,8 +331,32 @@ export default function RichMenuDesigner() {
   //   const handleMessageChange = (value) => {
   //     setMessages(value);
   //   };
+  const handleDeleteRichMenu = async () => {
+    try {
+      const body = {
+        type: "deleterichmenu",
+        destination: channelId,
+        richmenu_config: richmenuconfig,
+      };
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/richmenu`,
+        body,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (res.status === 200) {
+        console.log("delte succces");
+      }
+    } catch (error) {
+      console.error(
+        "Error sending request to webhook:",
+        error.response?.data || error.message
+      );
+    }
+  };
 
-  const handleSendMessage = async () => {
+  const handleCreateRichMenu = async () => {
     const body = {
       type: "createrichmenu",
       destination: channelId,
@@ -347,41 +374,58 @@ export default function RichMenuDesigner() {
       console.log("result", res);
 
       if (res.status === 200) {
-        const richmenuconfigWithRichId = {
-          richmenu_id: res.data,
-          richmenu: {
-            size: selectedSizeTemplate,
-            selected: false,
-            name: "Rich menu",
-            chatBarText: chatBarTitle,
-            areas: selectedAreaTemplate,
-          },
+        setRichMenuId(res.data);
 
-          image: image,
-        };
-        const body2 = {
-          type: "setrichmenuforalluser",
-          destination: channelId,
-          richmenu_config: richmenuconfigWithRichId,
-        };
-        const res2 = await axios.post(
-          `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/richmenu`,
-          body2,
-          {
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-        if (res2.status === 200) {
-          console.log("Response from webhook:", res.data);
-          setNotification({
-            open: true,
-            message: "Successfully sent message",
-            statusMessage: "success",
-          });
-        }
+        setNotification({
+          open: true,
+          message: "Successfully create rih menu",
+          statusMessage: "success",
+        });
       }
 
       console.log("Response from webhook:", res.data);
+    } catch (error) {
+      console.error(
+        "Error sending request to webhook:",
+        error.response?.data || error.message
+      );
+    }
+  };
+
+  const handleUpdateRichMenu = async () => {
+    try {
+      const richmenuconfigWithRichId = {
+        richmenu_id: richMenuId,
+        richmenu: {
+          size: selectedSizeTemplate,
+          selected: false,
+          name: "Rich menu",
+          chatBarText: chatBarTitle,
+          areas: selectedAreaTemplate,
+        },
+
+        image: image,
+      };
+      const body2 = {
+        type: "setrichmenuforalluser",
+        destination: channelId,
+        richmenu_config: richmenuconfigWithRichId,
+      };
+      const res2 = await axios.post(
+        `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/richmenu`,
+        body2,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (res2.status === 200) {
+        console.log("Response from webhook:", res2.data);
+        setNotification({
+          open: true,
+          message: "Successfully update rich menu",
+          statusMessage: "success",
+        });
+      }
     } catch (error) {
       console.error(
         "Error sending request to webhook:",
@@ -395,6 +439,14 @@ export default function RichMenuDesigner() {
     setSelectedSizeTemplate(template.size);
     setOpenModal(false);
     setSelectedAreaTemplate(template.areas);
+  };
+
+  const handleInputRichMenuName = (e) => {
+    const word = e.target.value;
+    if (word[word.length - 1] === " ") {
+      window.alert("Can not input space");
+    }
+    setRichMenuAlias(word.replace(/\s/g, ""));
   };
 
   return (
@@ -498,122 +550,141 @@ export default function RichMenuDesigner() {
           className="mt-4 object-cover"
         />
       )}
+      {selectedAreaTemplate.length > 0 && (
+        <>
+          <Box mt={3} width="100%">
+            <Typography
+              variant="h6"
+              gutterBottom
+              backgroundColor="primary.main"
+              style={{ color: "#fff", padding: "10px" }}
+            >
+              Preview Richmenu
+            </Typography>
 
-      <Box mt={3} width="100%">
-        <Typography
-          variant="h6"
-          gutterBottom
-          backgroundColor="primary.main"
-          style={{ color: "#fff", padding: "10px" }}
-        >
-          Preview Richmenu
-        </Typography>
-
-        {/* Preview Box */}
-        <Box
-          sx={{
-            position: "relative",
-            width: imagePreview
-              ? imagePreview.includes("template1L") ||
-                imagePreview.includes("template2L") ||
-                imagePreview.includes("template3L") ||
-                imagePreview.includes("template4L") ||
-                imagePreview.includes("template5L") ||
-                imagePreview.includes("template6L") ||
-                imagePreview.includes("template7L") // Check if large template
-                ? 2500 * 0.25 // Scale down to 50% for large templates
-                : 2500 * 0.25 // Scale down to 50% for compact templates
-              : 0, // Adjust width based on selected template
-            height: imagePreview
-              ? imagePreview.includes("template1L") ||
-                imagePreview.includes("template2L") ||
-                imagePreview.includes("template3L") ||
-                imagePreview.includes("template4L") ||
-                imagePreview.includes("template5L") ||
-                imagePreview.includes("template6L") ||
-                imagePreview.includes("template7L") // Check if large template
-                ? 1686 * 0.25 // Scale down to 50% for large templates
-                : 800 * 0.25 // Scale down to 50% for compact templates
-              : 0, // Adjust height based on selected template
-            maxWidth: "100%",
-            border: "2px dashed #ccc",
-            borderRadius: 2,
-            overflow: "hidden",
-            backgroundColor: "#f5f5f5",
-          }}
-        >
-          {/* Display uploaded image */}
-          {image && (
-            <img
-              src={image}
-              alt="Uploaded Preview"
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "85%",
-                objectFit: "cover",
+            {/* Preview Box */}
+            <Box
+              sx={{
+                position: "relative",
+                width: imagePreview
+                  ? imagePreview.includes("template1L") ||
+                    imagePreview.includes("template2L") ||
+                    imagePreview.includes("template3L") ||
+                    imagePreview.includes("template4L") ||
+                    imagePreview.includes("template5L") ||
+                    imagePreview.includes("template6L") ||
+                    imagePreview.includes("template7L") // Check if large template
+                    ? 2500 * 0.25 // Scale down to 50% for large templates
+                    : 2500 * 0.25 // Scale down to 50% for compact templates
+                  : 0, // Adjust width based on selected template
+                height: imagePreview
+                  ? imagePreview.includes("template1L") ||
+                    imagePreview.includes("template2L") ||
+                    imagePreview.includes("template3L") ||
+                    imagePreview.includes("template4L") ||
+                    imagePreview.includes("template5L") ||
+                    imagePreview.includes("template6L") ||
+                    imagePreview.includes("template7L") // Check if large template
+                    ? 1686 * 0.25 // Scale down to 50% for large templates
+                    : 800 * 0.25 // Scale down to 50% for compact templates
+                  : 0, // Adjust height based on selected template
+                maxWidth: "100%",
+                border: "2px dashed #ccc",
+                borderRadius: 2,
+                overflow: "hidden",
+                backgroundColor: "#f5f5f5",
               }}
-            />
-          )}
+            >
+              {/* Display uploaded image */}
+              {image && (
+                <img
+                  src={image}
+                  alt="Uploaded Preview"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "85%",
+                    objectFit: "cover",
+                  }}
+                />
+              )}
 
-          {/* Display selected template overlay */}
-          {imagePreview && (
-            <img
-              src={imagePreview}
-              alt="Template Preview"
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                opacity: 0.85, // 60% opacity
-              }}
-            />
-          )}
-        </Box>
-      </Box>
-
-      <Typography mt={4}>Chat Bar Title</Typography>
-      <TextField
-        fullWidth
-        variant="outlined"
-        value={chatBarTitle}
-        onChange={(e) => setChatBarTitle(e.target.value)}
-        inputProps={{ maxLength: 14 }}
-      />
-      <Box>
-        <Typography mt={4}>Action Bar</Typography>
-      </Box>
-      <Box component="form">
-        {selectedAreaTemplate?.map((area, index) => (
-          <ActionComponent
-            handleAreaChange={handleAreaChange}
-            key={index}
-            index={index}
-            imagePreview={imagePreview}
+              {/* Display selected template overlay */}
+              {imagePreview && (
+                <img
+                  src={imagePreview}
+                  alt="Template Preview"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    opacity: 0.85, // 60% opacity
+                  }}
+                />
+              )}
+            </Box>
+          </Box>
+          <Typography mt={4}>Rich Menu Name</Typography>
+          <TextField
+            fullWidth
+            variant="outlined"
+            value={richMenuAlias}
+            onChange={handleInputRichMenuName}
+            inputProps={{ maxLength: 14 }}
           />
-        ))}
 
-        {/* Note */}
-        <Box mt={2} width="100%">
-          <Typography variant="caption">*หมายเหตุ</Typography>
-        </Box>
-        {/* Send Button */}
-        <Box mt={4} textAlign="right" width="100%">
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSendMessage}
-          >
-            Send
-          </Button>
-        </Box>
-      </Box>
+          <Typography mt={4}>Chat Bar Title</Typography>
+          <TextField
+            fullWidth
+            variant="outlined"
+            value={chatBarTitle}
+            onChange={(e) => setChatBarTitle(e.target.value)}
+            inputProps={{ maxLength: 14 }}
+          />
+          <Box>
+            <Typography mt={4}>Action Bar</Typography>
+          </Box>
+          <Box component="form">
+            {selectedAreaTemplate?.map((area, index) => (
+              <ActionComponent
+                handleAreaChange={handleAreaChange}
+                key={index}
+                index={index}
+                imagePreview={imagePreview}
+              />
+            ))}
 
+            {/* Note */}
+            <Box mt={2} width="100%">
+              <Typography variant="caption">*หมายเหตุ</Typography>
+            </Box>
+            <Box mt={4} textAlign="right" width="100%">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleUpdateRichMenu}
+              >
+                Link Rich Menu
+              </Button>
+            </Box>
+            {/* Send Button */}
+            <Box mt={4} textAlign="right" width="100%">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleCreateRichMenu}
+              >
+                Create
+              </Button>
+            </Box>
+          </Box>
+        </>
+      )}
       <Notification
         openNotification={notification.open}
         setOpenNotification={setNotification}
