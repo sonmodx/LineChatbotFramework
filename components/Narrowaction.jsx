@@ -12,6 +12,7 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Stack,
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
@@ -48,6 +49,9 @@ export default function NarrowMessage() {
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
   const [dateTime, setDateTime] = useState(null);
+  const [maxReciever, setMaxReceiver] = useState();
+  const [remainingQuota, setRemainingQuota] = useState(false);
+  const [notificationDisabled, setNotificationDisabled] = useState(false);
   /*
   
   */
@@ -112,8 +116,8 @@ export default function NarrowMessage() {
           type: "audience",
           audienceGroupId: selectAudience.audienceGroupId,
         },
-        limit: { max: 1, upToRemainingQuota: false },
-        notificationDisabled: true,
+        limit: { max: maxReciever, upToRemainingQuota: remainingQuota },
+        notificationDisabled: notificationDisabled,
         message: newMessages,
         api_id: selectedApi?._id || null,
 
@@ -246,6 +250,33 @@ export default function NarrowMessage() {
         onChange={(e) => setDateTime(e.target.value)}
         sx={{ mt: 2 }}
       />
+      <Stack direction="row" spacing={5}>
+        <Box display="flex" alignItems="center" mt={2}>
+          <Checkbox
+            checked={notificationDisabled}
+            onChange={(event) => setNotificationDisabled(event.target.checked)}
+          />
+          <Typography variant="body1" display="inline">
+            Disable Notification
+          </Typography>
+        </Box>
+        <Box display="flex" alignItems="center" mt={2}>
+          <Checkbox
+            checked={remainingQuota}
+            onChange={(event) => setRemainingQuota(event.target.checked)}
+          />
+          <Typography variant="body1" display="inline">
+            Up To Remaining Quota
+          </Typography>
+          <TextField
+            label="Maximum Receiver"
+            type="number"
+            value={maxReciever}
+            onChange={(e) => setMaxReceiver(e.target.value)}
+            sx={{ ml: 2 }}
+          />
+        </Box>
+      </Stack>
 
       {/* Text Message and User Areas */}
       <Box mt={3} width="100%">

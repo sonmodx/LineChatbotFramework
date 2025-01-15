@@ -1,29 +1,25 @@
 import mongoose, { Schema, models } from "mongoose";
 
-const logSchema = new Schema(
+const richmenuSchema = new Schema(
   {
     channel_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Channel",
       required: true,
     },
-    chatbot_name: {
+    richmenuId: {
       type: String,
       required: true,
     },
-    destination: {
+    richmenuAlias: {
       type: String,
-      required: true,
-    },
-    line_user_id: {
-      type: [String],
       required: true,
     },
     content: {
       type: Object,
       required: true,
     },
-    direction: {
+    image: {
       type: String,
       required: true,
     },
@@ -31,5 +27,6 @@ const logSchema = new Schema(
   { timestamps: true }
 );
 
-const Log = models.Log || mongoose.model("Log", logSchema);
-export default Log;
+const RichMenu = models.RichMenu || mongoose.model("RichMenu", richmenuSchema);
+
+export default RichMenu;

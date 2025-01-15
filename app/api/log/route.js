@@ -64,9 +64,13 @@ export async function GET(req) {
           $or: [
             { name: { $regex: search, $options: "i" } },
             { description: { $regex: search, $options: "i" } },
+            { line_user_id: { $elemMatch: { $regex: search, $options: "i" } } },
           ],
         }),
       };
+
+      console.log("log", typeof search);
+      console.log("filter", JSON.stringify(filter, null, 2));
 
       const totalLog = await Log.countDocuments(filter);
 
@@ -74,6 +78,8 @@ export async function GET(req) {
         .sort({ [orderBy]: orderDirection })
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
+
+      console.log("result log", LineLog);
 
       // Function to retrieve line_user_name from LineUser collection
       const getLineUserNames = async (lineUserIds) => {
