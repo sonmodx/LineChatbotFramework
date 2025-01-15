@@ -47,8 +47,6 @@ export default function PushMessage() {
   const typeMessage = "Push";
   const [apis, setApis] = useState([]);
   const [dateTime, setDateTime] = useState(null);
-  console.log("date", dateTime);
-
   const [dynamicContents, setDynamicContents] = useState([]);
 
   const handleCheckboxChange = (event) => {
