@@ -45,27 +45,40 @@ const getLineColor = (index) => {
   return colors[index % colors.length];
 };
 
-const processLogsByDate = (logs, isDaily) => {
+const processLogs = (logs) => {
   const groupedData = {};
 
   logs.forEach((log) => {
     const date = new Date(log.createdAt);
-    const key = isDaily
-      ? date.toLocaleDateString("default", { day: "2-digit", month: "short", year: "numeric" })
-      : `${date.toLocaleString("default", { month: "short" })} ${date.getFullYear()}`;
+    const monthKey = `${String(date.getMonth() + 1).padStart(2, "0")}-${date.getFullYear()}`;
+    const dayKey = date.toISOString().split("T")[0];
 
     if (!groupedData[log.direction]) {
-      groupedData[log.direction] = {};
+      groupedData[log.direction] = { monthly: {}, daily: {} };
     }
 
-    if (!groupedData[log.direction][key]) {
-      groupedData[log.direction][key] = 0;
+    if (!groupedData[log.direction].monthly[monthKey]) {
+      groupedData[log.direction].monthly[monthKey] = 0;
+    }
+    if (!groupedData[log.direction].daily[dayKey]) {
+      groupedData[log.direction].daily[dayKey] = 0;
     }
 
-    groupedData[log.direction][key]++;
+    groupedData[log.direction].monthly[monthKey]++;
+    groupedData[log.direction].daily[dayKey]++;
   });
 
   return groupedData;
+};
+
+const getLast7DaysLabels = () => {
+  const labels = [];
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    labels.push(`${String(date.getDate()).padStart(2, "0")}-${String(date.getMonth() + 1).padStart(2, "0")}-${date.getFullYear()}`);
+  }
+  return labels;
 };
 
 const chartData = (labels, data, color) => ({
@@ -93,9 +106,9 @@ export default function ChannelStatics({ listTitle, channelId }) {
   const [received, setReceived] = useState(0);
   const [actionTypes, setActionTypes] = useState({});
   const [block, setBlock] = useState(0);
-  const [isDaily, setIsDaily] = useState(false); // Toggle between daily and monthly views
+  const [viewDaily, setViewDaily] = useState(true);
 
-  const getAllLogs = async () => {
+  const getLogs = async () => {
     try {
       setIsLoading(true);
       const res = await axios.get(`/api/log?channel_id=${channelId}`);
@@ -103,18 +116,8 @@ export default function ChannelStatics({ listTitle, channelId }) {
         const { log } = res.data;
         setLogs(log);
 
-        const processedData = processLogsByDate(log, isDaily);
-
-        const actionData = {};
-        const labels = Object.keys(
-          processedData[Object.keys(processedData)[0]] || {}
-        ).sort();
-
-        Object.keys(processedData).forEach((direction) => {
-          actionData[direction] = labels.map((label) => processedData[direction][label] || 0);
-        });
-
-        setActionTypes(actionData);
+        const processedData = processLogs(log);
+        setActionTypes(processedData);
 
         // Set individual counts
         const sentLogs = log.filter((l) => l.direction === "send_Reply");
@@ -161,26 +164,15 @@ export default function ChannelStatics({ listTitle, channelId }) {
   };
 
   useEffect(() => {
-    getAllLogs();
+    getLogs();
     getAllUsers();
-  }, [channelId, isDaily]);
+  }, [channelId]);
 
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom>
         {listTitle} Overview
       </Typography>
-
-      <FormControlLabel
-        control={
-          <Switch
-            checked={isDaily}
-            onChange={(e) => setIsDaily(e.target.checked)}
-            color="primary"
-          />
-        }
-        label={isDaily ? "Daily View" : "Monthly View"}
-      />
 
       {isLoading ? (
         <Box
@@ -237,32 +229,46 @@ export default function ChannelStatics({ listTitle, channelId }) {
             </Grid>
             <Grid item xs={12} sm={2}>
               <Paper sx={{ p: 2, textAlign: "center" }}>
-                <Typography variant="h6">Narrowcast</Typography>
-                <Typography variant="h5">{narrowcast}</Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={2}>
-              <Paper sx={{ p: 2, textAlign: "center" }}>
                 <Typography variant="h6">Broadcast</Typography>
                 <Typography variant="h5">{boardcast}</Typography>
               </Paper>
             </Grid>
+            <Grid item xs={12} sm={2}>
+              <Paper sx={{ p: 2, textAlign: "center" }}>
+                <Typography variant="h6">Narrowcast</Typography>
+                <Typography variant="h5">{narrowcast}</Typography>
+              </Paper>
+            </Grid>
           </Grid>
+          <Typography variant="h4" marginTop={3} marginBottom={3} gutterBottom>
+        {listTitle} Chart
+          </Typography>
+          <FormControlLabel
+              control={
+                <Switch
+                  checked={viewDaily}
+                  onChange={() => setViewDaily(!viewDaily)}
+                  color="primary"
+                />
+              }
+              label={`View ${viewDaily ? "Monthly" : "Daily"}`}
+            />
 
           <Grid container spacing={3} sx={{ mt: 3 }}>
+            
+
             {Object.keys(actionTypes).map((key, index) => {
               const color = getLineColor(index);
-              const labels = Object.keys(
-                processLogsByDate(logs, isDaily)[key] || {}
-              ).sort();
+              const labels = viewDaily ? getLast7DaysLabels() : Object.keys(actionTypes[key].monthly);
+              const data = viewDaily
+                ? labels.map((label) => actionTypes[key].daily[label.split("-").reverse().join("-")] || 0)
+                : Object.values(actionTypes[key].monthly);
+
               return (
                 <Grid item xs={12} sm={4} key={index}>
                   <Paper sx={{ p: 2 }}>
                     <Typography variant="h6">{key.replace(/_/g, " ")}</Typography>
-                    <Line
-                      data={chartData(labels, actionTypes[key], color)}
-                      options={staticsOptions}
-                    />
+                    <Line data={chartData(labels, data, color)} options={staticsOptions} />
                   </Paper>
                 </Grid>
               );
