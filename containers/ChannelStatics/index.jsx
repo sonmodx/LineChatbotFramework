@@ -241,7 +241,7 @@ export default function ChannelStatics({ listTitle, channelId }) {
             </Grid>
           </Grid>
           <Typography variant="h4" marginTop={3} marginBottom={3} gutterBottom>
-        {listTitle} Chart
+        {listTitle} Chart 
           </Typography>
           <FormControlLabel
               control={
@@ -251,7 +251,7 @@ export default function ChannelStatics({ listTitle, channelId }) {
                   color="primary"
                 />
               }
-              label={`View ${viewDaily ? "Monthly" : "Daily"}`}
+              label={`View ${viewDaily ? "Daily(Last 7 days)" : "Monthly"}`}
             />
 
           <Grid container spacing={3} sx={{ mt: 3 }}>
