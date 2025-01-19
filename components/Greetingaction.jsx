@@ -36,7 +36,7 @@ export default function Greetingaction({ data, setState, state }) {
   const [apis, setApis] = useState([]);
   const [name, setName] = useState(data?.name || "");
   const [description, setDescription] = useState(data?.description || "");
-  console.log("GET DATA", data);
+
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("id");
   const maximumMessage = 5;
@@ -74,21 +74,31 @@ export default function Greetingaction({ data, setState, state }) {
       setMessages(messages.slice(0, messageCount - 1));
     }
   };
+
+  const isValidJSON = (str) => {
+    try {
+      JSON.parse(str);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
   const handleSave = async () => {
     try {
       const newMessages = messages.map((msg) => {
-        if (msg.type === "template") {
+        if (msg.type === "template" && isValidJSON(msg.template)) {
           return JSON.parse(msg.template);
         }
-        if (msg.type === "imagemap") {
+        if (msg.type === "imagemap" && isValidJSON(msg.imagemap)) {
           return JSON.parse(msg.imagemap);
         }
-        if (msg.type === "flex") {
+        if (msg.type === "flex" && isValidJSON(msg.flex)) {
           return JSON.parse(msg.flex);
         }
 
         return msg;
       });
+      console.log("HI", newMessages);
       const body = {
         name: name,
         type: messages[0]?.type,
@@ -127,7 +137,7 @@ export default function Greetingaction({ data, setState, state }) {
 
   const handleGetAllApis = async () => {
     const _apis = await getAllApis(channelObjectId);
-    console.log(_apis);
+    // console.log(_apis);
     setApis(JSON.parse(_apis));
   };
 
@@ -168,8 +178,8 @@ export default function Greetingaction({ data, setState, state }) {
     const result = getAllKeyObjects(keywordsObject);
     setDynamicContents(result);
 
-    console.log("MY KEY", keywordsObject);
-    console.log("MY result", result);
+    // console.log("MY KEY", keywordsObject);
+    // console.log("MY result", result);
   }, [selectedApi]);
 
   const renderButtons = (contents, messageIndex, field) => {
