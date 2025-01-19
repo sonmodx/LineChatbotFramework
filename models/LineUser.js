@@ -6,7 +6,6 @@ const lineUserSchema = new Schema(
     line_user_id: {
       type: String,
       required: true,
-      unique: true,
     },
     display_name: {
       type: String,
