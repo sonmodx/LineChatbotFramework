@@ -25,6 +25,8 @@ function ManageShowTable({ tab, id, channelId }) {
     return <ChannelAPI listTitle={listTitle[tab]} channelId={id} />;
   } else if (tab === 3) {
     return <ChannelLog listTitle={listTitle[tab]} channelId={id} />;
+  } else if (tab === 4) {
+    return <ChannelStatics listTitle={listTitle[tab]} channelId={id} />;
   }
   return <Box>Empty Component</Box>;
 }
@@ -37,7 +39,7 @@ export default function ChannelDetail({ id, channelName, channelId }) {
     { id: 1, label: "user" },
     { id: 2, label: "api" },
     { id: 3, label: "log" },
-    { id: 4, label: "Statics"},
+    { id: 4, label: "statics"},
   ];
 
   return (

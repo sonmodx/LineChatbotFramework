@@ -24,7 +24,7 @@ export async function GET(req) {
     const orderDirection =
       searchParams.get("orderDirection") === "desc" ? -1 : 1;
     const pageNumber = parseInt(searchParams.get("pageNumber")) || 1;
-    const pageSize = parseInt(searchParams.get("pageSize")) || 10;
+    const pageSize = parseInt(searchParams.get("pageSize")) || null;
 
     if (id) {
       const Line_User = await LineUser.findById(id);
