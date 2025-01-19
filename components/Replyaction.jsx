@@ -42,7 +42,6 @@ export default function Replyaction({ data, setState, state }) {
   const [dynamicContents, setDynamicContents] = useState([]);
   const [name, setName] = useState(data?.name || "");
   const [description, setDescription] = useState(data?.description || "");
-  console.log("GETDATA", data);
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
@@ -88,6 +87,7 @@ export default function Replyaction({ data, setState, state }) {
       setErrorKeyword(false);
       const newMessages = messages.map((msg) => {
         if (msg.type === "template") {
+          console.log("TEMPLATE");
           return JSON.parse(msg.template);
         }
         if (msg.type === "imagemap") {
@@ -145,7 +145,7 @@ export default function Replyaction({ data, setState, state }) {
     const _api = await getApiById(data?.api_id || null);
     if (_api) {
       setUseApi(true);
-      console.log("API ID", _api);
+
       setSelectedApi(JSON.parse(_api));
     }
   };
