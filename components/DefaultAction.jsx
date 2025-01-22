@@ -29,7 +29,7 @@ export default function DefaultAction({ data, setState, state }) {
   const [messages, setMessages] = useState(
     data?.message || Array(messageCount).fill({ type: "text", text: "" })
   );
-  const [messageType, setMessageType] = useState("text"); // State for message type
+
   const searchParams = useSearchParams();
   console.log("messages", messages);
   const id = data?._id || null;
@@ -48,11 +48,6 @@ export default function DefaultAction({ data, setState, state }) {
 
   const handleApiChange = (event, newValue) => {
     setSelectedApi(newValue);
-  };
-
-  const handleMessageTypeChange = (type) => {
-    setMessageType(type);
-    setMessages(""); // Reset messages when type changes
   };
 
   const handleMessageChange = (index, value, key) => {
@@ -81,16 +76,25 @@ export default function DefaultAction({ data, setState, state }) {
     }
   };
 
+  const isValidJSON = (str) => {
+    try {
+      JSON.parse(str);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
   const handleSave = async () => {
     try {
       const newMessages = messages.map((msg) => {
-        if (msg.type === "template") {
+        if (msg.type === "template" && isValidJSON(msg.template)) {
           return JSON.parse(msg.template);
         }
-        if (msg.type === "imagemap") {
+        if (msg.type === "imagemap" && isValidJSON(msg.imagemap)) {
           return JSON.parse(msg.imagemap);
         }
-        if (msg.type === "flex") {
+        if (msg.type === "flex" && isValidJSON(msg.flex)) {
           return JSON.parse(msg.flex);
         }
 

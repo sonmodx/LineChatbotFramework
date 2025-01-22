@@ -31,7 +31,7 @@ export default function Replyaction({ data, setState, state }) {
     data?.message || Array(messageCount).fill({ type: "text", text: "" })
   );
   const [errorKeyword, setErrorKeyword] = useState(false);
-  const [messageType, setMessageType] = useState("text"); // State for selected message type
+
   const searchParams = useSearchParams();
 
   const channelObjectId = searchParams.get("id");
@@ -77,6 +77,15 @@ export default function Replyaction({ data, setState, state }) {
     }
   };
 
+  const isValidJSON = (str) => {
+    try {
+      JSON.parse(str);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
   const handleSave = async () => {
     try {
       if (keywords.length === 0) {
@@ -86,14 +95,13 @@ export default function Replyaction({ data, setState, state }) {
 
       setErrorKeyword(false);
       const newMessages = messages.map((msg) => {
-        if (msg.type === "template") {
-          console.log("TEMPLATE");
+        if (msg.type === "template" && isValidJSON(msg.template)) {
           return JSON.parse(msg.template);
         }
-        if (msg.type === "imagemap") {
+        if (msg.type === "imagemap" && isValidJSON(msg.imagemap)) {
           return JSON.parse(msg.imagemap);
         }
-        if (msg.type === "flex") {
+        if (msg.type === "flex" && isValidJSON(msg.flex)) {
           return JSON.parse(msg.flex);
         }
 
