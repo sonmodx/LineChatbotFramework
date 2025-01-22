@@ -29,7 +29,6 @@ export default function Greetingaction({ data, setState, state }) {
   const [messages, setMessages] = useState(
     data?.message || Array(messageCount).fill({ type: "text", text: "" })
   );
-  const [messageType, setMessageType] = useState("text"); // Default to "text"
   const searchParams = useSearchParams();
   const [dynamicContents, setDynamicContents] = useState([]);
   const id = data?._id || null;

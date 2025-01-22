@@ -23,65 +23,71 @@ const APISchema = new Schema(
       ref: "Channel",
       required: true,
     },
-    api_params: [{
+    api_params: [
+      {
         key: {
-            type: String,
-            required: false,
+          type: String,
+          required: false,
         },
         value: {
-            type: String,
-            required: false,
+          type: String,
+          required: false,
         },
         description: {
-            type: String,
-            required: false,
-        }
-    }],
-    api_headers: [{
+          type: String,
+          required: false,
+        },
+      },
+    ],
+    api_headers: [
+      {
         key: {
-            type: String,
-            required: false,
+          type: String,
+          required: false,
         },
         value: {
-            type: String,
-            required: false,
+          type: String,
+          required: false,
         },
         description: {
-            type: String,
-            required: false,
-        }
-    }],
-    api_body: [{
+          type: String,
+          required: false,
+        },
+      },
+    ],
+    api_body: [
+      {
         key: {
-            type: String,
-            required: false,
+          type: String,
+          required: false,
         },
         content_type: {
-            type: String,
-            required: false,
+          type: String,
+          required: false,
         },
         content: {
-            type: String,
-            required: false,
-        }
-    },],
+          type: String,
+          required: false,
+        },
+      },
+    ],
     api_auth: {
-        secret_token: {
-            type: String,
-            required: false,
-        },
-        algorithm: {
-            type: String,
-            required: false,
-        },
-        payload: {
-            type: String,
-            required: false,
-        },
+      secret_token: {
+        type: String,
+        required: false,
+      },
+      type: {
+        type: String,
+        required: false,
+      },
+      payload: {
+        type: String,
+        required: false,
+      },
     },
     keywords: {
-        type: [String],
-        required: true,
+      type: [String],
+      required: true,
     },
   },
   { timestamps: true }
