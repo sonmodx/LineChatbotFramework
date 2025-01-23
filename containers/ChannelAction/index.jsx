@@ -71,7 +71,6 @@ export default function ChannelAction({ listTitle, channelId }) {
               justifyContent: "space-between",
               alignItems: "center",
               marginTop: 5,
-
             }}
           >
             <Typography variant="h4" sx={{ py: 1, fontWeight: "bolder" }}>
@@ -92,9 +91,16 @@ export default function ChannelAction({ listTitle, channelId }) {
               "Description",
               "Update date",
               "Create date",
+              "Active",
               "",
             ]}
-            bodyColumns={["api_id", "description", "updatedAt", "createdAt"]}
+            bodyColumns={[
+              "api_id",
+              "description",
+              "updatedAt",
+              "createdAt",
+              "activeString",
+            ]}
             canSetting={true}
             statusState={[]}
             callbackGetData={getAllActions}

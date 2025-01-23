@@ -371,7 +371,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
           >
             <Button
               variant="outlined"
-              color="secondary"
+              color="error"
               onClick={() => setOpen(false)} // Close modal on Cancel
             >
               Cancel
@@ -492,7 +492,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
           >
             <Button
               variant="outlined"
-              color="secondary"
+              color="error"
               onClick={() => setOpenUpdate(false)} // Close modal on Cancel
             >
               Cancel

@@ -14,6 +14,7 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  Chip,
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
@@ -335,6 +336,16 @@ export default function PushMessage() {
                     variant="outlined"
                     fullWidth
                   />
+                )}
+                renderOption={({ key, ...props }, option) => (
+                  <li key={key} {...props}>
+                    <Typography variant="body1">{option.name}</Typography>{" "}
+                    <Chip
+                      sx={{ ml: "auto" }}
+                      label={option.owner}
+                      color={option.owner === "user" ? "primary" : "default"}
+                    />
+                  </li>
                 )}
               />
             )}

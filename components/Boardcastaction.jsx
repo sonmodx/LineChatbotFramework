@@ -13,6 +13,7 @@ import {
   Select,
   MenuItem,
   IconButton,
+  Chip,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import Notification from "./Notification";
@@ -258,6 +259,16 @@ export default function BroadcastMessage() {
                     variant="outlined"
                     fullWidth
                   />
+                )}
+                renderOption={({ key, ...props }, option) => (
+                  <li key={key} {...props}>
+                    <Typography variant="body1">{option.name}</Typography>{" "}
+                    <Chip
+                      sx={{ ml: "auto" }}
+                      label={option.owner}
+                      color={option.owner === "user" ? "primary" : "default"}
+                    />
+                  </li>
                 )}
               />
             )}

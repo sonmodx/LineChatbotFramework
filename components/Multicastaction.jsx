@@ -391,6 +391,16 @@ export default function MulticastMessage() {
                     fullWidth
                   />
                 )}
+                renderOption={({ key, ...props }, option) => (
+                  <li key={key} {...props}>
+                    <Typography variant="body1">{option.name}</Typography>{" "}
+                    <Chip
+                      sx={{ ml: "auto" }}
+                      label={option.owner}
+                      color={option.owner === "user" ? "primary" : "default"}
+                    />
+                  </li>
+                )}
               />
             )}
           </Grid>
