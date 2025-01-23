@@ -176,6 +176,7 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
       api_params: urlParams,
       api_body: apiBody,
       api_auth: auth,
+      owner: "user",
     };
     if (mode === "edit") {
       requestData.id = id;
@@ -486,7 +487,7 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
                       variant="h6"
                       sx={{
                         marginTop: 1,
-                        color: "secondary.main",
+                        color: "error.main",
                         fontSize: 16,
                       }}
                     >

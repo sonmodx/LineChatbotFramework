@@ -1,6 +1,7 @@
 "use server";
 
 import { connectMongoDB } from "@/lib/mongodb";
+import Action from "@/models/action";
 import API from "@/models/API";
 import Audience from "@/models/audience";
 import LineUser from "@/models/LineUser";
@@ -69,9 +70,9 @@ export const getAllAudiences = async (channelId) => {
 
   try {
     // Explicitly ensure channelId is treated as a string
-    const api = await Audience.find({ channel_id: channelId });
+    const aud = await Audience.find({ channel_id: channelId });
 
-    return JSON.stringify(api);
+    return JSON.stringify(aud);
   } catch (error) {
     console.error("Error Query Audience in DB:", error);
     throw error; // Re-throw the error for better debugging
@@ -83,11 +84,61 @@ export const getAllRichMenus = async (channelId) => {
 
   try {
     // Explicitly ensure channelId is treated as a string
-    const api = await RichMenu.find({ channel_id: channelId });
+    const rich = await RichMenu.find({ channel_id: channelId });
 
-    return JSON.stringify(api);
+    return JSON.stringify(rich);
   } catch (error) {
     console.error("Error Query Rich menu in DB:", error);
     throw error; // Re-throw the error for better debugging
+  }
+};
+
+export const checkExistDefaultAction = async (channelId) => {
+  await connectMongoDB();
+
+  try {
+    const action = await Action.exists({
+      channel_id: channelId,
+      type_action: "default",
+    });
+
+    return !!action;
+  } catch (error) {
+    console.error("Error Querying Default Action in DB:", error);
+    throw error;
+  }
+};
+
+export const checkExistKeywordReplyAction = async (
+  channelId,
+  listKeyword,
+  excludeReplyId = null
+) => {
+  await connectMongoDB();
+
+  try {
+    const allReply = await Action.find({
+      channel_id: channelId,
+      type_action: "reply",
+      ...(excludeReplyId && { _id: { $ne: excludeReplyId } }),
+    }).lean();
+
+    const existingKeywords = new Set();
+
+    allReply.forEach((reply) => {
+      if (reply.keyword) {
+        reply.keyword.forEach((keyword) => {
+          existingKeywords.add(keyword);
+        });
+      }
+    });
+
+    // Check if any keyword in listKeyword does not exist in existingKeywords
+    const result = listKeyword.some((keyword) => existingKeywords.has(keyword));
+    console.log("All keywords exist:", result);
+    return result;
+  } catch (error) {
+    console.error("Error Querying Default Action in DB:", error);
+    throw error;
   }
 };

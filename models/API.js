@@ -80,13 +80,13 @@ const APISchema = new Schema(
         type: String,
         required: false,
       },
-      payload: {
-        type: String,
-        required: false,
-      },
     },
     keywords: {
       type: [String],
+      required: true,
+    },
+    owner: {
+      type: String,
       required: true,
     },
   },

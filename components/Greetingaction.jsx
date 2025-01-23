@@ -14,6 +14,8 @@ import {
   Select,
   MenuItem,
   IconButton,
+  Switch,
+  Chip,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -21,6 +23,7 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import axios from "axios";
 import { getAllApis, getApiById } from "@/actions";
 import SwitchInputComponent from "./SwitchInputComponent";
+import Loading from "./Loading";
 
 export default function Greetingaction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false);
@@ -35,10 +38,11 @@ export default function Greetingaction({ data, setState, state }) {
   const [apis, setApis] = useState([]);
   const [name, setName] = useState(data?.name || "");
   const [description, setDescription] = useState(data?.description || "");
-
+  const [isActive, setIsActive] = useState(data?.isActivated ?? true);
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("id");
   const maximumMessage = 5;
+  const [loading, setLoading] = useState(false);
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
@@ -106,6 +110,7 @@ export default function Greetingaction({ data, setState, state }) {
         api_id: selectedApi?._id || "",
         channel_id: channelId,
         message: newMessages,
+        isActivated: isActive,
       };
       console.log("BODY", body);
       if (state === "create") {
@@ -149,9 +154,15 @@ export default function Greetingaction({ data, setState, state }) {
     }
   };
 
+  const getBaseAPI = async () => {
+    setLoading(true);
+    await handleGetAllApis();
+    await handleGetApiById();
+    setLoading(false);
+  };
+
   useEffect(() => {
-    handleGetAllApis();
-    handleGetApiById();
+    getBaseAPI();
   }, []);
 
   useEffect(() => {
@@ -208,11 +219,18 @@ export default function Greetingaction({ data, setState, state }) {
     });
   };
 
+  if (loading) return <Loading />;
+
   return (
     <Box p={4} width="100%">
       {/* Title and Description */}
       <Typography variant="h5" gutterBottom>
         Greeting Message
+        <Switch
+          checked={isActive}
+          onChange={() => setIsActive((prev) => !prev)}
+          inputProps={{ "aria-label": "controlled-switch" }}
+        />
       </Typography>
 
       {/* Thin Black Line */}
@@ -246,6 +264,16 @@ export default function Greetingaction({ data, setState, state }) {
                     variant="outlined"
                     fullWidth
                   />
+                )}
+                renderOption={({ key, ...props }, option) => (
+                  <li key={key} {...props}>
+                    <Typography variant="body1">{option.name}</Typography>{" "}
+                    <Chip
+                      sx={{ ml: "auto" }}
+                      label={option.owner}
+                      color={option.owner === "user" ? "primary" : "default"}
+                    />
+                  </li>
                 )}
               />
             )}

@@ -14,13 +14,20 @@ import {
   Select,
   MenuItem,
   IconButton,
+  Switch,
+  Chip,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import axios from "axios";
-import { getAllApis, getApiById } from "@/actions";
+import {
+  checkExistKeywordReplyAction,
+  getAllApis,
+  getApiById,
+} from "@/actions";
 import SwitchInputComponent from "./SwitchInputComponent";
+import Loading from "./Loading";
 
 export default function Replyaction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -30,7 +37,11 @@ export default function Replyaction({ data, setState, state }) {
   const [messages, setMessages] = useState(
     data?.message || Array(messageCount).fill({ type: "text", text: "" })
   );
-  const [errorKeyword, setErrorKeyword] = useState(false);
+  const [errorKeyword, setErrorKeyword] = useState({
+    error: false,
+    message: "",
+  });
+  const [isActive, setIsActive] = useState(data?.isActivated ?? true);
 
   const searchParams = useSearchParams();
 
@@ -42,6 +53,7 @@ export default function Replyaction({ data, setState, state }) {
   const [dynamicContents, setDynamicContents] = useState([]);
   const [name, setName] = useState(data?.name || "");
   const [description, setDescription] = useState(data?.description || "");
+  const [loading, setLoading] = useState(false);
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
@@ -89,11 +101,24 @@ export default function Replyaction({ data, setState, state }) {
   const handleSave = async () => {
     try {
       if (keywords.length === 0) {
-        setErrorKeyword(true);
+        setErrorKeyword({ error: true, message: "This field is required" });
+        return;
+      }
+      const existKeyword = await checkExistKeywordReplyAction(
+        channelObjectId,
+        keywords.split(","),
+        id
+      );
+
+      if (existKeyword) {
+        setErrorKeyword({
+          error: true,
+          message: "Keyword have already be used",
+        });
         return;
       }
 
-      setErrorKeyword(false);
+      setErrorKeyword({ error: false, message: "" });
       const newMessages = messages.map((msg) => {
         if (msg.type === "template" && isValidJSON(msg.template)) {
           return JSON.parse(msg.template);
@@ -116,8 +141,9 @@ export default function Replyaction({ data, setState, state }) {
         channel_id: channelObjectId,
         message: newMessages,
         keyword: keywords.split(","),
+        isActivated: isActive,
       };
-      console.log("BODY", body);
+
       if (state === "create") {
         const res = await axios.post(
           "/api/Action?action_type=reply_message",
@@ -157,14 +183,15 @@ export default function Replyaction({ data, setState, state }) {
       setSelectedApi(JSON.parse(_api));
     }
   };
-
-  const handleMessageTypeChange = (type) => {
-    setMessageType(type); // Update message type
+  const getBaseAPI = async () => {
+    setLoading(true);
+    await handleGetAllApis();
+    await handleGetApiById();
+    setLoading(false);
   };
 
   useEffect(() => {
-    handleGetAllApis();
-    handleGetApiById();
+    getBaseAPI();
   }, []);
 
   useEffect(() => {
@@ -217,11 +244,19 @@ export default function Replyaction({ data, setState, state }) {
       );
     });
   };
+
+  if (loading) return <Loading />;
+
   return (
     <Box p={4} width="100%">
       {/* Title and Description */}
       <Typography variant="h5" gutterBottom>
         Reply Message
+        <Switch
+          checked={isActive}
+          onChange={() => setIsActive((prev) => !prev)}
+          inputProps={{ "aria-label": "controlled-switch" }}
+        />
       </Typography>
 
       {/* Thin Black Line */}
@@ -255,6 +290,16 @@ export default function Replyaction({ data, setState, state }) {
                     variant="outlined"
                     fullWidth
                   />
+                )}
+                renderOption={({ key, ...props }, option) => (
+                  <li key={key} {...props}>
+                    <Typography variant="body1">{option.name}</Typography>{" "}
+                    <Chip
+                      sx={{ ml: "auto" }}
+                      label={option.owner}
+                      color={option.owner === "user" ? "primary" : "default"}
+                    />
+                  </li>
                 )}
               />
             )}
@@ -307,8 +352,8 @@ export default function Replyaction({ data, setState, state }) {
               variant="outlined"
               onChange={(e) => setKeywords(e.target.value)}
               value={keywords}
-              error={errorKeyword}
-              helperText={errorKeyword ? "This field is required" : ""}
+              error={errorKeyword.error}
+              helperText={errorKeyword.message}
             />
           </Grid>
 

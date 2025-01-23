@@ -68,7 +68,15 @@ export async function GET(req) {
       const actions = await Action.find(filter)
         .sort({ [orderBy]: orderDirection })
         .skip((pageNumber - 1) * pageSize)
-        .limit(pageSize);
+        .limit(pageSize)
+        .select("-__v")
+        .lean()
+        .then((actions) =>
+          actions.map((action) => ({
+            ...action,
+            activeString: action.isActivated ? "active" : "inactive",
+          }))
+        );
 
       return formatResponse(200, { Actions: actions, Total: totalActions });
     }
@@ -98,6 +106,7 @@ export async function POST(req) {
       message,
       keyword,
       type_action,
+      isActivated,
     } = await req.json();
     console.log("action_type", action_type);
     if (!name || !type || !channel_id || !message || !type_action) {
@@ -124,6 +133,7 @@ export async function POST(req) {
         channel_id: new mongoose.Types.ObjectId(channel_id),
         message,
         keyword,
+        isActivated,
       };
 
       if (api_id) {
@@ -154,6 +164,7 @@ export async function POST(req) {
         description,
         channel_id: new mongoose.Types.ObjectId(channel_id),
         message,
+        isActivated,
       };
 
       if (api_id) {
@@ -196,6 +207,7 @@ export async function PUT(req) {
       api_id,
       message,
       keyword,
+      isActivated,
     } = await req.json();
 
     const action = await Action.findById(id);
@@ -221,6 +233,7 @@ export async function PUT(req) {
       channel_id: new mongoose.Types.ObjectId(channel_id),
       message,
       keyword,
+      isActivated,
     };
 
     if (api_id) {

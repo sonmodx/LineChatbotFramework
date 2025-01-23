@@ -6,11 +6,11 @@ const ActionSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    type: {
+    type_action: {
       type: String,
       required: true,
     },
-    type_action: {
+    type: {
       type: String,
       required: true,
     },
@@ -31,6 +31,14 @@ const ActionSchema = new mongoose.Schema(
     },
     keyword: {
       type: [String],
+      required: false,
+    },
+    param: {
+      type: String,
+      required: false,
+    },
+    isActivated: {
+      type: Boolean,
       required: false,
     },
   },
