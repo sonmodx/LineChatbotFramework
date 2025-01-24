@@ -22,7 +22,7 @@ const ActionSchema = new mongoose.Schema(
       ref: "Channel",
     },
     api_id: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.Mixed,
       ref: "API",
     },
     message: {
@@ -34,10 +34,14 @@ const ActionSchema = new mongoose.Schema(
       required: false,
     },
     param: {
-      type: String,
+      type: [String],
       required: false,
     },
     isActivated: {
+      type: Boolean,
+      required: true,
+    },
+    useAI: {
       type: Boolean,
       required: false,
     },

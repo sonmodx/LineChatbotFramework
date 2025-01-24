@@ -34,7 +34,7 @@ export default function DefaultAction({ data, setState, state }) {
   );
 
   const searchParams = useSearchParams();
-  console.log("messages", messages);
+  console.log("selectyed api", selectedApi);
   const id = data?._id || null;
   const maximumMessage = 5;
   const channelObjectId = searchParams.get("id");
@@ -43,12 +43,14 @@ export default function DefaultAction({ data, setState, state }) {
   const [name, setName] = useState(data?.name || "");
   const [description, setDescription] = useState(data?.description || "");
   const [isActive, setIsActive] = useState(data?.isActivated ?? true);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [useAI, setUseAI] = useState(data?.useAI || false);
 
   const channelId = searchParams.get("id");
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
+    setSelectedApi(null);
   };
 
   const handleApiChange = (event, newValue) => {
@@ -114,6 +116,7 @@ export default function DefaultAction({ data, setState, state }) {
         channel_id: channelId,
         message: newMessages,
         isActivated: isActive,
+        useAI: useAI,
       };
       console.log("BODY", body);
       if (state === "create") {
@@ -145,14 +148,13 @@ export default function DefaultAction({ data, setState, state }) {
   const handleGetAllApis = async () => {
     const _apis = await getAllApis(channelObjectId);
 
-    console.log(_apis);
     setApis(JSON.parse(_apis));
   };
   const handleGetApiById = async () => {
     const _api = await getApiById(data?.api_id || null);
     if (_api) {
       setUseApi(true);
-      console.log("API ID", _api);
+
       setSelectedApi(JSON.parse(_api));
     }
   };
@@ -248,7 +250,11 @@ export default function DefaultAction({ data, setState, state }) {
       <Box mt={4} width="100%">
         <Grid container alignItems="center" spacing={2}>
           <Grid item xs={12} sm={3}>
-            <Checkbox checked={useApi} onChange={handleCheckboxChange} />
+            <Checkbox
+              checked={useApi}
+              onChange={handleCheckboxChange}
+              disabled={useAI}
+            />
             <Typography variant="body1" display="inline">
               Use API
             </Typography>
@@ -284,6 +290,17 @@ export default function DefaultAction({ data, setState, state }) {
           </Grid>
         </Grid>
       </Box>
+      <Box mt={3} width="100%">
+        <Checkbox
+          checked={useAI}
+          disabled={useApi}
+          onChange={(event) => setUseAI(event.target.checked)}
+        />
+        <Typography variant="body1" display="inline">
+          Use AI to respond to user messages that are not predefined in the
+          Reply Action.
+        </Typography>
+      </Box>
 
       {/* Name Input */}
       <Box mt={3} width="100%">
@@ -317,65 +334,67 @@ export default function DefaultAction({ data, setState, state }) {
         </Grid>
       </Box>
 
-      <Grid item xs={12} sm={12}>
-        <Typography
-          variant="h6"
-          gutterBottom
-          backgroundColor="primary.main"
-          style={{ color: "#fff", padding: "10px", marginTop: 16 }}
-        >
-          Text Message
-        </Typography>
-        {/* Dynamically Created Message Fields */}
-        {[...Array(messageCount)].map((_, index) => (
-          <Box key={index} mt={2}>
-            {/* Message Type Dropdown */}
-            <FormControl fullWidth variant="outlined" style={{}}>
-              <InputLabel>Message Type</InputLabel>
-              <Select
-                value={messages[index].type}
-                onChange={(e) =>
-                  handleMessageChange(index, e.target.value, "type")
-                }
-                label="Message Type"
-              >
-                <MenuItem value="text">Text</MenuItem>
-                <MenuItem value="image">Image</MenuItem>
-                <MenuItem value="sticker">Sticker</MenuItem>
-                <MenuItem value="video">Video</MenuItem>
-                <MenuItem value="audio">Audio</MenuItem>
-                <MenuItem value="location">Location</MenuItem>
-                <MenuItem value="flex">Flex</MenuItem>
-                <MenuItem value="template">Template</MenuItem>
-                <MenuItem value="imagemap">Imagemap</MenuItem>
-              </Select>
-            </FormControl>
-            <SwitchInputComponent
-              index={index}
-              messages={messages}
-              maximumMessage={maximumMessage}
-              handleMessageChange={handleMessageChange}
-              dynamicContents={dynamicContents}
-              renderButtons={renderButtons}
-            />
-          </Box>
-        ))}
+      {!useAI && (
+        <Grid item xs={12} sm={12}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            backgroundColor="primary.main"
+            style={{ color: "#fff", padding: "10px", marginTop: 16 }}
+          >
+            Text Message
+          </Typography>
+          {/* Dynamically Created Message Fields */}
+          {[...Array(messageCount)].map((_, index) => (
+            <Box key={index} mt={2}>
+              {/* Message Type Dropdown */}
+              <FormControl fullWidth variant="outlined" style={{}}>
+                <InputLabel>Message Type</InputLabel>
+                <Select
+                  value={messages[index].type}
+                  onChange={(e) =>
+                    handleMessageChange(index, e.target.value, "type")
+                  }
+                  label="Message Type"
+                >
+                  <MenuItem value="text">Text</MenuItem>
+                  <MenuItem value="image">Image</MenuItem>
+                  <MenuItem value="sticker">Sticker</MenuItem>
+                  <MenuItem value="video">Video</MenuItem>
+                  <MenuItem value="audio">Audio</MenuItem>
+                  <MenuItem value="location">Location</MenuItem>
+                  <MenuItem value="flex">Flex</MenuItem>
+                  <MenuItem value="template">Template</MenuItem>
+                  <MenuItem value="imagemap">Imagemap</MenuItem>
+                </Select>
+              </FormControl>
+              <SwitchInputComponent
+                index={index}
+                messages={messages}
+                maximumMessage={maximumMessage}
+                handleMessageChange={handleMessageChange}
+                dynamicContents={dynamicContents}
+                renderButtons={renderButtons}
+              />
+            </Box>
+          ))}
 
-        {/* ADD and REMOVE Buttons */}
-        <Box mt={2}>
-          {messageCount < 5 && (
-            <IconButton onClick={addMessageBox}>
-              <AddCircleOutlineIcon />
-            </IconButton>
-          )}
-          {messageCount > 1 && (
-            <IconButton onClick={removeMessageBox}>
-              <RemoveCircleOutlineIcon />
-            </IconButton>
-          )}
-          <Typography variant="caption">ADD / REMOVE</Typography>
-        </Box>
-      </Grid>
+          {/* ADD and REMOVE Buttons */}
+          <Box mt={2}>
+            {messageCount < 5 && (
+              <IconButton onClick={addMessageBox}>
+                <AddCircleOutlineIcon />
+              </IconButton>
+            )}
+            {messageCount > 1 && (
+              <IconButton onClick={removeMessageBox}>
+                <RemoveCircleOutlineIcon />
+              </IconButton>
+            )}
+            <Typography variant="caption">ADD / REMOVE</Typography>
+          </Box>
+        </Grid>
+      )}
 
       {/* Note */}
       <Box mt={2} width="100%">

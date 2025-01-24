@@ -6,6 +6,7 @@ import ListItemText from "@mui/material/ListItemText";
 import { ListSubheader } from "@mui/material";
 import { checkExistDefaultAction } from "@/actions";
 import { useSearchParams } from "next/navigation";
+import Loading from "@/components/Loading";
 
 const listAction = [
   "Greeting message",
@@ -24,19 +25,24 @@ export default function ListMenu({ selectedIndex, setSelectedIndex }) {
 
   const [disabledDefaultMessage, setDisabledDefaultMessage] =
     React.useState(false);
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     const checkDefaultAction = async () => {
+      setLoading(true);
       try {
         const result = await checkExistDefaultAction(channelObjectId);
         setDisabledDefaultMessage(result);
       } catch (error) {
         console.error("Error checking default action:", error);
       }
+      setLoading(false);
     };
 
     checkDefaultAction();
   }, []);
+
+  if (loading) return <Loading title="list menu" />;
   return (
     <Box sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}>
       <List component="nav" aria-label="secondary mailbox folder">
