@@ -362,6 +362,7 @@ export default function MulticastMessage() {
                       );
                       // Add back to line users list
                       setLineUsers((prev) => [...prev, user]);
+                      setSelectLineUser(null);
                     }}
                     sx={{ marginRight: 1 }}
                   />

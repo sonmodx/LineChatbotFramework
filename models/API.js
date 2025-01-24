@@ -81,10 +81,6 @@ const APISchema = new Schema(
         required: false,
       },
     },
-    keywords: {
-      type: [String],
-      required: true,
-    },
     owner: {
       type: String,
       required: true,

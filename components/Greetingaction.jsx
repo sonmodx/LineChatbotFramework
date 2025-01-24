@@ -42,10 +42,11 @@ export default function Greetingaction({ data, setState, state }) {
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("id");
   const maximumMessage = 5;
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
+    setSelectedApi(null);
   };
 
   const handleApiChange = (event, newValue) => {

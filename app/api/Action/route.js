@@ -105,8 +105,10 @@ export async function POST(req) {
       api_id,
       message,
       keyword,
+      param,
       type_action,
       isActivated,
+      useAI,
     } = await req.json();
     console.log("action_type", action_type);
     if (!name || !type || !channel_id || !message || !type_action) {
@@ -132,6 +134,7 @@ export async function POST(req) {
         description,
         channel_id: new mongoose.Types.ObjectId(channel_id),
         message,
+        param,
         keyword,
         isActivated,
       };
@@ -165,6 +168,7 @@ export async function POST(req) {
         channel_id: new mongoose.Types.ObjectId(channel_id),
         message,
         isActivated,
+        useAI,
       };
 
       if (api_id) {
@@ -205,9 +209,11 @@ export async function PUT(req) {
       description,
       channel_id,
       api_id,
+      param,
       message,
       keyword,
       isActivated,
+      useAI,
     } = await req.json();
 
     const action = await Action.findById(id);
@@ -232,13 +238,19 @@ export async function PUT(req) {
       description,
       channel_id: new mongoose.Types.ObjectId(channel_id),
       message,
+      param,
       keyword,
       isActivated,
+      useAI,
     };
+    console.log("server api_id", api_id);
 
-    if (api_id) {
-      updateData.api_id = new mongoose.Types.ObjectId(api_id);
+    if (api_id === "") {
+      updateData.api_id = ""; // Assign empty string
+    } else if (api_id) {
+      updateData.api_id = new mongoose.Types.ObjectId(api_id); // Assign ObjectId if valid
     }
+    console.log("server api_id", updateData);
 
     const updatedAction = await Action.findByIdAndUpdate(id, updateData, {
       new: true,

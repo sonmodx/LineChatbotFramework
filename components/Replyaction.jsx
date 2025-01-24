@@ -32,6 +32,9 @@ import Loading from "./Loading";
 export default function Replyaction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
+  const [selectedApiParam, setSelectedApiParam] = useState(null);
+  const [apiParamOptions, setApiParamOptions] = useState([]);
+  const [apiParams, setApiParams] = useState([]);
   const [messageCount, setMessageCount] = useState(data?.message.length || 1); // Track number o
   const [keywords, setKeywords] = useState(data?.keyword.join(",") || []);
   const [messages, setMessages] = useState(
@@ -53,15 +56,36 @@ export default function Replyaction({ data, setState, state }) {
   const [dynamicContents, setDynamicContents] = useState([]);
   const [name, setName] = useState(data?.name || "");
   const [description, setDescription] = useState(data?.description || "");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
     setSelectedApi(null);
+    setSelectedApiParam(null);
+    setApiParams([]);
+    setApiParamOptions([]);
   };
 
   const handleApiChange = (event, newValue) => {
+    if (!newValue) return;
     setSelectedApi(newValue);
+    setApiParamOptions(
+      newValue?.api_params.map((param, index) => ({
+        ...param,
+        index,
+      }))
+    );
+  };
+
+  const handleApiParamChange = (event, newValue) => {
+    if (!newValue) return;
+    setApiParams((prev) => [...prev, newValue]);
+    setSelectedApiParam(newValue);
+    setApiParamOptions((prevParam) =>
+      prevParam.filter((param) => param.key !== newValue.key)
+    );
+
+    console.log("param", newValue);
   };
 
   const handleMessageChange = (index, value, key) => {
@@ -141,6 +165,7 @@ export default function Replyaction({ data, setState, state }) {
         channel_id: channelObjectId,
         message: newMessages,
         keyword: keywords.split(","),
+        param: apiParams.map((param) => param.index.toString()),
         isActivated: isActive,
       };
 
@@ -179,8 +204,17 @@ export default function Replyaction({ data, setState, state }) {
     const _api = await getApiById(data?.api_id || null);
     if (_api) {
       setUseApi(true);
-
-      setSelectedApi(JSON.parse(_api));
+      const apiJSON = JSON.parse(_api);
+      setSelectedApi(apiJSON);
+      if (state === "edit") {
+        console.log("p1", data?.param, apiJSON);
+        const apiParamObjects = data?.param.map((pIndex) => ({
+          ...apiJSON.api_params[parseInt(pIndex)],
+          index: pIndex,
+        }));
+        console.log("PARAM OBG", apiParamObjects);
+        setApiParams(apiParamObjects);
+      }
     }
   };
   const getBaseAPI = async () => {
@@ -359,14 +393,49 @@ export default function Replyaction({ data, setState, state }) {
 
           {/* Param Label and Input */}
           <Grid item xs={12} sm={6}>
-            <Typography variant="h6" gutterBottom>
-              Params
-            </Typography>
-            <TextField
-              fullWidth
-              placeholder="Enter parameters"
-              variant="outlined"
-            />
+            {selectedApi?.api_params && selectedApi?.api_params.length > 0 && (
+              <>
+                <Typography variant="h6" gutterBottom>
+                  Params
+                </Typography>
+                <Autocomplete
+                  options={apiParamOptions}
+                  getOptionLabel={(option) => option.key || ""}
+                  value={selectedApiParam}
+                  onChange={handleApiParamChange}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Select API Params"
+                      variant="outlined"
+                      fullWidth
+                    />
+                  )}
+                />
+              </>
+            )}
+          </Grid>
+          <Grid item xs={12} sm={6}></Grid>
+          <Grid item xs={12} sm={6}>
+            <div>
+              {apiParams.map((param, index) => (
+                <Chip
+                  key={index}
+                  label={`(index_${index}) ${param?.key}`}
+                  color="primary"
+                  onDelete={() => {
+                    // Remove user from selected list
+                    setApiParams((prev) =>
+                      prev.filter((u) => u.key !== param?.key)
+                    );
+                    // Add back to line users list
+                    setApiParamOptions((prev) => [...prev, param]);
+                    setSelectedApiParam(null);
+                  }}
+                  sx={{ marginRight: 1 }}
+                />
+              ))}
+            </div>
           </Grid>
         </Grid>
       </Box>
