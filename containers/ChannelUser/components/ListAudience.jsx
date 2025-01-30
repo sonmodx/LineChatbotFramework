@@ -190,16 +190,29 @@ export default function ListAudience({ channelId, channelIdLine }) {
     }
   };
 
-  const handleGetAllLineUsers = async () => {
-    const line_users = await getAllLineUsers(channelId);
+  const handleGetAllLineUsers = async (existingUserIds = []) => {
+    try {
+      const line_users = await getAllLineUsers(channelId);
+      const parsedUsers = JSON.parse(line_users);
 
-    console.log(line_users);
-    setLineUsers(JSON.parse(line_users));
+      // Extract the list of existing user IDs from the provided array
+
+      // Filter users whose `line_user_id` is not in existingUsers
+      const filteredUsers = parsedUsers.filter(
+        (user) => !existingUserIds.includes(user.line_user_id)
+      );
+      console.log("hi", existingUserIds);
+
+      console.log(filteredUsers);
+      setLineUsers(filteredUsers);
+    } catch (error) {
+      console.error("Error fetching LINE users:", error);
+    }
   };
 
   const handleGetAllLineUsersByUserId = async (item) => {
     setIsLoadingSelectedUsers(true);
-    const users = await getAllLineUsersByUserId(item.audiences);
+    const users = await getAllLineUsersByUserId(channelId, item.audiences);
     console.log(users);
     setSelectedUsers(JSON.parse(users));
     setIsLoadingSelectedUsers(false);
@@ -229,7 +242,13 @@ export default function ListAudience({ channelId, channelIdLine }) {
         <Typography variant="h4" sx={{ py: 1, fontWeight: "bolder" }}>
           List Audience
         </Typography>
-        <Button variant="contained" onClick={() => setOpen(true)}>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setOpen(true);
+            handleGetAllLineUsers();
+          }}
+        >
           Create
         </Button>
       </Stack>
@@ -247,7 +266,8 @@ export default function ListAudience({ channelId, channelIdLine }) {
         callbackGetData={getAllAudiences}
         callbackEditData={async (item) => {
           console.log("aud", item.audiences);
-          handleGetAllLineUsersByUserId(item);
+          await handleGetAllLineUsersByUserId(item);
+          await handleGetAllLineUsers(item.audiences);
           setOpenUpdate(true);
           setSelectAudienceId(item);
           setName(item.description);
@@ -329,7 +349,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
               getOptionLabel={(option) => option.display_name || ""}
               value={selectLineUser}
               onChange={(event, newValue) => handleSelectLineUser(newValue)}
-              onSelect={handleGetAllLineUsers}
+              // onSelect={handleGetAllLineUsers}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -446,7 +466,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
               getOptionLabel={(option) => option.display_name || ""}
               value={selectLineUser}
               onChange={(event, newValue) => handleSelectLineUser(newValue)}
-              onSelect={handleGetAllLineUsers}
+              // onSelect={handleGetAllLineUsers}
               renderInput={(params) => (
                 <TextField
                   {...params}

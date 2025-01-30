@@ -21,13 +21,16 @@ export const getAllLineUsers = async (channelId) => {
   }
 };
 
-export const getAllLineUsersByUserId = async (userIds) => {
+export const getAllLineUsersByUserId = async (channelId, userIds) => {
   // Ensure MongoDB is connected
   await connectMongoDB();
 
   try {
     // Use $in to query multiple userIds
-    const lineUsers = await LineUser.find({ line_user_id: { $in: userIds } });
+    const lineUsers = await LineUser.find({
+      channel_id: channelId,
+      line_user_id: { $in: userIds },
+    });
     console.log("Line Users:", lineUsers);
     return JSON.stringify(lineUsers);
   } catch (error) {
