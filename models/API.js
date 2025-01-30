@@ -10,10 +10,6 @@ const APISchema = new Schema(
       type: String,
       required: true,
     },
-    description: {
-      type: String,
-      required: false,
-    },
     api_endpoint: {
       type: String,
       required: true,
@@ -80,6 +76,10 @@ const APISchema = new Schema(
         type: String,
         required: false,
       },
+    },
+    response: {
+      type: String,
+      required: false,
     },
     owner: {
       type: String,

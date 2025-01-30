@@ -68,6 +68,7 @@ export default function Replyaction({ data, setState, state }) {
 
   const handleApiChange = (event, newValue) => {
     if (!newValue) return;
+    console.log("API", newValue);
     setSelectedApi(newValue);
     setApiParamOptions(
       newValue?.api_params.map((param, index) => ({
@@ -204,6 +205,7 @@ export default function Replyaction({ data, setState, state }) {
     const _api = await getApiById(data?.api_id || null);
     if (_api) {
       setUseApi(true);
+      console.log("_api", _api);
       const apiJSON = JSON.parse(_api);
       setSelectedApi(apiJSON);
       if (state === "edit") {
@@ -232,10 +234,11 @@ export default function Replyaction({ data, setState, state }) {
     if (
       selectedApi === null ||
       typeof selectedApi !== "object" ||
-      Array.isArray(selectedApi)
+      Array.isArray(selectedApi) ||
+      typeof selectedApi?.response === "undefined"
     )
       return;
-    const keywordsObject = JSON.parse(selectedApi?.keywords);
+    const keywordsObject = JSON.parse(selectedApi?.response);
     const getAllKeyObjects = (obj, prefix = "") => {
       return Object.keys(obj).map((key) => {
         const value = obj[key];

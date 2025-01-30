@@ -197,7 +197,7 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
         keywordApi = responseUserApiData[0];
       }
 
-      requestData.keywords = JSON.stringify(keywordApi);
+      requestData.response = JSON.stringify(keywordApi);
       console.log("request data", requestData);
 
       const response = await axios({

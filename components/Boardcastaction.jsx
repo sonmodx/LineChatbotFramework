@@ -161,7 +161,7 @@ export default function BroadcastMessage() {
       Array.isArray(selectedApi)
     )
       return;
-    const keywordsObject = JSON.parse(selectedApi?.keywords);
+    const keywordsObject = JSON.parse(selectedApi?.response);
     const getAllKeyObjects = (obj, prefix = "") => {
       return Object.keys(obj).map((key) => {
         const value = obj[key];
