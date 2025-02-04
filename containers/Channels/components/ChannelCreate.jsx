@@ -16,9 +16,9 @@ import {
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { getBotInfo, setWebhookURL } from "./action";
+import { getBotInfo, isDestinationExists, setWebhookURL } from "./action";
 
-const WEBHOOK_URL = "https://example.com/hoge";
+const WEBHOOK_URL = "http://161.246.127.103:4000/webhook";
 
 export default function ChannelCreate() {
   const [channelId, setChannelId] = useState();
@@ -57,6 +57,13 @@ export default function ChannelCreate() {
         setErrorMessage("Invalid access token");
         return;
       }
+      const existDest = await isDestinationExists();
+      if (existDest) {
+        setIsOpenSnackbar(true);
+        setIsError(true);
+        setErrorMessage("This bot already be created");
+        return;
+      }
 
       //webhook url must be valid, currently for example
       const resultWebhook = await setWebhookURL(
@@ -74,7 +81,7 @@ export default function ChannelCreate() {
       const body = {
         name: channelName,
         description: description, //No field description
-        webhook_url: customWebhook,
+        webhook_url: WEBHOOK_URL,
         status: isActive, //No field status
         channel_id: channelId,
         channel_secret: channelSecret,
@@ -192,7 +199,8 @@ export default function ChannelCreate() {
               name="webhook-api"
               label="Webhook API"
               fullWidth
-              value={customWebhook}
+              defaultValue={WEBHOOK_URL}
+              disabled
               onChange={(e) => {
                 setCustomWebhook(e.target.value);
               }}
