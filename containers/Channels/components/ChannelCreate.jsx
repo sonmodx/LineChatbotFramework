@@ -48,7 +48,7 @@ export default function ChannelCreate() {
         setIsError(true);
         return;
       }
-      //verify channel and get bot's userId
+      //validate channel and get bot's userId
       const { userId: destination } = await getBotInfo(channelAccessToken);
 
       if (!destination) {
@@ -57,7 +57,8 @@ export default function ChannelCreate() {
         setErrorMessage("Invalid access token");
         return;
       }
-      const existDest = await isDestinationExists();
+      //validate channel never be created
+      const existDest = await isDestinationExists(destination);
       if (existDest) {
         setIsOpenSnackbar(true);
         setIsError(true);
