@@ -47,7 +47,7 @@ export async function setWebhookURL(token, endpoint) {
 export async function isDestinationExists(destination) {
   await connectMongoDB();
   try {
-    const channel = await Channel.findOne({ destinations: destination });
+    const channel = await Channel.findOne({ destination: destination });
     return !!channel; // Return true if a match is found, otherwise false
   } catch (error) {
     console.error("Error checking destination:", error);

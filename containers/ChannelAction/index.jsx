@@ -10,7 +10,6 @@ import ActionCreate from "./ActionCreate";
 import ActionEdit from "./ActionEdit";
 
 export default function ChannelAction({ listTitle, channelId }) {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [actions, setActions] = useState([]);
   const [total, setTotal] = useState();
@@ -95,7 +94,7 @@ export default function ChannelAction({ listTitle, channelId }) {
               "",
             ]}
             bodyColumns={[
-              "api_id",
+              "api_name",
               "description",
               "updatedAt",
               "createdAt",

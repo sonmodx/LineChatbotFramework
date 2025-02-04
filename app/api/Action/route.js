@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import Action from "@/models/action";
 import { formatResponse } from "@/lib/utils";
 import Channel from "@/models/channel";
+import API from "@/models/API";
 
 // method get
 export async function GET(req) {
@@ -58,9 +59,7 @@ export async function GET(req) {
         ...(channel_id && {
           channel_id: new mongoose.Types.ObjectId(channel_id),
         }),
-        ...(search && {
-          name: { $regex: search, $options: "i" },
-        }),
+        ...(search && { name: { $regex: search, $options: "i" } }),
       };
 
       const totalActions = await Action.countDocuments(filter);
@@ -70,15 +69,28 @@ export async function GET(req) {
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize)
         .select("-__v")
-        .lean()
-        .then((actions) =>
-          actions.map((action) => ({
-            ...action,
-            activeString: action.isActivated ? "active" : "inactive",
-          }))
-        );
+        .lean();
 
-      return formatResponse(200, { Actions: actions, Total: totalActions });
+      // Fetch all unique API names from the API collection
+      const apiRecords = await API.find({}, "name").lean();
+
+      // Create a mapping of API names
+      const apiNameMap = apiRecords.reduce((acc, api) => {
+        acc[api._id.toString()] = api.name;
+        return acc;
+      }, {});
+
+      // Attach API names to the actions list
+      const updatedActions = actions.map((action) => ({
+        ...action,
+        activeString: action.isActivated ? "active" : "inactive",
+        api_name: apiNameMap[action.api_id?.toString()] || null, // Get api_name if api_id exists
+      }));
+
+      return formatResponse(200, {
+        Actions: updatedActions,
+        Total: totalActions,
+      });
     }
   } catch (error) {
     console.log(error);
