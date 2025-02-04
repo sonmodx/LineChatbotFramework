@@ -16,6 +16,7 @@ import {
   IconButton,
   Switch,
   Chip,
+  Stack,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -420,7 +421,7 @@ export default function Replyaction({ data, setState, state }) {
           </Grid>
           <Grid item xs={12} sm={6}></Grid>
           <Grid item xs={12} sm={6}>
-            <div>
+            <Stack direction="row" flexWrap="wrap" gap={1}>
               {apiParams.map((param, index) => (
                 <Chip
                   key={index}
@@ -435,10 +436,9 @@ export default function Replyaction({ data, setState, state }) {
                     setApiParamOptions((prev) => [...prev, param]);
                     setSelectedApiParam(null);
                   }}
-                  sx={{ marginRight: 1 }}
                 />
               ))}
-            </div>
+            </Stack>
           </Grid>
         </Grid>
       </Box>

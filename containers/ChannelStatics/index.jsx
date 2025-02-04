@@ -8,6 +8,7 @@ import {
   CircularProgress,
   Switch,
   FormControlLabel,
+  Container,
 } from "@mui/material";
 import { Line } from "react-chartjs-2";
 import {
@@ -22,7 +23,15 @@ import {
 } from "chart.js";
 import axios from "axios";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const staticsOptions = {
   responsive: true,
@@ -50,7 +59,10 @@ const processLogs = (logs) => {
 
   logs.forEach((log) => {
     const date = new Date(log.createdAt);
-    const monthKey = `${String(date.getMonth() + 1).padStart(2, "0")}-${date.getFullYear()}`;
+    const monthKey = `${String(date.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${date.getFullYear()}`;
     const dayKey = date.toISOString().split("T")[0];
 
     if (!groupedData[log.direction]) {
@@ -76,7 +88,11 @@ const getLast7DaysLabels = () => {
   for (let i = 6; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
-    labels.push(`${String(date.getDate()).padStart(2, "0")}-${String(date.getMonth() + 1).padStart(2, "0")}-${date.getFullYear()}`);
+    labels.push(
+      `${String(date.getDate()).padStart(2, "0")}-${String(
+        date.getMonth() + 1
+      ).padStart(2, "0")}-${date.getFullYear()}`
+    );
   }
   return labels;
 };
@@ -121,9 +137,15 @@ export default function ChannelStatics({ listTitle, channelId }) {
 
         // Set individual counts
         const sentLogs = log.filter((l) => l.direction === "send_Reply");
-        const boardcastLogs = log.filter((l) => l.direction === "send_Broadcast");
-        const multicastLogs = log.filter((l) => l.direction === "send_Multicast");
-        const narrowcastLogs = log.filter((l) => l.direction === "send_Narrowcast");
+        const boardcastLogs = log.filter(
+          (l) => l.direction === "send_Broadcast"
+        );
+        const multicastLogs = log.filter(
+          (l) => l.direction === "send_Multicast"
+        );
+        const narrowcastLogs = log.filter(
+          (l) => l.direction === "send_Narrowcast"
+        );
         const pushLogs = log.filter((l) => l.direction === "send_Push");
         const receivedLogs = log.filter((l) => l.direction === "receive");
 
@@ -169,81 +191,101 @@ export default function ChannelStatics({ listTitle, channelId }) {
   }, [channelId]);
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        {listTitle} Overview
-      </Typography>
-
-      {isLoading ? (
-        <Box
-          sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}
+    <Container>
+      <Box sx={{ marginTop: 5 }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{ py: 1, fontWeight: "bolder" }}
         >
-          <CircularProgress />
-        </Box>
-      ) : (
-        <>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={4}>
-              <Paper sx={{ p: 2, textAlign: "center" }}>
-                <Typography variant="h6">Users</Typography>
-                <Typography variant="h5">{users}</Typography>
-              </Paper>
+          {listTitle} Overview
+        </Typography>
+
+        {isLoading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "50vh",
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={4}>
+                <Paper sx={{ p: 2, textAlign: "center" }}>
+                  <Typography variant="h6">Users</Typography>
+                  <Typography variant="h5">{users}</Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Paper sx={{ p: 2, textAlign: "center" }}>
+                  <Typography variant="h6">Total Messages</Typography>
+                  <Typography variant="h5">
+                    {sent +
+                      received +
+                      boardcast +
+                      push +
+                      multicast +
+                      narrowcast}
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Paper sx={{ p: 2, textAlign: "center" }}>
+                  <Typography variant="h6">Blocked</Typography>
+                  <Typography variant="h5">{block}</Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <Paper sx={{ p: 2, textAlign: "center" }}>
+                  <Typography variant="h6">Received</Typography>
+                  <Typography variant="h5">{received}</Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <Paper sx={{ p: 2, textAlign: "center" }}>
+                  <Typography variant="h6">Reply</Typography>
+                  <Typography variant="h5">{sent}</Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <Paper sx={{ p: 2, textAlign: "center" }}>
+                  <Typography variant="h6">Push</Typography>
+                  <Typography variant="h5">{push}</Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <Paper sx={{ p: 2, textAlign: "center" }}>
+                  <Typography variant="h6">Multicast</Typography>
+                  <Typography variant="h5">{multicast}</Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <Paper sx={{ p: 2, textAlign: "center" }}>
+                  <Typography variant="h6">Broadcast</Typography>
+                  <Typography variant="h5">{boardcast}</Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <Paper sx={{ p: 2, textAlign: "center" }}>
+                  <Typography variant="h6">Narrowcast</Typography>
+                  <Typography variant="h5">{narrowcast}</Typography>
+                </Paper>
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={4}>
-              <Paper sx={{ p: 2, textAlign: "center" }}>
-                <Typography variant="h6">Total Messages</Typography>
-                <Typography variant="h5">
-                  {sent + received + boardcast + push + multicast + narrowcast}
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Paper sx={{ p: 2, textAlign: "center" }}>
-                <Typography variant="h6">Blocked</Typography>
-                <Typography variant="h5">{block}</Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={2}>
-              <Paper sx={{ p: 2, textAlign: "center" }}>
-                <Typography variant="h6">Received</Typography>
-                <Typography variant="h5">{received}</Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={2}>
-              <Paper sx={{ p: 2, textAlign: "center" }}>
-                <Typography variant="h6">Reply</Typography>
-                <Typography variant="h5">{sent}</Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={2}>
-              <Paper sx={{ p: 2, textAlign: "center" }}>
-                <Typography variant="h6">Push</Typography>
-                <Typography variant="h5">{push}</Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={2}>
-              <Paper sx={{ p: 2, textAlign: "center" }}>
-                <Typography variant="h6">Multicast</Typography>
-                <Typography variant="h5">{multicast}</Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={2}>
-              <Paper sx={{ p: 2, textAlign: "center" }}>
-                <Typography variant="h6">Broadcast</Typography>
-                <Typography variant="h5">{boardcast}</Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={2}>
-              <Paper sx={{ p: 2, textAlign: "center" }}>
-                <Typography variant="h6">Narrowcast</Typography>
-                <Typography variant="h5">{narrowcast}</Typography>
-              </Paper>
-            </Grid>
-          </Grid>
-          <Typography variant="h4" marginTop={3} marginBottom={3} gutterBottom>
-        {listTitle} Chart 
-          </Typography>
-          <FormControlLabel
+            <Typography
+              variant="h4"
+              marginTop={3}
+              marginBottom={3}
+              gutterBottom
+            >
+              {listTitle} Chart
+            </Typography>
+            <FormControlLabel
               control={
                 <Switch
                   checked={viewDaily}
@@ -254,28 +296,39 @@ export default function ChannelStatics({ listTitle, channelId }) {
               label={`View ${viewDaily ? "Daily(Last 7 days)" : "Monthly"}`}
             />
 
-          <Grid container spacing={3} sx={{ mt: 3 }}>
-            
+            <Grid container spacing={3} sx={{ mt: 3 }}>
+              {Object.keys(actionTypes).map((key, index) => {
+                const color = getLineColor(index);
+                const labels = viewDaily
+                  ? getLast7DaysLabels()
+                  : Object.keys(actionTypes[key].monthly);
+                const data = viewDaily
+                  ? labels.map(
+                      (label) =>
+                        actionTypes[key].daily[
+                          label.split("-").reverse().join("-")
+                        ] || 0
+                    )
+                  : Object.values(actionTypes[key].monthly);
 
-            {Object.keys(actionTypes).map((key, index) => {
-              const color = getLineColor(index);
-              const labels = viewDaily ? getLast7DaysLabels() : Object.keys(actionTypes[key].monthly);
-              const data = viewDaily
-                ? labels.map((label) => actionTypes[key].daily[label.split("-").reverse().join("-")] || 0)
-                : Object.values(actionTypes[key].monthly);
-
-              return (
-                <Grid item xs={12} sm={4} key={index}>
-                  <Paper sx={{ p: 2 }}>
-                    <Typography variant="h6">{key.replace(/_/g, " ")}</Typography>
-                    <Line data={chartData(labels, data, color)} options={staticsOptions} />
-                  </Paper>
-                </Grid>
-              );
-            })}
-          </Grid>
-        </>
-      )}
-    </Box>
+                return (
+                  <Grid item xs={12} sm={4} key={index}>
+                    <Paper sx={{ p: 2 }}>
+                      <Typography variant="h6">
+                        {key.replace(/_/g, " ")}
+                      </Typography>
+                      <Line
+                        data={chartData(labels, data, color)}
+                        options={staticsOptions}
+                      />
+                    </Paper>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </>
+        )}
+      </Box>
+    </Container>
   );
 }

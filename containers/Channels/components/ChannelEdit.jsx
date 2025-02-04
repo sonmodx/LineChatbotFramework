@@ -2,6 +2,7 @@
 
 import Loading from "@/components/Loading";
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
@@ -10,6 +11,7 @@ import {
   FormControlLabel,
   FormHelperText,
   InputLabel,
+  Snackbar,
   OutlinedInput,
   Stack,
   TextField,
@@ -17,8 +19,9 @@ import {
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { getBotInfo } from "./action";
 
-const WEBHOOK_URL = "https://example.com/hoge";
+const WEBHOOK_URL = "http://161.246.127.103:4000/webhook";
 
 export default function ChannelEdit() {
   //   const [channelId, setChannelId] = useState();
@@ -29,6 +32,9 @@ export default function ChannelEdit() {
   //   const [isActive, setIsActive] = useState(true);
   const router = useRouter();
   const [channel, setChannel] = useState({});
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isOpenSnackbar, setIsOpenSnackbar] = useState(false);
+
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [customWebhook, setCustomWebhook] = useState("");
@@ -36,6 +42,13 @@ export default function ChannelEdit() {
   const channelIdParams = searchParams.get("channelId");
   console.log(channel);
 
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setIsOpenSnackbar(false);
+  };
   const getChannelByID = async () => {
     try {
       setIsLoading(true);
@@ -66,12 +79,21 @@ export default function ChannelEdit() {
         setIsError(true);
         return;
       }
+      const { userId: destination } = await getBotInfo(
+        channel.channel_access_token
+      );
+      if (!destination) {
+        setIsOpenSnackbar(true);
+        setIsError(true);
+        setErrorMessage("Invalid access token");
+        return;
+      }
 
       const body = {
         id: channel._id,
         name: channel.name,
         description: channel.description,
-        webhook_url: customWebhook,
+        webhook_url: WEBHOOK_URL,
         status: channel.status,
         channel_id: channel.channel_id,
         channel_secret: channel.channel_secret,
@@ -83,7 +105,7 @@ export default function ChannelEdit() {
       });
       if (res.status === 200) {
         router.push("/channels");
-        console.log("Successful created new channel!");
+        console.log("Successful update channel!");
       }
     } catch (error) {
       console.error("Error create new channel failed:", error);
@@ -227,7 +249,8 @@ export default function ChannelEdit() {
                 name="webhook-api"
                 label="Webhook API"
                 fullWidth
-                value={customWebhook}
+                defaultValue={WEBHOOK_URL}
+                disabled
                 onChange={(e) => setCustomWebhook(e.target.value)}
               />
 
@@ -254,6 +277,20 @@ export default function ChannelEdit() {
           </form>
         )}
       </Box>
+      <Snackbar
+        open={isOpenSnackbar}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity="error"
+          sx={{ width: "100%", fontWeight: "bold" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

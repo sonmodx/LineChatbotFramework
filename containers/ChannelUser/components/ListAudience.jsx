@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   Chip,
-  Container,
   Modal,
   Stack,
   TextField,
@@ -360,7 +359,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
               )}
             />
             <Box mt={2}>
-              <div>
+              <Stack direction="row" flexWrap="wrap" gap={1}>
                 {selectedUsers.map((user) => (
                   <Chip
                     key={user.line_user_id}
@@ -377,7 +376,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
                     sx={{ marginRight: 1 }}
                   />
                 ))}
-              </div>
+              </Stack>
             </Box>
           </Box>
           {/* Buttons at the Bottom-Right */}
@@ -477,7 +476,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
               )}
             />
             <Box mt={2}>
-              <div>
+              <Stack direction="row" flexWrap="wrap" gap={1}>
                 {!isLoadingSelectedUsers &&
                   selectedUsers.map((user) => (
                     <Chip
@@ -498,7 +497,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
                     />
                   ))}
                 {isLoadingSelectedUsers && <Loading />}
-              </div>
+              </Stack>
             </Box>
           </Box>
           {/* Buttons at the Bottom-Right */}

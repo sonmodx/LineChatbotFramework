@@ -15,6 +15,7 @@ import {
   Select,
   MenuItem,
   IconButton,
+  Stack,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import { getAllApis, getAllLineUsers } from "@/actions";
@@ -350,7 +351,7 @@ export default function MulticastMessage() {
               )}
             />
             <Box mt={2}>
-              <div>
+              <Stack direction="row" flexWrap="wrap" gap={1}>
                 {selectedUsers.map((user) => (
                   <Chip
                     key={user.line_user_id}
@@ -368,7 +369,7 @@ export default function MulticastMessage() {
                     sx={{ marginRight: 1 }}
                   />
                 ))}
-              </div>
+              </Stack>
             </Box>
 
             {/* API Section */}

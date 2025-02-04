@@ -78,7 +78,7 @@ export default function ChannelLog({ listTitle, channelId }) {
           justifyContent: "space-between",
           alignItems: "center",
           marginTop: 5,
-          px: 2,
+          // px: 2,
         }}
       >
         <Typography variant="h4" sx={{ py: 1, fontWeight: "bolder" }}>
