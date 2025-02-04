@@ -8,6 +8,7 @@ import {
   CircularProgress,
   Switch,
   FormControlLabel,
+  Container
 } from "@mui/material";
 import { Line } from "react-chartjs-2";
 import {
@@ -169,16 +170,24 @@ export default function ChannelStatics({ listTitle, channelId }) {
   }, [channelId]);
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
+    <Container>
+    <Box sx={{ marginTop : 5 }}>
+      <Typography variant="h4" sx={{ py: 1, fontWeight: "bolder" }} gutterBottom>
         {listTitle} Overview
       </Typography>
 
       {isLoading ? (
         <Box
-          sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}
-        >
+        sx={{
+          display: "flex",
+          flexDirection: "column", // Stack items vertically
+          justifyContent: "center",
+          alignItems: "center",
+        }}>
           <CircularProgress />
+            <Typography variant="caption" sx={{ mt: 2 }}>
+            Loading, please wait...
+            </Typography>
         </Box>
       ) : (
         <>
@@ -277,5 +286,6 @@ export default function ChannelStatics({ listTitle, channelId }) {
         </>
       )}
     </Box>
+    </Container>
   );
 }
