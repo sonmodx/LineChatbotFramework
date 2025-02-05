@@ -15,7 +15,6 @@ const listAction = [
   "Multicast Message",
   "Narrow Message",
   "Broadcast Message",
-  "Rich menu",
   "Default Message",
 ];
 
