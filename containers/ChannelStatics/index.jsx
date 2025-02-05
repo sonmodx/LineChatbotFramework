@@ -22,6 +22,7 @@ import {
   Legend,
 } from "chart.js";
 import axios from "axios";
+import Loading from "@/components/Loading";
 
 ChartJS.register(
   CategoryScale,
@@ -202,16 +203,7 @@ export default function ChannelStatics({ listTitle, channelId }) {
         </Typography>
 
         {isLoading ? (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "50vh",
-            }}
-          >
-            <CircularProgress />
-          </Box>
+          <Loading />
         ) : (
           <>
             <Grid container spacing={3}>
