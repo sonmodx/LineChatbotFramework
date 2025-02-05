@@ -129,7 +129,7 @@ export default function CustomTable({
                   </Box>
                 </TableCell>
                 {bodyColumns?.map((bc) => (
-                  <TableCell>{row[bc]}</TableCell>
+                  <TableCell key={row._id}>{row[bc]}</TableCell>
                 ))}
                 {statusState.length !== 0 && (
                   <TableCell>

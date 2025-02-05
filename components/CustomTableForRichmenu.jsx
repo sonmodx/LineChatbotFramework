@@ -48,7 +48,7 @@ export default function CustomTable({
   headerLink,
   headerCell,
   anchorEl,
-  setAnchorEl,  
+  setAnchorEl,
   linkanchorEl,
   setlinkAnchorEl,
   isOpenSnackbar,
@@ -111,8 +111,8 @@ export default function CustomTable({
   const idLink = openLinkPopper ? "link-popper" : undefined;
 
   const handleUpdateAudience = () => {
-    const updatedData = { ...selectId, textadd: name }; 
-    callbackEditData(updatedData); 
+    const updatedData = { ...selectId, textadd: name };
+    callbackEditData(updatedData);
     setOpenUpdate(false);
   };
 
@@ -161,7 +161,7 @@ export default function CustomTable({
                   </Box>
                 </TableCell>
                 {bodyColumns?.map((bc) => (
-                  <TableCell>{row[bc]}</TableCell>
+                  <TableCell key={row._id}>{row[bc]}</TableCell>
                 ))}
                 {statusState.length !== 0 && (
                   <TableCell>
@@ -172,11 +172,20 @@ export default function CustomTable({
                 )}
 
                 {canSetting && (
-                  <TableCell width={120} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <IconButton onClick={(e) => handleLink(e, row)} aria-describedby={idLink}>
+                  <TableCell
+                    width={120}
+                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                  >
+                    <IconButton
+                      onClick={(e) => handleLink(e, row)}
+                      aria-describedby={idLink}
+                    >
                       <LinkIcon />
                     </IconButton>
-                    <IconButton onClick={(e) => handleClick(e, row)} aria-describedby={idDelete}>
+                    <IconButton
+                      onClick={(e) => handleClick(e, row)}
+                      aria-describedby={idDelete}
+                    >
                       <DeleteOutlineOutlinedIcon />
                     </IconButton>
                   </TableCell>
@@ -206,31 +215,40 @@ export default function CustomTable({
       />
       {canSetting && (
         <>
-          <Popper id={idLink} open={openLinkPopper} anchorEl={linkanchorEl} placement="top">
+          <Popper
+            id={idLink}
+            open={openLinkPopper}
+            anchorEl={linkanchorEl}
+            placement="top"
+          >
+            <PopperItem>
+              <Button
+                size="small"
+                variant="contained"
+                color="primary"
+                sx={{ fontSize: 10 }}
+                onClick={() => callbackLinkData(selectId)}
+                autoFocus
+              >
+                Link to Line User
+              </Button>
+              <Button
+                size="small"
+                variant="outlined"
+                sx={{ ml: 1, fontSize: 10 }}
+                onClick={() => setlinkAnchorEl(null)}
+              >
+                CANCEL
+              </Button>
+            </PopperItem>
+          </Popper>
 
-          <PopperItem>
-            <Button
-              size="small"
-              variant="contained"
-              color="primary"
-              sx={{ fontSize: 10 }}
-              onClick={() => callbackLinkData(selectId)}
-              autoFocus
-            >
-              Link to Line User
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              sx={{ ml: 1, fontSize: 10 }}
-              onClick={() => setlinkAnchorEl(null)}
-            >
-              CANCEL
-            </Button>
-          </PopperItem>
-        </Popper>
-
-          <Popper id={idDelete} open={openDeletePopper} anchorEl={anchorEl} placement="top">
+          <Popper
+            id={idDelete}
+            open={openDeletePopper}
+            anchorEl={anchorEl}
+            placement="top"
+          >
             <PopperItem>
               <Button
                 size="small"
@@ -271,7 +289,6 @@ export default function CustomTable({
           Success delete
         </Alert>
       </Snackbar>
-
     </>
   );
 }

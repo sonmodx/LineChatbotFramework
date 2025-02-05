@@ -17,13 +17,12 @@ import {
   TextField,
 } from "@mui/material";
 import axios from "axios";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getBotInfo } from "./action";
 
-const WEBHOOK_URL = "http://161.246.127.103:4000/webhook";
-
-export default function ChannelEdit() {
+export default function ChannelEdit({ channelId }) {
+  const WEBHOOK_URL = "http://161.246.127.103:4000/webhook";
   //   const [channelId, setChannelId] = useState();
   //   const [channelSecret, setChannelSecret] = useState();
   //   const [channelAccessToken, setChannelAccessToken] = useState();
@@ -35,11 +34,9 @@ export default function ChannelEdit() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isOpenSnackbar, setIsOpenSnackbar] = useState(false);
 
-  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [customWebhook, setCustomWebhook] = useState("");
 
-  const channelIdParams = searchParams.get("channelId");
   console.log(channel);
 
   const handleCloseSnackbar = (event, reason) => {
@@ -52,7 +49,7 @@ export default function ChannelEdit() {
   const getChannelByID = async () => {
     try {
       setIsLoading(true);
-      const res = await axios.get(`/api/Channel?id=${channelIdParams}`);
+      const res = await axios.get(`/api/Channel?id=${channelId}`);
       if (res.status === 200) {
         const { Channel } = res.data;
         console.log(Channel);
