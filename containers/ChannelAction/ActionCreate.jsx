@@ -35,8 +35,6 @@ export default function ActionCreate({ setIsCreateState, state }) {
       case 5:
         return <BroadcastMessage />;
       case 6:
-        return <RichMenuAction />;
-      case 7:
         return (
           <DefaultAction
             setState={setIsCreateState}
