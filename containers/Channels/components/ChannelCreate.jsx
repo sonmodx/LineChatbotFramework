@@ -69,7 +69,7 @@ export default function ChannelCreate() {
       //webhook url must be valid, currently for example
       const resultWebhook = await setWebhookURL(
         channelAccessToken,
-        customWebhook
+        WEBHOOK_URL
       );
       // if return {message: ""}
       if (Object.keys(resultWebhook).length !== 0) {
