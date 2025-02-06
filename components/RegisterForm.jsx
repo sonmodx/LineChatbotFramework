@@ -49,6 +49,11 @@ const isValidEmail = (email) => {
   return emailPattern.test(email);
 };
 
+const isValidPassword = (password) => {
+  const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/; // At least 6 characters, one letter, one number
+  return passwordPattern.test(password);
+};
+
 export default function RegisterForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -72,6 +77,11 @@ export default function RegisterForm() {
     // Validate email format
     if (!isValidEmail(email)) {
       setError("Invalid email format.");
+      return;
+    }
+
+    if (!isValidPassword(password)) {
+      setError("Password must be at least 6 characters long and include at least one letter and one number.");
       return;
     }
 
