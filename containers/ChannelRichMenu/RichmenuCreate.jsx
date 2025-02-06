@@ -265,7 +265,7 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
   const [chatBarTitle, setChatBarTitle] = useState("");
   const searchParams = useSearchParams();
   const channelObjectId = searchParams.get("id");
-  const channelId = searchParams.get("channel_id");
+  const channelId = searchParams.get("destination");
   // const typeMessage = "RichMenu";
   const [image, setImage] = useState(null);
   const [openModal, setOpenModal] = useState(false);
