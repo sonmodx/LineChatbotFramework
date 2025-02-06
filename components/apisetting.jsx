@@ -40,15 +40,24 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
   // [
   //  { key: "", content_type: "", content: "" },
   // ]
-  const [auth, setAuth] = useState("None");
+  const [auth, setAuth] = useState({ type: "None", secret_token: "" });
   const [scripts, setScripts] = useState("");
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [openNotification, setOpenNotification] = useState(false);
-  const [openNotificationRequest, setOpenNotificationRequest] = useState(false);
 
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    statusMessage: "",
+  });
+  const [notificationRequest, setNotificationRequest] = useState({
+    open: false,
+    message: "",
+    statusMessage: "",
+  });
   const [name, setName] = useState("");
   const [keywords, setKeywords] = useState([]);
+  console.log("AUTH", auth);
 
   // Fetch existing data for editing
   useEffect(() => {
@@ -66,7 +75,7 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
           setHeaders(data.api_headers || [{ key: "", value: "" }]);
           setUrlParams(data.api_params || [{ key: "", value: "" }]);
           setBody(revertToObjectString(data.api_body) || "");
-          setAuth(data.api_auth || "None");
+          setAuth(data.api_auth || { type: "None", secret_token: "" });
           setScripts(data.scripts || "");
           setName(data.name || "");
           setKeywords(data.keywords || []);
@@ -166,7 +175,8 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
       api_headers: headers,
       api_params: urlParams,
       api_body: apiBody,
-      api_auth: "",
+      api_auth: auth,
+      owner: "user",
     };
     if (mode === "edit") {
       requestData.id = id;
@@ -174,7 +184,6 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
     if (mode === "create") {
       requestData.channel_id = channelId;
     }
-    console.log("data,", requestData.api_body);
 
     try {
       setLoading(true);
@@ -183,12 +192,13 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
         return;
       }
       const responseUserApiData = responseUserAPI.data;
-      let keywordApi;
+      let keywordApi = responseUserApiData;
       if (Array.isArray(responseUserApiData)) {
         keywordApi = responseUserApiData[0];
       }
 
-      requestData.keywords = JSON.stringify(keywordApi);
+      requestData.response = JSON.stringify(keywordApi);
+      console.log("request data", requestData);
 
       const response = await axios({
         method: mode === "edit" ? "put" : "post",
@@ -200,7 +210,7 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
       console.log("API Request Successful:", response.data);
 
       if (response.status === 200 || response.status === 201) {
-        setOpenNotification(true);
+        setNotification(true);
       }
     } catch (error) {
       console.error(
@@ -216,7 +226,7 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
     try {
       const response = await getResponseAPI();
       if (response) {
-        setOpenNotificationRequest(true);
+        setNotificationRequest(true);
       } else {
         window.alert("Request Failed!!!");
       }
@@ -477,7 +487,7 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
                       variant="h6"
                       sx={{
                         marginTop: 1,
-                        color: "secondary.main",
+                        color: "error.main",
                         fontSize: 16,
                       }}
                     >
@@ -495,31 +505,27 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
                   </Typography>
                   <FormControl fullWidth>
                     <Select
-                      value={auth}
-                      onChange={(e) => setAuth(e.target.value)}
+                      value={auth?.type}
+                      onChange={(e) =>
+                        setAuth({ type: e.target.value, secret_token: "" })
+                      }
                       label="Auth Type"
                     >
                       <MenuItem value="None">None</MenuItem>
-                      <MenuItem value="Basic">Basic Auth</MenuItem>
                       <MenuItem value="Bearer">Bearer Token</MenuItem>
                     </Select>
                   </FormControl>
-                  {auth === "Basic" && (
-                    <Grid container spacing={2} sx={{ marginTop: 2 }}>
-                      <Grid item xs={6}>
-                        <TextField label="Username" fullWidth />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <TextField label="Password" fullWidth type="password" />
-                      </Grid>
-                    </Grid>
-                  )}
-                  {auth === "Bearer" && (
+
+                  {auth?.type === "Bearer" && (
                     <TextField
                       label="Token"
                       variant="outlined"
                       fullWidth
                       sx={{ marginTop: 2 }}
+                      value={auth?.secret_token}
+                      onChange={(e) => {
+                        setAuth({ ...auth, secret_token: e.target.value });
+                      }}
                     />
                   )}
                 </Box>
@@ -566,15 +572,19 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
           </Stack>
         </Box>
       </Box>
+
       <Notification
-        openNotification={openNotification}
-        setOpenNotification={setOpenNotification}
-        message={`Successful ${mode === "edit" ? "update API" : "create API"}`}
+        openNotification={notificationRequest.open}
+        setOpenNotification={setNotificationRequest}
+        message={notificationRequest.message}
+        statusMessage={notificationRequest.statusMessage}
       />
+
       <Notification
-        openNotification={openNotificationRequest}
-        setOpenNotification={setOpenNotificationRequest}
-        message={`Successful request API`}
+        openNotification={notification.open}
+        setOpenNotification={setNotification}
+        message={notification.message}
+        statusMessage={notification.statusMessage}
       />
     </Container>
   );

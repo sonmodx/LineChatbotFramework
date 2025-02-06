@@ -25,7 +25,15 @@ import {
 } from "chart.js";
 
 // Register Chart.js components
-ChartJS.register(LineElement, BarElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
+ChartJS.register(
+  LineElement,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  Legend
+);
 
 // Mock Data
 const uptimeData = {
@@ -79,8 +87,16 @@ const messageData = {
     {
       label: "Messages Sent",
       data: [50, 300, 1200], // Mock message counts
-      backgroundColor: ["rgba(103, 58, 183, 0.7)", "rgba(33, 150, 243, 0.7)", "rgba(76, 175, 80, 0.7)"],
-      borderColor: ["rgba(103, 58, 183, 1)", "rgba(33, 150, 243, 1)", "rgba(76, 175, 80, 1)"],
+      backgroundColor: [
+        "rgba(103, 58, 183, 0.7)",
+        "rgba(33, 150, 243, 0.7)",
+        "rgba(76, 175, 80, 0.7)",
+      ],
+      borderColor: [
+        "rgba(103, 58, 183, 1)",
+        "rgba(33, 150, 243, 1)",
+        "rgba(76, 175, 80, 1)",
+      ],
       borderWidth: 1,
     },
   ],
@@ -115,7 +131,7 @@ export default function Dashboard() {
         <Grid item xs={6} sm={3}>
           <Paper elevation={3} style={{ padding: 16, textAlign: "center" }}>
             <Typography variant="h6">API Count</Typography>
-            <Typography variant="h4" color="secondary">
+            <Typography variant="h4" color="error">
               {apiCount}/20
             </Typography>
           </Paper>
@@ -123,7 +139,7 @@ export default function Dashboard() {
         <Grid item xs={6} sm={3}>
           <Paper elevation={3} style={{ padding: 16, textAlign: "center" }}>
             <Typography variant="h6">Member Count</Typography>
-            <Typography variant="h4" color="secondary">
+            <Typography variant="h4" color="error">
               {apiCount}/100
             </Typography>
           </Paper>

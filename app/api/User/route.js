@@ -24,7 +24,7 @@ export async function GET(req) {
     const orderDirection =
       searchParams.get("orderDirection") === "desc" ? -1 : 1;
     const pageNumber = parseInt(searchParams.get("pageNumber")) || 1;
-    const pageSize = parseInt(searchParams.get("pageSize")) || 10;
+    const pageSize = parseInt(searchParams.get("pageSize")) || null;
 
     if (id) {
       const Line_User = await LineUser.findById(id);
@@ -45,6 +45,7 @@ export async function GET(req) {
       return formatResponse(200, { user: Line_User });
     } else {
       const channels = await Channel.findById(channel_id);
+      console.log("channel", channels);
       if (!channels) {
         return formatResponse(404, { message: "Channel not found." });
       }
@@ -82,7 +83,9 @@ export async function GET(req) {
         // Find all matching Audience records for the user's line_user_id in the audiences array
         console.log("server match line user", user);
         const matchedAudiences = allAudiences.filter(
-          (aud) => aud.audiences.includes(user.line_user_id) // Check if the line_user_id exists in the audiences array
+          (aud) =>
+            aud.audiences.includes(user.line_user_id) &&
+            aud.channel_id.toString() === channel_id.toString()
         );
 
         console.log("server match aud", matchedAudiences);

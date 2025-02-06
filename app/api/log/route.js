@@ -25,7 +25,7 @@ export async function GET(req) {
     const orderDirection =
       searchParams.get("orderDirection") === "desc" ? -1 : 1;
     const pageNumber = parseInt(searchParams.get("pageNumber")) || 1;
-    const pageSize = parseInt(searchParams.get("pageSize")) || 10;
+    const pageSize = parseInt(searchParams.get("pageSize")) || null;
 
     if (id) {
       const LineLog = await Log.findById(id);
@@ -64,9 +64,13 @@ export async function GET(req) {
           $or: [
             { name: { $regex: search, $options: "i" } },
             { description: { $regex: search, $options: "i" } },
+            { line_user_id: { $elemMatch: { $regex: search, $options: "i" } } },
           ],
         }),
       };
+
+      console.log("log", typeof search);
+      console.log("filter", JSON.stringify(filter, null, 2));
 
       const totalLog = await Log.countDocuments(filter);
 
@@ -74,6 +78,8 @@ export async function GET(req) {
         .sort({ [orderBy]: orderDirection })
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
+
+      console.log("result log", LineLog);
 
       // Function to retrieve line_user_name from LineUser collection
       const getLineUserNames = async (lineUserIds) => {
@@ -112,10 +118,7 @@ export async function GET(req) {
           }
 
           // Join the content array with a comma separator if it contains more than 1 value
-          const joinedContent =
-            Array.isArray(log.content) && log.content.length > 1
-              ? log.content.join(", ") // Join array with comma separator
-              : log.content.join(""); // For single value, keep as it is
+          const joinedContent = JSON.stringify(log.content, null, 2);
 
           return {
             ...log.toObject(),

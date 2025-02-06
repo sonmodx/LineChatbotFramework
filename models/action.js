@@ -6,11 +6,11 @@ const ActionSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    type: {
+    type_action: {
       type: String,
       required: true,
     },
-    type_action: {
+    type: {
       type: String,
       required: true,
     },
@@ -22,7 +22,7 @@ const ActionSchema = new mongoose.Schema(
       ref: "Channel",
     },
     api_id: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.Mixed,
       ref: "API",
     },
     message: {
@@ -31,6 +31,18 @@ const ActionSchema = new mongoose.Schema(
     },
     keyword: {
       type: [String],
+      required: false,
+    },
+    param: {
+      type: [String],
+      required: false,
+    },
+    isActivated: {
+      type: Boolean,
+      required: true,
+    },
+    useAI: {
+      type: Boolean,
       required: false,
     },
   },

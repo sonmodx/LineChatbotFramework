@@ -9,6 +9,7 @@ import Paper from "@mui/material/Paper";
 import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import LinkIcon from "@mui/icons-material/Link";
 import {
   Alert,
   Box,
@@ -18,8 +19,12 @@ import {
   TablePagination,
   Link,
   Typography,
+  Modal,
+  TextField,
+  Autocomplete,
+  Chip,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { useSession } from "next-auth/react";
@@ -34,6 +39,7 @@ export default function CustomTable({
   canSetting,
   statusState,
   callbackGetData,
+  callbackLinkData,
   callbackEditData,
   callbackDeleteData,
   isLoading,
@@ -43,6 +49,8 @@ export default function CustomTable({
   headerCell,
   anchorEl,
   setAnchorEl,
+  linkanchorEl,
+  setlinkAnchorEl,
   isOpenSnackbar,
   setIsOpenSnackbar,
   session,
@@ -53,6 +61,14 @@ export default function CustomTable({
   search = null,
 }) {
   const [selectId, setSelectId] = useState();
+  const [openDelete, setOpenDelete] = useState(false);
+  const [openUpdate, setOpenUpdate] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [selectLineUser, setSelectLineUser] = useState(null);
+  const [lineUsers, setLineUsers] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [isLoadingSelectedUsers, setIsLoadingSelectedUsers] = useState(false);
 
   const emptyRows = page > 0 ? Math.max(0, rowsPerPage - data.length) : 0;
 
@@ -70,16 +86,35 @@ export default function CustomTable({
     setSelectId(channelId);
   };
 
+  const handleLink = (event, channelId) => {
+    setlinkAnchorEl(linkanchorEl ? null : event.currentTarget);
+    setSelectId(channelId);
+  };
+
+  const handleEdit = (row) => {
+    setSelectId(row);
+    setName(row.name);
+    setDescription(row.description);
+    setOpenUpdate(true);
+  };
+
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
       return;
     }
-
     setIsOpenSnackbar(false);
   };
 
-  const open = Boolean(anchorEl);
-  const id = open ? "simple-popper" : undefined;
+  const openDeletePopper = Boolean(anchorEl);
+  const openLinkPopper = Boolean(linkanchorEl);
+  const idDelete = openDeletePopper ? "delete-popper" : undefined;
+  const idLink = openLinkPopper ? "link-popper" : undefined;
+
+  const handleUpdateAudience = () => {
+    const updatedData = { ...selectId, textadd: name };
+    callbackEditData(updatedData);
+    setOpenUpdate(false);
+  };
 
   useEffect(() => {
     callbackGetData(session, page, rowsPerPage);
@@ -100,8 +135,6 @@ export default function CustomTable({
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow sx={{ bgcolor: "whitesmoke" }}>
-              {/* parameter: headerColumns[]*/}
-              {/* type: string[]*/}
               {headerColumns?.map((hc, index) => (
                 <TableCell key={index} sx={{ fontWeight: "bolder" }}>
                   {hc}
@@ -121,7 +154,6 @@ export default function CustomTable({
                   <Box sx={{ display: "flex", alignItems: "center" }}>
                     {headerLink && (
                       <Link href={headerLink(row)} underline="hover">
-                        {/* <Person2OutlinedIcon sx={{ mr: 1 }} /> */}
                         {row[headerCell]}
                       </Link>
                     )}
@@ -140,13 +172,19 @@ export default function CustomTable({
                 )}
 
                 {canSetting && (
-                  <TableCell width={120}>
-                    <IconButton>
-                      <EditOutlinedIcon onClick={() => callbackEditData(row)} />
+                  <TableCell
+                    width={120}
+                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                  >
+                    <IconButton
+                      onClick={(e) => handleLink(e, row)}
+                      aria-describedby={idLink}
+                    >
+                      <LinkIcon />
                     </IconButton>
                     <IconButton
                       onClick={(e) => handleClick(e, row)}
-                      aria-describedby={id}
+                      aria-describedby={idDelete}
                     >
                       <DeleteOutlineOutlinedIcon />
                     </IconButton>
@@ -176,29 +214,64 @@ export default function CustomTable({
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
       {canSetting && (
-        <Popper id={id} open={open} anchorEl={anchorEl} placement="top">
-          <PopperItem>
-            <Button
-              size="small"
-              variant="contained"
-              color="error"
-              sx={{ fontSize: 10 }}
-              onClick={() => callbackDeleteData(selectId)}
-              autoFocus
-              onBlur={() => setAnchorEl(null)}
-            >
-              DELETE
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              sx={{ ml: 1, fontSize: 10 }}
-              onClick={() => setAnchorEl(null)}
-            >
-              CANCEL
-            </Button>
-          </PopperItem>
-        </Popper>
+        <>
+          <Popper
+            id={idLink}
+            open={openLinkPopper}
+            anchorEl={linkanchorEl}
+            placement="top"
+          >
+            <PopperItem>
+              <Button
+                size="small"
+                variant="contained"
+                color="primary"
+                sx={{ fontSize: 10 }}
+                onClick={() => callbackLinkData(selectId)}
+                autoFocus
+              >
+                Link to Line User
+              </Button>
+              <Button
+                size="small"
+                variant="outlined"
+                sx={{ ml: 1, fontSize: 10 }}
+                onClick={() => setlinkAnchorEl(null)}
+              >
+                CANCEL
+              </Button>
+            </PopperItem>
+          </Popper>
+
+          <Popper
+            id={idDelete}
+            open={openDeletePopper}
+            anchorEl={anchorEl}
+            placement="top"
+          >
+            <PopperItem>
+              <Button
+                size="small"
+                variant="contained"
+                color="error"
+                sx={{ fontSize: 10 }}
+                onClick={() => callbackDeleteData(selectId)}
+                autoFocus
+                onBlur={() => setAnchorEl(null)}
+              >
+                DELETE
+              </Button>
+              <Button
+                size="small"
+                variant="outlined"
+                sx={{ ml: 1, fontSize: 10 }}
+                onClick={() => setAnchorEl(null)}
+              >
+                CANCEL
+              </Button>
+            </PopperItem>
+          </Popper>
+        </>
       )}
 
       <Snackbar

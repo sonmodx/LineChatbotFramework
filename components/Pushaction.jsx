@@ -10,6 +10,11 @@ import {
   Grid,
   Button,
   IconButton,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Chip,
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
@@ -17,24 +22,33 @@ import { getAllApis, getAllLineUsers } from "@/actions";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import Notification from "./Notification";
+import { getCurrentTime, parseDateTime } from "@/lib/utils";
+import SwitchInputComponent from "./SwitchInputComponent";
 
 export default function PushMessage() {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [messageCount, setMessageCount] = useState(1); // Track number of message boxes
   const maximumMessage = 5;
-  const [messages, setMessages] = useState(Array(messageCount).fill(""));
+  const [messages, setMessages] = useState(
+    Array(messageCount).fill({ type: "text", text: "" })
+  );
+
   const [selectLineUser, setSelectLineUser] = useState(null);
   const [lineUsers, setLineUsers] = useState([]);
-  const [openNotification, setOpenNotification] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    statusMessage: "",
+  });
+
   const searchParams = useSearchParams();
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("channel_id");
   const typeMessage = "Push";
   const [apis, setApis] = useState([]);
-
+  const [dateTime, setDateTime] = useState(null);
   const [dynamicContents, setDynamicContents] = useState([]);
-  console.log(messages);
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
@@ -48,7 +62,7 @@ export default function PushMessage() {
   const addMessageBox = () => {
     if (messageCount < 5) {
       setMessageCount(messageCount + 1);
-      setMessages((prev) => [...prev, ""]);
+      setMessages((prev) => [...prev, { text: "", type: "text" }]);
     }
   };
 
@@ -61,29 +75,46 @@ export default function PushMessage() {
 
   const handleGetAllLineUsers = async () => {
     const line_users = await getAllLineUsers(channelObjectId);
-
-    console.log(line_users);
     setLineUsers(JSON.parse(line_users));
   };
 
-  const handleMessageChange = (index, value) => {
+  const handleMessageChange = (index, value, key) => {
     const updatedMessages = [...messages];
-    updatedMessages[index] = value;
+
+    if (key === "type") {
+      updatedMessages[index] = { type: value };
+    } else {
+      updatedMessages[index][key] = value;
+    }
+
     setMessages(updatedMessages);
   };
 
   const handleSendMessage = async () => {
+    const newMessages = messages.map((msg) => {
+      if (msg.type === "template") {
+        return JSON.parse(msg.template);
+      }
+      if (msg.type === "imagemap") {
+        return JSON.parse(msg.imagemap);
+      }
+      if (msg.type === "flex") {
+        return JSON.parse(msg.flex);
+      }
+
+      return msg;
+    });
     const body = {
       type: typeMessage,
       destination: channelId,
       direct_config: {
         api_id: selectedApi?._id || null,
-        user_id: selectLineUser.line_user_id,
-        message: messages
-          .filter((msg) => msg !== undefined && msg.trim() !== "")
-          .map((msg) => ({ type: "text", text: msg })),
+        user_id: selectLineUser?.line_user_id || null,
+        ...parseDateTime(dateTime),
+        message: newMessages,
       },
     };
+    console.log("bodyu", body);
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/direct_message`,
@@ -93,27 +124,40 @@ export default function PushMessage() {
         }
       );
       if (res.status === 200) {
-        setOpenNotification(true);
+        setNotification({
+          open: true,
+          message: "Successfully sent message",
+          statusMessage: "success",
+        });
+      } else {
+        setNotification({
+          open: true,
+          message: "Can't sent message",
+          statusMessage: "error",
+        });
       }
-
-      console.log("Response from webhook:", res.data);
     } catch (error) {
       console.error(
         "Error sending request to webhook:",
         error.response?.data || error.message
       );
+      setNotification({
+        open: true,
+        message: "Can't sent message",
+        statusMessage: "error",
+      });
     }
   };
 
   const handleGetAllApis = async () => {
     const _apis = await getAllApis(channelObjectId);
-
-    console.log(_apis);
     setApis(JSON.parse(_apis));
   };
 
   useEffect(() => {
+    handleGetAllLineUsers();
     handleGetAllApis();
+    setDateTime(getCurrentTime());
   }, []);
 
   useEffect(() => {
@@ -123,12 +167,11 @@ export default function PushMessage() {
       Array.isArray(selectedApi)
     )
       return;
-    const keywordsObject = JSON.parse(selectedApi?.keywords);
+    const keywordsObject = JSON.parse(selectedApi?.response);
     const getAllKeyObjects = (obj, prefix = "") => {
       return Object.keys(obj).map((key) => {
         const value = obj[key];
         const fullKey = prefix ? `${prefix}.${key}` : key;
-
         if (typeof value === "object" && !Array.isArray(value)) {
           return getAllKeyObjects(value, fullKey);
         } else {
@@ -138,15 +181,12 @@ export default function PushMessage() {
     };
     const result = getAllKeyObjects(keywordsObject);
     setDynamicContents(result);
-
-    console.log("MY KEY", keywordsObject);
-    console.log("MY result", result);
   }, [selectedApi]);
 
-  const renderButtons = (contents, messageIndex) => {
+  const renderButtons = (contents, messageIndex, field) => {
     return contents.map((keyword, index) => {
       if (Array.isArray(keyword)) {
-        return renderButtons(keyword, messageIndex);
+        return renderButtons(keyword, messageIndex, field);
       }
 
       return (
@@ -156,9 +196,11 @@ export default function PushMessage() {
           color="primary"
           style={{ margin: "5px" }}
           onClick={() => {
-            const updatedMessages = [...messages];
-            updatedMessages[messageIndex] += `$(${keyword})`;
-
+            let updatedMessages = [...messages];
+            if (!updatedMessages[messageIndex][field]) {
+              updatedMessages[messageIndex][field] = "";
+            }
+            updatedMessages[messageIndex][field] += `$(${keyword})`;
             setMessages(updatedMessages);
           }}
         >
@@ -170,19 +212,24 @@ export default function PushMessage() {
 
   return (
     <Box p={4} width="100%">
-      {/* Title and Description */}
       <Typography variant="h5" gutterBottom>
         Push Message
       </Typography>
 
-      {/* Thin Black Line */}
       <Box borderBottom={1} borderColor="black" mb={3} width="100%" />
 
       <Typography variant="body2" gutterBottom>
         วิธีใช้งาน : สามารถส่ง messages ไปหา user ทีละคนโดยระบุ User
       </Typography>
+      <TextField
+        id="datetime-local"
+        label="Schedule"
+        type="datetime-local"
+        value={dateTime}
+        onChange={(e) => setDateTime(e.target.value)}
+        sx={{ mt: 2 }}
+      />
 
-      {/* Text Message and User Areas */}
       <Box mt={3} width="100%">
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
@@ -197,26 +244,39 @@ export default function PushMessage() {
 
             {/* Dynamically Created Message Fields */}
             {[...Array(messageCount)].map((_, index) => (
-              <>
-                <Box key={index} mt={2}>
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={4}
-                    placeholder={`Enter your message (${
-                      index + 1
-                    }/${maximumMessage})`}
-                    variant="outlined"
-                    value={messages[index]}
-                    onChange={(e) => handleMessageChange(index, e.target.value)}
-                  />
-                </Box>
-                {dynamicContents.length > 0 &&
-                  renderButtons(dynamicContents, index)}
-              </>
+              <Box key={index} mt={2}>
+                {/* Message Type Dropdown */}
+                <FormControl fullWidth variant="outlined" style={{}}>
+                  <InputLabel>Message Type</InputLabel>
+                  <Select
+                    value={messages[index].type}
+                    onChange={(e) =>
+                      handleMessageChange(index, e.target.value, "type")
+                    }
+                    label="Message Type"
+                  >
+                    <MenuItem value="text">Text</MenuItem>
+                    <MenuItem value="image">Image</MenuItem>
+                    <MenuItem value="sticker">Sticker</MenuItem>
+                    <MenuItem value="video">Video</MenuItem>
+                    <MenuItem value="audio">Audio</MenuItem>
+                    <MenuItem value="location">Location</MenuItem>
+                    <MenuItem value="flex">Flex</MenuItem>
+                    <MenuItem value="template">Template</MenuItem>
+                    <MenuItem value="imagemap">Imagemap</MenuItem>
+                  </Select>
+                </FormControl>
+                <SwitchInputComponent
+                  index={index}
+                  messages={messages}
+                  maximumMessage={maximumMessage}
+                  handleMessageChange={handleMessageChange}
+                  dynamicContents={dynamicContents}
+                  renderButtons={renderButtons}
+                />
+              </Box>
             ))}
 
-            {/* ADD and REMOVE Buttons */}
             <Box mt={2}>
               {messageCount < 5 && (
                 <IconButton onClick={addMessageBox}>
@@ -232,7 +292,6 @@ export default function PushMessage() {
             </Box>
           </Grid>
 
-          {/* User Input and API Section */}
           <Grid item xs={12} sm={6}>
             <Typography
               variant="h6"
@@ -247,7 +306,6 @@ export default function PushMessage() {
               getOptionLabel={(option) => option.display_name || ""}
               value={selectLineUser}
               onChange={(event, newValue) => setSelectLineUser(newValue)}
-              onSelect={handleGetAllLineUsers}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -257,9 +315,8 @@ export default function PushMessage() {
                 />
               )}
             />
-
             {/* API Section */}
-            <Box display="flex" alignItems="center">
+            <Box display="flex" alignItems="center" mt={2}>
               <Checkbox checked={useApi} onChange={handleCheckboxChange} />
               <Typography variant="body1" display="inline">
                 Use API
@@ -280,22 +337,37 @@ export default function PushMessage() {
                     fullWidth
                   />
                 )}
+                renderOption={({ key, ...props }, option) => (
+                  <li key={key} {...props}>
+                    <Typography variant="body1">{option.name}</Typography>{" "}
+                    <Chip
+                      sx={{ ml: "auto" }}
+                      label={option.owner}
+                      color={option.owner === "user" ? "primary" : "default"}
+                    />
+                  </li>
+                )}
               />
             )}
           </Grid>
         </Grid>
       </Box>
 
-      {/* Send Button */}
+      {/* Note */}
+      <Box mt={2} width="100%">
+        <Typography variant="caption">*หมายเหตุ</Typography>
+      </Box>
+
       <Box mt={4} textAlign="right" width="100%">
         <Button variant="contained" color="primary" onClick={handleSendMessage}>
           Send
         </Button>
       </Box>
       <Notification
-        openNotification={openNotification}
-        setOpenNotification={setOpenNotification}
-        message="Successful sent message"
+        openNotification={notification.open}
+        setOpenNotification={setNotification}
+        message={notification.message}
+        statusMessage={notification.statusMessage}
       />
     </Box>
   );

@@ -25,6 +25,7 @@ export default function ChannelAPI({ listTitle, channelId }) {
           page + 1
         }&pageSize=${rowsPerPage}`
       );
+      console.log("GET ALL API", res);
       if (res.status === 200) {
         const data = res.data;
         setApis(data.API);
@@ -64,7 +65,6 @@ export default function ChannelAPI({ listTitle, channelId }) {
           justifyContent: "space-between",
           alignItems: "center",
           marginTop: 5,
-          px: 2,
         }}
       >
         <Typography variant="h4" sx={{ py: 1, fontWeight: "bolder" }}>
@@ -79,15 +79,8 @@ export default function ChannelAPI({ listTitle, channelId }) {
         </Button>
       </Box>
       <CustomTable
-        headerColumns={[
-          "Reply",
-          "Type",
-          "Description",
-          "Update date",
-          "Create date",
-          "",
-        ]}
-        bodyColumns={["method_type", "description", "updatedAt", "createdAt"]}
+        headerColumns={["Reply", "Type", "Update date", "Create date", ""]}
+        bodyColumns={["method_type", "updatedAt", "createdAt"]}
         canSetting={true}
         statusState={[]}
         callbackGetData={getAllApis}

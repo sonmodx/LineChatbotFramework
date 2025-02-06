@@ -27,18 +27,14 @@ export default function ActionCreate({ setIsCreateState, state }) {
           <Replyaction setState={setIsCreateState} state={state} data={null} />
         );
       case 2:
-        return <FlexMessage />;
-      case 3:
         return <PushMessage />;
-      case 4:
+      case 3:
         return <MulticastMessage />;
-      case 5:
+      case 4:
         return <NarrowMessage />;
-      case 6:
+      case 5:
         return <BroadcastMessage />;
-      case 7:
-        return <RichMenuAction />;
-      case 8:
+      case 6:
         return (
           <DefaultAction
             setState={setIsCreateState}

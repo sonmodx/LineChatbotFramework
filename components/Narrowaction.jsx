@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -10,13 +8,21 @@ import {
   Grid,
   Button,
   IconButton,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Stack,
+  Chip,
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import Notification from "./Notification";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
-import { getAllApis } from "@/actions";
+import { getAllApis, getAllAudiences } from "@/actions";
+import SwitchInputComponent from "./SwitchInputComponent";
+import { getCurrentTime, parseDateTime } from "@/lib/utils";
 
 const narrowFilterList = [{ type: "audience", audienceGroupId: 6618080771019 }];
 
@@ -26,16 +32,30 @@ export default function NarrowMessage() {
   const [selectedGroups, setSelectedGroups] = useState(null); // State for selected group
   const [messageCount, setMessageCount] = useState(1); // Track number of message boxes
   const maximumMessage = 5;
-  const [messages, setMessages] = useState(Array(messageCount).fill(""));
+  const [narrowFilterList, setNarrowFilterList] = useState([]);
+  const [messages, setMessages] = useState(
+    Array(messageCount).fill({ type: "text", text: "" })
+  );
+  console.log("Messages", messages);
   const [selectAudience, setSelectAudience] = useState(null);
-  const [openNotification, setOpenNotification] = useState(false);
-  console.log("msg", messages);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    statusMessage: "",
+  });
   const searchParams = useSearchParams();
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("channel_id");
   const typeMessage = "Narrowcast";
   const [apis, setApis] = useState([]);
   const [dynamicContents, setDynamicContents] = useState([]);
+  const [dateTime, setDateTime] = useState(null);
+  const [maxReciever, setMaxReceiver] = useState();
+  const [remainingQuota, setRemainingQuota] = useState(false);
+  const [notificationDisabled, setNotificationDisabled] = useState(false);
+  /*
+  
+  */
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
@@ -52,7 +72,7 @@ export default function NarrowMessage() {
   const addMessageBox = () => {
     if (messageCount < 5) {
       setMessageCount(messageCount + 1);
-      setMessages((prev) => [...prev, ""]);
+      setMessages((prev) => [...prev, { text: "", type: "text" }]);
     }
   };
 
@@ -63,24 +83,50 @@ export default function NarrowMessage() {
     }
   };
 
-  const handleMessageChange = (index, value) => {
+  const handleMessageChange = (index, value, key) => {
     const updatedMessages = [...messages];
-    updatedMessages[index] = value;
+
+    if (key === "type") {
+      updatedMessages[index] = { type: value };
+    } else {
+      updatedMessages[index][key] = value;
+    }
+
     setMessages(updatedMessages);
   };
 
   const handleSendMessage = async () => {
+    const newMessages = messages.map((msg) => {
+      if (msg.type === "template") {
+        return JSON.parse(msg.template);
+      }
+      if (msg.type === "imagemap") {
+        return JSON.parse(msg.imagemap);
+      }
+      if (msg.type === "flex") {
+        return JSON.parse(msg.flex);
+      }
+
+      return msg;
+    });
     const body = {
       type: typeMessage,
       destination: channelId,
       direct_config: {
-        narrow_filter: selectAudience,
-        message: messages
-          .filter((msg) => msg !== undefined && msg.trim() !== "")
-          .map((msg) => ({ type: "text", text: msg })),
+        recipient: {
+          type: "audience",
+          audienceGroupId: selectAudience.audienceGroupId,
+        },
+        limit: { max: maxReciever, upToRemainingQuota: remainingQuota },
+        notificationDisabled: notificationDisabled,
+        message: newMessages,
+        api_id: selectedApi?._id || null,
+
+        ...parseDateTime(dateTime),
       },
     };
     console.log("body", body);
+
     try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/direct_message`,
@@ -90,27 +136,47 @@ export default function NarrowMessage() {
         }
       );
       if (res.status === 200) {
-        setOpenNotification(true);
+        setNotification({
+          open: true,
+          message: "Successfully sent message",
+          statusMessage: "success",
+        });
+      } else {
+        setNotification({
+          open: true,
+          message: "Can't sent message",
+          statusMessage: "error",
+        });
       }
-
-      console.log("Response from webhook:", res.data);
     } catch (error) {
       console.error(
         "Error sending request to webhook:",
         error.response?.data || error.message
       );
+      setNotification({
+        open: true,
+        message: "Can't sent message",
+        statusMessage: "error",
+      });
     }
+  };
+
+  const handleGetAllAudiences = async () => {
+    const _audiences = await getAllAudiences(channelObjectId);
+
+    console.log(_audiences);
+    setNarrowFilterList(JSON.parse(_audiences));
   };
 
   const handleGetAllApis = async () => {
     const _apis = await getAllApis(channelObjectId);
-
-    console.log(_apis);
     setApis(JSON.parse(_apis));
   };
 
   useEffect(() => {
     handleGetAllApis();
+    handleGetAllAudiences();
+    setDateTime(getCurrentTime());
   }, []);
 
   useEffect(() => {
@@ -120,7 +186,7 @@ export default function NarrowMessage() {
       Array.isArray(selectedApi)
     )
       return;
-    const keywordsObject = JSON.parse(selectedApi?.keywords);
+    const keywordsObject = JSON.parse(selectedApi?.response);
     const getAllKeyObjects = (obj, prefix = "") => {
       return Object.keys(obj).map((key) => {
         const value = obj[key];
@@ -140,10 +206,10 @@ export default function NarrowMessage() {
     console.log("MY result", result);
   }, [selectedApi]);
 
-  const renderButtons = (contents, messageIndex) => {
+  const renderButtons = (contents, messageIndex, field) => {
     return contents.map((keyword, index) => {
       if (Array.isArray(keyword)) {
-        return renderButtons(keyword, messageIndex);
+        return renderButtons(keyword, messageIndex, field);
       }
 
       return (
@@ -153,8 +219,11 @@ export default function NarrowMessage() {
           color="primary"
           style={{ margin: "5px" }}
           onClick={() => {
-            const updatedMessages = [...messages];
-            updatedMessages[messageIndex] += `$(${keyword})`;
+            let updatedMessages = [...messages];
+            if (!updatedMessages[messageIndex][field]) {
+              updatedMessages[messageIndex][field] = "";
+            }
+            updatedMessages[messageIndex][field] += `$(${keyword})`;
             setMessages(updatedMessages);
           }}
         >
@@ -170,13 +239,45 @@ export default function NarrowMessage() {
       <Typography variant="h5" gutterBottom>
         Narrowcast Message
       </Typography>
-
-      {/* Thin Black Line */}
       <Box borderBottom={1} borderColor="black" mb={3} width="100%" />
-
       <Typography variant="body2" gutterBottom>
         วิธีใช้งาน : สามารถส่ง messages ไปหา user ทีละกลุ่มโดยระบุ audience
       </Typography>
+      <TextField
+        id="datetime-local"
+        label="Schedule"
+        type="datetime-local"
+        value={dateTime}
+        onChange={(e) => setDateTime(e.target.value)}
+        sx={{ mt: 2 }}
+      />
+      <Stack direction="row" spacing={5}>
+        <Box display="flex" alignItems="center" mt={2}>
+          <Checkbox
+            checked={notificationDisabled}
+            onChange={(event) => setNotificationDisabled(event.target.checked)}
+          />
+          <Typography variant="body1" display="inline">
+            Disable Notification
+          </Typography>
+        </Box>
+        <Box display="flex" alignItems="center" mt={2}>
+          <Checkbox
+            checked={remainingQuota}
+            onChange={(event) => setRemainingQuota(event.target.checked)}
+          />
+          <Typography variant="body1" display="inline">
+            Up To Remaining Quota
+          </Typography>
+          <TextField
+            label="Maximum Receiver"
+            type="number"
+            value={maxReciever}
+            onChange={(e) => setMaxReceiver(e.target.value)}
+            sx={{ ml: 2 }}
+          />
+        </Box>
+      </Stack>
 
       {/* Text Message and User Areas */}
       <Box mt={3} width="100%">
@@ -186,33 +287,43 @@ export default function NarrowMessage() {
               variant="h6"
               gutterBottom
               backgroundColor="primary.main"
-              style={{
-                color: "#fff",
-                padding: "10px",
-              }}
+              style={{ color: "#fff", padding: "10px" }}
             >
               Text Message
             </Typography>
-
             {/* Dynamically Created Message Fields */}
             {[...Array(messageCount)].map((_, index) => (
-              <>
-                <Box key={index} mt={2}>
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={4}
-                    placeholder={`Enter your message (${
-                      index + 1
-                    }/${maximumMessage})`}
-                    variant="outlined"
-                    value={messages[index]}
-                    onChange={(e) => handleMessageChange(index, e.target.value)}
-                  />
-                </Box>
-                {dynamicContents.length > 0 &&
-                  renderButtons(dynamicContents, index)}
-              </>
+              <Box key={index} mt={2}>
+                {/* Message Type Dropdown */}
+                <FormControl fullWidth variant="outlined" style={{}}>
+                  <InputLabel>Message Type</InputLabel>
+                  <Select
+                    value={messages[index].type}
+                    onChange={(e) =>
+                      handleMessageChange(index, e.target.value, "type")
+                    }
+                    label="Message Type"
+                  >
+                    <MenuItem value="text">Text</MenuItem>
+                    <MenuItem value="image">Image</MenuItem>
+                    <MenuItem value="sticker">Sticker</MenuItem>
+                    <MenuItem value="video">Video</MenuItem>
+                    <MenuItem value="audio">Audio</MenuItem>
+                    <MenuItem value="location">Location</MenuItem>
+                    <MenuItem value="flex">Flex</MenuItem>
+                    <MenuItem value="template">Template</MenuItem>
+                    <MenuItem value="imagemap">Imagemap</MenuItem>
+                  </Select>
+                </FormControl>
+                <SwitchInputComponent
+                  index={index}
+                  messages={messages}
+                  maximumMessage={maximumMessage}
+                  handleMessageChange={handleMessageChange}
+                  dynamicContents={dynamicContents}
+                  renderButtons={renderButtons}
+                />
+              </Box>
             ))}
 
             {/* ADD and REMOVE Buttons */}
@@ -237,18 +348,14 @@ export default function NarrowMessage() {
               variant="h6"
               gutterBottom
               backgroundColor="primary.main"
-              style={{
-                color: "#fff",
-                padding: "10px",
-              }}
+              style={{ color: "#fff", padding: "10px" }}
             >
               Filter by
             </Typography>
-
             {/* Group Selection */}
             <Autocomplete
               options={narrowFilterList}
-              getOptionLabel={(option) => option.type || ""}
+              getOptionLabel={(option) => option.description || ""}
               value={selectAudience}
               onChange={(event, newValue) => setSelectAudience(newValue)}
               renderInput={(params) => (
@@ -283,10 +390,25 @@ export default function NarrowMessage() {
                     fullWidth
                   />
                 )}
+                renderOption={({ key, ...props }, option) => (
+                  <li key={key} {...props}>
+                    <Typography variant="body1">{option.name}</Typography>{" "}
+                    <Chip
+                      sx={{ ml: "auto" }}
+                      label={option.owner}
+                      color={option.owner === "user" ? "primary" : "default"}
+                    />
+                  </li>
+                )}
               />
             )}
           </Grid>
         </Grid>
+      </Box>
+
+      {/* Note */}
+      <Box mt={2} width="100%">
+        <Typography variant="caption">*หมายเหตุ</Typography>
       </Box>
 
       {/* Send Button */}
@@ -296,9 +418,10 @@ export default function NarrowMessage() {
         </Button>
       </Box>
       <Notification
-        openNotification={openNotification}
-        setOpenNotification={setOpenNotification}
-        message="Successful sent message"
+        openNotification={notification.open}
+        setOpenNotification={setNotification}
+        message={notification.message}
+        statusMessage={notification.statusMessage}
       />
     </Box>
   );

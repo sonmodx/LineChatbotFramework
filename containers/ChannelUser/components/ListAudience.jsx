@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   Chip,
-  Container,
   Modal,
   Stack,
   TextField,
@@ -30,14 +29,22 @@ export default function ListAudience({ channelId, channelIdLine }) {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [openNotification, setOpenNotification] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    statusMessage: "",
+  });
   const [description, setDescription] = useState("");
   const [lineUsers, setLineUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   console.log(selectedUsers);
   const [selectLineUser, setSelectLineUser] = useState(null);
   const [openUpdate, setOpenUpdate] = useState(false);
-  const [openNotificationUpdate, setOpenNotificationUpdate] = useState(false);
+  const [notificationUpdate, setNotificationUpdate] = useState({
+    open: false,
+    message: "",
+    statusMessage: "",
+  });
   const [selectAudienceId, setSelectAudienceId] = useState(null);
 
   const audienceConfig = {
@@ -107,7 +114,11 @@ export default function ListAudience({ channelId, channelIdLine }) {
         }
       );
       if (res.status === 200) {
-        setOpenNotification(true);
+        setNotification({
+          open: true,
+          message: "Successfully create audience",
+          statusMessage: "success",
+        });
         setOpen(false);
         setDefaultValue();
         getAllAudiences();
@@ -135,7 +146,11 @@ export default function ListAudience({ channelId, channelIdLine }) {
       if (res.status === 200) {
         getAllAudiences();
         console.log("Successful delete audience");
-        setOpenNotification(true);
+        setNotification({
+          open: true,
+          message: "Successfully delete audience",
+          statusMessage: "success",
+        });
         setDefaultValue();
       }
     } catch (error) {
@@ -160,7 +175,11 @@ export default function ListAudience({ channelId, channelIdLine }) {
         }
       );
       if (res.status === 200) {
-        setOpenNotificationUpdate(true);
+        setNotificationUpdate({
+          open: true,
+          message: "Successfully update audience",
+          statusMessage: "success",
+        });
         setOpenUpdate(false);
         setDefaultValue();
         getAllAudiences();
@@ -170,16 +189,29 @@ export default function ListAudience({ channelId, channelIdLine }) {
     }
   };
 
-  const handleGetAllLineUsers = async () => {
-    const line_users = await getAllLineUsers(channelId);
+  const handleGetAllLineUsers = async (existingUserIds = []) => {
+    try {
+      const line_users = await getAllLineUsers(channelId);
+      const parsedUsers = JSON.parse(line_users);
 
-    console.log(line_users);
-    setLineUsers(JSON.parse(line_users));
+      // Extract the list of existing user IDs from the provided array
+
+      // Filter users whose `line_user_id` is not in existingUsers
+      const filteredUsers = parsedUsers.filter(
+        (user) => !existingUserIds.includes(user.line_user_id)
+      );
+      console.log("hi", existingUserIds);
+
+      console.log(filteredUsers);
+      setLineUsers(filteredUsers);
+    } catch (error) {
+      console.error("Error fetching LINE users:", error);
+    }
   };
 
   const handleGetAllLineUsersByUserId = async (item) => {
     setIsLoadingSelectedUsers(true);
-    const users = await getAllLineUsersByUserId(item.audiences);
+    const users = await getAllLineUsersByUserId(channelId, item.audiences);
     console.log(users);
     setSelectedUsers(JSON.parse(users));
     setIsLoadingSelectedUsers(false);
@@ -209,7 +241,13 @@ export default function ListAudience({ channelId, channelIdLine }) {
         <Typography variant="h4" sx={{ py: 1, fontWeight: "bolder" }}>
           List Audience
         </Typography>
-        <Button variant="contained" onClick={() => setOpen(true)}>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setOpen(true);
+            handleGetAllLineUsers();
+          }}
+        >
           Create
         </Button>
       </Stack>
@@ -227,7 +265,8 @@ export default function ListAudience({ channelId, channelIdLine }) {
         callbackGetData={getAllAudiences}
         callbackEditData={async (item) => {
           console.log("aud", item.audiences);
-          handleGetAllLineUsersByUserId(item);
+          await handleGetAllLineUsersByUserId(item);
+          await handleGetAllLineUsers(item.audiences);
           setOpenUpdate(true);
           setSelectAudienceId(item);
           setName(item.description);
@@ -309,7 +348,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
               getOptionLabel={(option) => option.display_name || ""}
               value={selectLineUser}
               onChange={(event, newValue) => handleSelectLineUser(newValue)}
-              onSelect={handleGetAllLineUsers}
+              // onSelect={handleGetAllLineUsers}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -320,7 +359,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
               )}
             />
             <Box mt={2}>
-              <div>
+              <Stack direction="row" flexWrap="wrap" gap={1}>
                 {selectedUsers.map((user) => (
                   <Chip
                     key={user.line_user_id}
@@ -337,7 +376,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
                     sx={{ marginRight: 1 }}
                   />
                 ))}
-              </div>
+              </Stack>
             </Box>
           </Box>
           {/* Buttons at the Bottom-Right */}
@@ -351,7 +390,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
           >
             <Button
               variant="outlined"
-              color="secondary"
+              color="error"
               onClick={() => setOpen(false)} // Close modal on Cancel
             >
               Cancel
@@ -426,7 +465,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
               getOptionLabel={(option) => option.display_name || ""}
               value={selectLineUser}
               onChange={(event, newValue) => handleSelectLineUser(newValue)}
-              onSelect={handleGetAllLineUsers}
+              // onSelect={handleGetAllLineUsers}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -437,7 +476,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
               )}
             />
             <Box mt={2}>
-              <div>
+              <Stack direction="row" flexWrap="wrap" gap={1}>
                 {!isLoadingSelectedUsers &&
                   selectedUsers.map((user) => (
                     <Chip
@@ -458,7 +497,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
                     />
                   ))}
                 {isLoadingSelectedUsers && <Loading />}
-              </div>
+              </Stack>
             </Box>
           </Box>
           {/* Buttons at the Bottom-Right */}
@@ -472,7 +511,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
           >
             <Button
               variant="outlined"
-              color="secondary"
+              color="error"
               onClick={() => setOpenUpdate(false)} // Close modal on Cancel
             >
               Cancel
@@ -488,14 +527,16 @@ export default function ListAudience({ channelId, channelIdLine }) {
         </Box>
       </Modal>
       <Notification
-        openNotification={openNotificationUpdate}
-        setOpenNotification={setOpenNotificationUpdate}
-        message="Successful update audience"
+        openNotification={notificationUpdate.open}
+        setOpenNotification={setNotificationUpdate}
+        message={notificationUpdate.message}
+        statusMessage={notificationUpdate.statusMessage}
       />
       <Notification
-        openNotification={openNotification}
-        setOpenNotification={setOpenNotification}
-        message="Successful sent message"
+        openNotification={notification.open}
+        setOpenNotification={setNotification}
+        message={notification.message}
+        statusMessage={notification.statusMessage}
       />
     </Box>
   );

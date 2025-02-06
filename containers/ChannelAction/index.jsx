@@ -10,7 +10,6 @@ import ActionCreate from "./ActionCreate";
 import ActionEdit from "./ActionEdit";
 
 export default function ChannelAction({ listTitle, channelId }) {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [actions, setActions] = useState([]);
   const [total, setTotal] = useState();
@@ -71,7 +70,6 @@ export default function ChannelAction({ listTitle, channelId }) {
               justifyContent: "space-between",
               alignItems: "center",
               marginTop: 5,
-              px: 2,
             }}
           >
             <Typography variant="h4" sx={{ py: 1, fontWeight: "bolder" }}>
@@ -92,9 +90,16 @@ export default function ChannelAction({ listTitle, channelId }) {
               "Description",
               "Update date",
               "Create date",
+              "Active",
               "",
             ]}
-            bodyColumns={["api_id", "description", "updatedAt", "createdAt"]}
+            bodyColumns={[
+              "api_name",
+              "description",
+              "updatedAt",
+              "createdAt",
+              "activeString",
+            ]}
             canSetting={true}
             statusState={[]}
             callbackGetData={getAllActions}

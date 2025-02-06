@@ -34,7 +34,7 @@ export default function ListUser({ listTitle, channelId }) {
     }
   };
   return (
-    <Box>
+    <Box sx={{ width: "100%" }}>
       <Box
         sx={{
           display: "flex",

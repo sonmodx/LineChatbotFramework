@@ -1,4 +1,8 @@
 "use server";
+
+import { connectMongoDB } from "@/lib/mongodb";
+import Channel from "@/models/channel";
+
 const LINE_API = "https://api.line.me/v2/bot";
 
 export async function getBotInfo(token) {
@@ -37,5 +41,16 @@ export async function setWebhookURL(token, endpoint) {
     return data;
   } catch (err) {
     throw new Error(err);
+  }
+}
+
+export async function isDestinationExists(destination) {
+  await connectMongoDB();
+  try {
+    const channel = await Channel.findOne({ destination: destination });
+    return !!channel; // Return true if a match is found, otherwise false
+  } catch (error) {
+    console.error("Error checking destination:", error);
+    return false;
   }
 }

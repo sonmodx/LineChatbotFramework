@@ -1,6 +1,5 @@
 "use client";
 import { Stack } from "@mui/material";
-import ListMenu from "./ListMenu";
 import Replyaction from "@/components/Replyaction";
 import { useEffect, useState } from "react";
 import PushMessage from "@/components/Pushaction";
@@ -14,9 +13,7 @@ import axios from "axios";
 import DefaultAction from "@/components/DefaultAction";
 
 export default function ActionEdit({ setIsEditState, state, id }) {
-  console.log("ACTION ID", id);
   const [data, setData] = useState();
-  console.log("data", data);
   useEffect(() => {
     const getData = async () => {
       try {

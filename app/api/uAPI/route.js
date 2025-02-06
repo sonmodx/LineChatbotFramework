@@ -112,10 +112,10 @@ export async function POST(req) {
       api_headers,
       api_body,
       api_auth,
-      keywords,
+      response,
     } = await req.json();
 
-    if (!name || !method_type || !api_endpoint || !channel_id || !keywords) {
+    if (!name || !method_type || !api_endpoint || !channel_id || !response) {
       return formatResponse(400, { message: "Invalid input." });
     }
 
@@ -141,7 +141,7 @@ export async function POST(req) {
       api_headers,
       api_body,
       api_auth,
-      keywords,
+      response,
     });
 
     const savedAPI = await newAPI.save();
@@ -173,7 +173,7 @@ export async function PUT(req) {
       api_headers,
       api_body,
       api_auth,
-      keywords,
+      response,
     } = body;
 
     if (!id) {
@@ -209,7 +209,7 @@ export async function PUT(req) {
         api_headers,
         api_body,
         api_auth,
-        keywords,
+        response,
       },
       {
         new: true,

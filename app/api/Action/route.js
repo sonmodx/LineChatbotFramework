@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import Action from "@/models/action";
 import { formatResponse } from "@/lib/utils";
 import Channel from "@/models/channel";
+import API from "@/models/API";
 
 // method get
 export async function GET(req) {
@@ -58,9 +59,7 @@ export async function GET(req) {
         ...(channel_id && {
           channel_id: new mongoose.Types.ObjectId(channel_id),
         }),
-        ...(search && {
-          name: { $regex: search, $options: "i" },
-        }),
+        ...(search && { name: { $regex: search, $options: "i" } }),
       };
 
       const totalActions = await Action.countDocuments(filter);
@@ -68,9 +67,30 @@ export async function GET(req) {
       const actions = await Action.find(filter)
         .sort({ [orderBy]: orderDirection })
         .skip((pageNumber - 1) * pageSize)
-        .limit(pageSize);
+        .limit(pageSize)
+        .select("-__v")
+        .lean();
 
-      return formatResponse(200, { Actions: actions, Total: totalActions });
+      // Fetch all unique API names from the API collection
+      const apiRecords = await API.find({}, "name").lean();
+
+      // Create a mapping of API names
+      const apiNameMap = apiRecords.reduce((acc, api) => {
+        acc[api._id.toString()] = api.name;
+        return acc;
+      }, {});
+
+      // Attach API names to the actions list
+      const updatedActions = actions.map((action) => ({
+        ...action,
+        activeString: action.isActivated ? "active" : "inactive",
+        api_name: apiNameMap[action.api_id?.toString()] || null, // Get api_name if api_id exists
+      }));
+
+      return formatResponse(200, {
+        Actions: updatedActions,
+        Total: totalActions,
+      });
     }
   } catch (error) {
     console.log(error);
@@ -97,7 +117,10 @@ export async function POST(req) {
       api_id,
       message,
       keyword,
+      param,
       type_action,
+      isActivated,
+      useAI,
     } = await req.json();
     console.log("action_type", action_type);
     if (!name || !type || !channel_id || !message || !type_action) {
@@ -123,7 +146,9 @@ export async function POST(req) {
         description,
         channel_id: new mongoose.Types.ObjectId(channel_id),
         message,
+        param,
         keyword,
+        isActivated,
       };
 
       if (api_id) {
@@ -154,6 +179,8 @@ export async function POST(req) {
         description,
         channel_id: new mongoose.Types.ObjectId(channel_id),
         message,
+        isActivated,
+        useAI,
       };
 
       if (api_id) {
@@ -194,8 +221,11 @@ export async function PUT(req) {
       description,
       channel_id,
       api_id,
+      param,
       message,
       keyword,
+      isActivated,
+      useAI,
     } = await req.json();
 
     const action = await Action.findById(id);
@@ -219,10 +249,20 @@ export async function PUT(req) {
       type_action,
       description,
       channel_id: new mongoose.Types.ObjectId(channel_id),
-      api_id: new mongoose.Types.ObjectId(api_id),
       message,
+      param,
       keyword,
+      isActivated,
+      useAI,
     };
+    console.log("server api_id", api_id);
+
+    if (api_id === "") {
+      updateData.api_id = ""; // Assign empty string
+    } else if (api_id) {
+      updateData.api_id = new mongoose.Types.ObjectId(api_id); // Assign ObjectId if valid
+    }
+    console.log("server api_id", updateData);
 
     const updatedAction = await Action.findByIdAndUpdate(id, updateData, {
       new: true,

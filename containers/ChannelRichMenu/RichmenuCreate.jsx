@@ -1,4 +1,3 @@
-// pages/rich-menu-designer.js
 "use client";
 
 import React, { useState } from "react";
@@ -16,9 +15,11 @@ import {
   Paper,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
-import Notification from "./Notification";
+import { useRouter } from "next/navigation";
+
+import Notification from "../../components/Notification";
 import axios from "axios";
-import ActionComponent from "./ActionComponent";
+import ActionComponent from "../../components/ActionComponent";
 import Image from "next/image";
 
 const HiddenInput = styled("input")({
@@ -251,7 +252,9 @@ const compactTemplate = [
   },
 ];
 
-export default function RichMenuDesigner() {
+export default function ChannelRichMenu({ setIsCreateState, state }) {
+  const router = useRouter();
+
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [notification, setNotification] = useState({
@@ -381,9 +384,11 @@ export default function RichMenuDesigner() {
           message: "Successfully create rih menu",
           statusMessage: "success",
         });
-      }
 
-      console.log("Response from webhook:", res.data);
+        setIsCreateState("actions");
+        console.log("Response from webhook:", res.data);
+      }
+      
     } catch (error) {
       console.error(
         "Error sending request to webhook:",
@@ -605,7 +610,7 @@ export default function RichMenuDesigner() {
                     top: 0,
                     left: 0,
                     width: "100%",
-                    height: "85%",
+                    height: "100%",
                     objectFit: "cover",
                   }}
                 />
