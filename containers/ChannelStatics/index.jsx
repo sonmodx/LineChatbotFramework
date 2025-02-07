@@ -58,19 +58,12 @@ const getLineColor = (index) => {
 const processLogs = (logs) => {
   const groupedData = {};
 
-  console.log(logs);
-  logs.forEach(log => {
-    
-    // log.createdAt = "08/02/2025 02:31"
-    const daykey = log.createdAt.split("/")[0];
-    const month = log.createdAt.split("/")[2];
-    const year = log.createdAt.split("/")[3];
+  logs.forEach((log) => {
+    const [datePart] = log.createdAt.split(" "); // Extracts "DD/MM/YYYY"
+    const [day, month, year] = datePart.split("/");
 
-    console.log(daykey);
-    console.log(month);
-    console.log(year);
-
-    const monthKey = `${String(month + 1).padStart(2, "0")}-${year}`;
+    const dayKey = `${day}/${month}/${year}`; // Full date
+    const monthKey = `${month}-${year}`; // Month-Year
 
     if (!groupedData[log.direction]) {
       groupedData[log.direction] = { monthly: {}, daily: {} };
@@ -87,9 +80,9 @@ const processLogs = (logs) => {
     groupedData[log.direction].daily[dayKey]++;
   });
 
-  console.log("groupedDate : ", groupedData);
   return groupedData;
 };
+
 
 const getLast7DaysLabels = () => {
   const labels = [];
@@ -97,9 +90,9 @@ const getLast7DaysLabels = () => {
     const date = new Date();
     date.setDate(date.getDate() - i);
     labels.push(
-      `${String(date.getDate()).padStart(2, "0")}-${String(
+      `${String(date.getDate()).padStart(2, "0")}/${String(
         date.getMonth() + 1
-      ).padStart(2, "0")}-${date.getFullYear()}`
+      ).padStart(2, "0")}/${date.getFullYear()}`
     );
   }
   return labels;
