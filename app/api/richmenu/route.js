@@ -4,7 +4,7 @@ import { connectMongoDB } from "@/lib/mongodb";
 import Channel from "@/models/channel";
 import LineUser from "@/models/LineUser";
 import mongoose from "mongoose";
-import { formatResponse } from "@/lib/utils";
+import { formatDate,formatResponse } from "@/lib/utils";
 import Richmenu from "@/models/richmenu";
 
 export async function GET(req) {
@@ -21,46 +21,35 @@ export async function GET(req) {
     const channel_id = searchParams.get("channel_id");
     const search = searchParams.get("search") || "";
     const orderBy = searchParams.get("orderBy") || "name";
-    const orderDirection =
-      searchParams.get("orderDirection") === "desc" ? -1 : 1;
+    const orderDirection = searchParams.get("orderDirection") === "desc" ? -1 : 1;
     const pageNumber = parseInt(searchParams.get("pageNumber")) || 1;
     const pageSize = parseInt(searchParams.get("pageSize")) || 10;
 
     if (id) {
-      const LineRichmenu = await Richmenu.findById(id);
+      const LineRichmenu = await Richmenu.findById(id).lean();
       if (!LineRichmenu) {
         return formatResponse(404, { message: "Richmenu not found." });
       }
-      const channel = await Channel.findById(
-        LineRichmenu.channel_id.toString()
-      );
+      const channel = await Channel.findById(LineRichmenu.channel_id.toString()).lean();
       if (!channel) {
         return formatResponse(404, { message: "Channel not found." });
       }
-      if (
-        session.user._id &&
-        session.user._id.toString() !== channel.user_id.toString()
-      ) {
-        return formatResponse(400, { message: "No access this Channel" });
+      if (session.user._id.toString() !== channel.user_id.toString()) {
+        return formatResponse(400, { message: "No access to this Channel" });
       }
 
       return formatResponse(200, { Richmenu: LineRichmenu });
     } else {
-      const channels = await Channel.findById(channel_id);
+      const channels = await Channel.findById(channel_id).lean();
       if (!channels) {
         return formatResponse(404, { message: "Channel not found." });
       }
-      if (
-        session.user._id &&
-        session.user._id.toString() !== channels.user_id.toString()
-      ) {
-        return formatResponse(400, { message: "No access this Channel" });
+      if (session.user._id.toString() !== channels.user_id.toString()) {
+        return formatResponse(400, { message: "No access to this Channel" });
       }
 
       const filter = {
-        ...(channel_id && {
-          channel_id: new mongoose.Types.ObjectId(channel_id),
-        }),
+        ...(channel_id && { channel_id: new mongoose.Types.ObjectId(channel_id) }),
         ...(search && {
           $or: [
             { name: { $regex: search, $options: "i" } },
@@ -74,16 +63,19 @@ export async function GET(req) {
       const LineRichmenu = await Richmenu.find(filter)
         .sort({ [orderBy]: orderDirection })
         .skip((pageNumber - 1) * pageSize)
-        .limit(pageSize);
+        .limit(pageSize)
+        .lean();
 
-      // Add the volume field by calculating the length of the Richmenu array for each document
-      const RichmenuWithVolume = LineRichmenu.map((RichmenuDoc) => ({
-        ...RichmenuDoc.toObject(), // Convert to plain object to allow modifications
-        volume: RichmenuDoc.Richmenus ? RichmenuDoc.Richmenus.length : 0, // Add volume field
+      // Add volume field (Richmenus array length) to each Richmenu
+      const formattedRichmenu = LineRichmenu.map((richmenu) => ({
+        ...richmenu,
+        volume: richmenu.Richmenus ? richmenu.Richmenus.length : 0,
+        createdAt: formatDate(new Date(richmenu.createdAt)),
+        updatedAt: formatDate(new Date(richmenu.updatedAt)),
       }));
 
       return formatResponse(200, {
-        Richmenu: RichmenuWithVolume,
+        Richmenu: formattedRichmenu,
         Total: totalRichmenu,
       });
     }

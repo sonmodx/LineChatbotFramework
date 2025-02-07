@@ -86,6 +86,7 @@ export default function ChannelAction({ listTitle, channelId }) {
           <CustomTable
             headerColumns={[
               "Action",
+              "Action Type",
               "API",
               "Description",
               "Update date",
@@ -94,6 +95,7 @@ export default function ChannelAction({ listTitle, channelId }) {
               "",
             ]}
             bodyColumns={[
+              "type_action",
               "api_name",
               "description",
               "updatedAt",

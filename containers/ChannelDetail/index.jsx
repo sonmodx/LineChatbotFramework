@@ -1,6 +1,5 @@
 "use client";
 import { Box, Container, Tab, Tabs, Typography } from "@mui/material";
-
 import { useState } from "react";
 import ChannelAPI from "../ChannelAPI";
 import ChannelUser from "../ChannelUser";
@@ -10,10 +9,15 @@ import ChannelStatics from "../ChannelStatics";
 import ChannelRichMenu from "../ChannelRichMenu";
 
 function ManageShowTable({ tab, id, channelId }) {
-  const listTitle = ["Action", "User", "API", "Log", "Statics", "Rich menu"];
+  const listTitle = ["Action", "API", "Rich menu", "User", "Log", "Statics"];
+
   if (tab === 0) {
     return <ChannelAction listTitle={listTitle[tab]} channelId={id} />;
   } else if (tab === 1) {
+    return <ChannelAPI listTitle={listTitle[tab]} channelId={id} />;
+  } else if (tab === 2) {
+    return <ChannelRichMenu listTitle={listTitle[tab]} channelId={id} />;
+  } else if (tab === 3) {
     return (
       <ChannelUser
         listTitle={listTitle[tab]}
@@ -21,28 +25,24 @@ function ManageShowTable({ tab, id, channelId }) {
         channelIdLine={channelId}
       />
     );
-  } else if (tab === 2) {
-    return <ChannelAPI listTitle={listTitle[tab]} channelId={id} />;
-  } else if (tab === 3) {
-    return <ChannelLog listTitle={listTitle[tab]} channelId={id} />;
   } else if (tab === 4) {
-    return <ChannelStatics listTitle={listTitle[tab]} channelId={id} />;
+    return <ChannelLog listTitle={listTitle[tab]} channelId={id} />;
   } else if (tab === 5) {
-    return <ChannelRichMenu listTitle={listTitle[tab]} channelId={id} />;
+    return <ChannelStatics listTitle={listTitle[tab]} channelId={id} />;
   }
+
   return <Box>Empty Component</Box>;
 }
-
 export default function ChannelDetail({ id, channelName, channelId }) {
   const [selectTab, setSelectTab] = useState(0);
 
   const listTab = [
-    { id: 0, label: "action" },
-    { id: 1, label: "user" },
-    { id: 2, label: "api" },
-    { id: 3, label: "log" },
-    { id: 4, label: "statics" },
-    { id: 5, label: "Rich menu" },
+    { id: 0, label: "Action" },
+    { id: 1, label: "API" },
+    { id: 2, label: "Rich menu" },
+    { id: 3, label: "User" },
+    { id: 4, label: "Log" },
+    { id: 5, label: "Statics" },
   ];
 
   return (

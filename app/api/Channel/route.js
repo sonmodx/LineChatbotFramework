@@ -6,7 +6,7 @@ import { connectMongoDB } from "@/lib/mongodb";
 import API from "@/models/API";
 import LineUser from "@/models/LineUser";
 import Action from "@/models/action";
-import { formatResponse } from "@/lib/utils";
+import { formatDate,formatResponse } from "@/lib/utils";
 
 export async function GET(req) {
   const session = await getServerSession(authOptions);
@@ -64,8 +64,14 @@ export async function GET(req) {
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
 
+      const formattedchannels = channels.map((api) => ({
+        ...api._doc,
+        createdAt: formatDate(new Date(api.createdAt)),
+        updatedAt: formatDate(new Date(api.updatedAt)),
+      }));
+
       return formatResponse(200, {
-        Channel: channels,
+        Channel: formattedchannels,
         Total: totalChannels,
       });
     }
