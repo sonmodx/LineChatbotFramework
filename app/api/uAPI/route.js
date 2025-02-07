@@ -103,6 +103,7 @@ export async function POST(req) {
 
   try {
     const {
+      owner,
       name,
       method_type,
       description,
@@ -132,6 +133,7 @@ export async function POST(req) {
     }
 
     const newAPI = new API({
+      owner,
       name,
       method_type,
       description,
