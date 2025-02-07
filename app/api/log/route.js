@@ -8,6 +8,19 @@ import { formatDate,formatResponse } from "@/lib/utils";
 import Audience from "@/models/audience";
 import Log from "@/models/log";
 
+// Helper function to properly format the full date and time
+function formatDateTime(date) {
+  return new Date(date).toLocaleString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false, // Use 24-hour format
+  });
+}
+
 export async function GET(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -25,14 +38,14 @@ export async function GET(req) {
     const orderDirection =
       searchParams.get("orderDirection") === "desc" ? -1 : 1;
     const pageNumber = parseInt(searchParams.get("pageNumber")) || 1;
-    const pageSize = parseInt(searchParams.get("pageSize")) || null;
+    const pageSize = parseInt(searchParams.get("pageSize")) || null; // Default 10 if null
 
     if (id) {
-      const LineLog = await Log.findById(id);
+      const LineLog = await Log.findById(id).lean();
       if (!LineLog) {
         return formatResponse(404, { message: "Audience not found." });
       }
-      const channel = await Channel.findById(LineLog.channel_id.toString());
+      const channel = await Channel.findById(LineLog.channel_id.toString()).lean();
       if (!channel) {
         return formatResponse(404, { message: "Channel not found." });
       }
@@ -43,9 +56,13 @@ export async function GET(req) {
         return formatResponse(400, { message: "No access this Channel" });
       }
 
-      return formatResponse(200, { audience: LineLog });
+      return formatResponse(200, { audience: { 
+        ...LineLog, 
+        createdAt: formatDateTime(LineLog.createdAt),
+        updatedAt: formatDateTime(LineLog.updatedAt),
+      }});
     } else {
-      const channels = await Channel.findById(channel_id);
+      const channels = await Channel.findById(channel_id).lean();
       if (!channels) {
         return formatResponse(404, { message: "Channel not found." });
       }
@@ -57,9 +74,7 @@ export async function GET(req) {
       }
 
       const filter = {
-        ...(channel_id && {
-          channel_id: new mongoose.Types.ObjectId(channel_id),
-        }),
+        ...(channel_id && { channel_id: new mongoose.Types.ObjectId(channel_id) }),
         ...(search && {
           $or: [
             { name: { $regex: search, $options: "i" } },
@@ -77,7 +92,8 @@ export async function GET(req) {
       const LineLog = await Log.find(filter)
         .sort({ [orderBy]: orderDirection })
         .skip((pageNumber - 1) * pageSize)
-        .limit(pageSize);
+        .limit(pageSize)
+        .lean();
 
       console.log("result log", LineLog);
 
@@ -89,7 +105,7 @@ export async function GET(req) {
 
         const users = await LineUser.find({
           line_user_id: { $in: lineUserIds },
-        });
+        }).lean();
 
         // Map the result to return the display names
         const lineUserNames = users.reduce((acc, user) => {
@@ -107,35 +123,27 @@ export async function GET(req) {
 
           let line_user_name = "Unknown User";
 
-          // If line_user_id is a string, use the string as line_user_name
           if (typeof lineUserIds === "string") {
-            line_user_name = lineUserIds; // Directly use the string value
-          }
-          // If line_user_id is an array, retrieve names from LineUser collection
-          else if (Array.isArray(lineUserIds)) {
+            line_user_name = lineUserIds;
+          } else if (Array.isArray(lineUserIds)) {
             const userNames = await getLineUserNames(lineUserIds);
-            line_user_name = userNames.join(", "); // Combine names with comma separator
+            line_user_name = userNames.join(", ");
           }
 
-          // Join the content array with a comma separator if it contains more than 1 value
           const joinedContent = JSON.stringify(log.content, null, 2);
 
           return {
-            ...log.toObject(),
-            line_user_name, // Add line_user_name field
-            content: joinedContent, // Join content with comma separator
+            ...log, // No need for .toObject() since we used .lean()
+            line_user_name,
+            content: joinedContent,
+            createdAt: formatDateTime(log.createdAt),
+            updatedAt: formatDateTime(log.updatedAt),
           };
         })
       );
 
-      const formattedlogsWithUserNamesAndContent = logsWithUserNamesAndContent.map((api) => ({
-        ...api._doc,
-        createdAt: formatDate(new Date(api.createdAt)),
-        updatedAt: formatDate(new Date(api.updatedAt)),
-      }));
-
       return formatResponse(200, {
-        log: formattedlogsWithUserNamesAndContent,
+        log: logsWithUserNamesAndContent,
         Total: totalLog,
       });
     }
