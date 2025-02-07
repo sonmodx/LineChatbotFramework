@@ -63,8 +63,8 @@ const processLogs = (logs) => {
     
     // log.createdAt = "08/02/2025 02:31"
     const daykey = log.createdAt.split("/")[0];
-    const month = log.createdAt.split("/")[2];
-    const year = log.createdAt.split("/")[3];
+    const month = log.createdAt.split("/")[1];
+    const year = log.createdAt.split("/")[2];
 
     console.log(daykey);
     console.log(month);
