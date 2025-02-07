@@ -4,7 +4,7 @@ import { connectMongoDB } from "@/lib/mongodb";
 import Channel from "@/models/channel";
 import LineUser from "@/models/LineUser";
 import mongoose from "mongoose";
-import { formatResponse } from "@/lib/utils";
+import { formatDate,formatResponse } from "@/lib/utils";
 import Richmenu from "@/models/richmenu";
 
 export async function GET(req) {

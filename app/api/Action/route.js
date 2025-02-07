@@ -3,9 +3,10 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { connectMongoDB } from "@/lib/mongodb";
 import mongoose from "mongoose";
 import Action from "@/models/action";
-import { formatResponse } from "@/lib/utils";
+import { formatDate,formatResponse } from "@/lib/utils";
 import Channel from "@/models/channel";
 import API from "@/models/API";
+
 
 // method get
 export async function GET(req) {
