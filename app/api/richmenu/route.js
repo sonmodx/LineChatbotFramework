@@ -7,6 +7,18 @@ import mongoose from "mongoose";
 import { formatDate,formatResponse } from "@/lib/utils";
 import Richmenu from "@/models/richmenu";
 
+function formatDateTime(date) {
+  return new Date(date).toLocaleString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false, // Use 24-hour format
+  });
+}
+
 export async function GET(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -70,8 +82,8 @@ export async function GET(req) {
       const formattedRichmenu = LineRichmenu.map((richmenu) => ({
         ...richmenu,
         volume: richmenu.Richmenus ? richmenu.Richmenus.length : 0,
-        createdAt: formatDate(new Date(richmenu.createdAt)),
-        updatedAt: formatDate(new Date(richmenu.updatedAt)),
+        createdAt: formatDateTime(new Date(richmenu.createdAt)),
+        updatedAt: formatDateTime(new Date(richmenu.updatedAt)),
       }));
 
       return formatResponse(200, {
