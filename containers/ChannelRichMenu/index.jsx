@@ -23,7 +23,7 @@ export default function ChannelAction({ listTitle, channelId }) {
   const [state, setState] = useState("actions");
   const [selectedActionId, setSelectedActionId] = useState();
   const searchParams = useSearchParams();
-  const channel_Id = searchParams.get("destination");
+  const channel_Id = searchParams.get("channel_id");
   const getAllActions = async () => {
     try {
       setIsLoading(true);
