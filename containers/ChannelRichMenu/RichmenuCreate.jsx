@@ -331,34 +331,6 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
     setSelectedAreaTemplate(updatedAreas);
   };
 
-  //   const handleMessageChange = (value) => {
-  //     setMessages(value);
-  //   };
-  const handleDeleteRichMenu = async () => {
-    try {
-      const body = {
-        type: "deleterichmenu",
-        destination: channelId,
-        richmenu_config: richmenuconfig,
-      };
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/richmenu`,
-        body,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-      if (res.status === 200) {
-        console.log("delte succces");
-      }
-    } catch (error) {
-      console.error(
-        "Error sending request to webhook:",
-        error.response?.data || error.message
-      );
-    }
-  };
-
   const handleCreateRichMenu = async () => {
     const body = {
       type: "createrichmenu",
@@ -668,15 +640,7 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
             <Box mt={2} width="100%">
               <Typography variant="caption">*หมายเหตุ</Typography>
             </Box>
-            <Box mt={4} textAlign="right" width="100%">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleUpdateRichMenu}
-              >
-                Link Rich Menu
-              </Button>
-            </Box>
+
             {/* Send Button */}
             <Box mt={4} textAlign="right" width="100%">
               <Button
