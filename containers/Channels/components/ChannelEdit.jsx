@@ -22,7 +22,8 @@ import { useEffect, useState } from "react";
 import { getBotInfo } from "./action";
 
 export default function ChannelEdit({ channelId }) {
-  const WEBHOOK_URL = "https://linefrontendframework.nontouchm.com:4000/webhook";
+  const WEBHOOK_URL =
+    "https://linefrontendframework.nontouchm.com:4000/webhook";
   //   const [channelId, setChannelId] = useState();
   //   const [channelSecret, setChannelSecret] = useState();
   //   const [channelAccessToken, setChannelAccessToken] = useState();
@@ -254,11 +255,11 @@ export default function ChannelEdit({ channelId }) {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={channel?.status === "true" ? true : false}
+                    checked={channel?.status === "true"}
                     onChange={(e) => {
                       setChannel((prev) => ({
                         ...prev,
-                        status: e.target.checked,
+                        status: e.target.checked ? "true" : "false",
                       }));
                     }}
                   />

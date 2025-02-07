@@ -53,6 +53,7 @@ export default function Channels() {
   };
 
   const handleEditChannel = (item) => {
+    console.log("CHANNEL EDIT", item);
     router.push(`/channels/edit?channelId=${item._id}`);
   };
 
