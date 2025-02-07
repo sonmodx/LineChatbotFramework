@@ -70,7 +70,7 @@ const processLogs = (logs) => {
     console.log(month);
     console.log(year);
 
-    const monthKey = `${String(month + 1).padStart(2, "0")}-${year.getFullYear()}`;
+    const monthKey = `${String(month + 1).padStart(2, "0")}-${year}`;
 
     if (!groupedData[log.direction]) {
       groupedData[log.direction] = { monthly: {}, daily: {} };
