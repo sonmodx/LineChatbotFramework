@@ -255,11 +255,11 @@ export default function ChannelEdit({ channelId }) {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={channel?.status === "true" ? true : false}
+                    checked={channel?.status === "true"}
                     onChange={(e) => {
                       setChannel((prev) => ({
                         ...prev,
-                        status: e.target.checked,
+                        status: e.target.checked ? "true" : "false",
                       }));
                     }}
                   />
