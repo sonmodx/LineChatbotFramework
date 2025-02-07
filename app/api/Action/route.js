@@ -8,19 +8,6 @@ import Channel from "@/models/channel";
 import API from "@/models/API";
 
 
-// Helper function to format the full date and time properly
-function formatDateTime(date) {
-  return new Date(date).toLocaleString("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false, // Use 24-hour format
-  });
-}
-
 export async function GET(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -58,8 +45,8 @@ export async function GET(req) {
       return formatResponse(200, {
         Action: {
           ...action,
-          createdAt: formatDateTime(action.createdAt),
-          updatedAt: formatDateTime(action.updatedAt),
+          createdAt: formatDateTime(new Date(action.createdAt)),
+          updatedAt: formatDateTime(new Date(action.updatedAt)),
         },
       });
     } else {
