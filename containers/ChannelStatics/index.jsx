@@ -62,8 +62,8 @@ const processLogs = (logs) => {
   logs.forEach(log => {
     const date = new Date(log.createdAt);
 
-    const monthKey = `${(date.getMonth() + 1).padStart(2, "0")}-${date.getFullYear()}`;
-    const dayKey = Date.toISOString().split("T")[0];
+    const monthKey = `${String(date.getMonth() + 1).padStart(2, "0")}-${date.getFullYear()}`;
+    const dayKey = date.toISOString().split("T")[0];
 
     if (!groupedData[log.direction]) {
       groupedData[log.direction] = { monthly: {}, daily: {} };
