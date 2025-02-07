@@ -57,8 +57,8 @@ export async function GET(req) {
 
       return formatResponse(200, { audience: { 
         ...LineLog, 
-        createdAt: formatDateTime(new Date(LineLog.createdAt)),
-        updatedAt: formatDateTime(new Date(LineLog.updatedAt)),
+        createdAt: formatDate(new Date(LineLog.createdAt)),
+        updatedAt: formatDate(new Date(LineLog.updatedAt)),
       }});
     } else {
       const channels = await Channel.findById(channel_id).lean();
@@ -135,8 +135,8 @@ export async function GET(req) {
             ...log, // No need for .toObject() since we used .lean()
             line_user_name,
             content: joinedContent,
-            createdAt: formatDateTime(new Date(log.createdAt)),
-            updatedAt: formatDateTime(new Date(log.updatedAt)),
+            createdAt: formatDate(new Date(log.createdAt)),
+            updatedAt: formatDate(new Date(log.updatedAt)),
           };
         })
       );

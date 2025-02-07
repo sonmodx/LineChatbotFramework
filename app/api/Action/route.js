@@ -7,19 +7,6 @@ import { formatDate,formatResponse } from "@/lib/utils";
 import Channel from "@/models/channel";
 import API from "@/models/API";
 
-function formatDateTime(date) {
-  return new Date(date).toLocaleString("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false, // Use 24-hour format
-  });
-}
-
-
 export async function GET(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -57,8 +44,8 @@ export async function GET(req) {
       return formatResponse(200, {
         Action: {
           ...action,
-          createdAt: formatDateTime(new Date(action.createdAt)),
-          updatedAt: formatDateTime(new Date(action.updatedAt)),
+          createdAt: formatDate(new Date(action.createdAt)),
+          updatedAt: formatDate(new Date(action.updatedAt)),
         },
       });
     } else {
@@ -103,8 +90,8 @@ export async function GET(req) {
         ...action,
         activeString: action.isActivated ? "active" : "inactive",
         api_name: apiNameMap[action.api_id?.toString()] || null,
-        createdAt: formatDateTime(new Date(action.createdAt)),
-        updatedAt: formatDateTime(new Date(action.updatedAt)),
+        createdAt: formatDate(new Date(action.createdAt)),
+        updatedAt: formatDate(new Date(action.updatedAt)),
       }));
 
       return formatResponse(200, {
