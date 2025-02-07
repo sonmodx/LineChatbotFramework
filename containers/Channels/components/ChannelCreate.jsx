@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { getBotInfo, isDestinationExists, setWebhookURL } from "./action";
 
-const WEBHOOK_URL = "http://161.246.127.103:4000/webhook";
+const WEBHOOK_URL = "https://linefrontendframework.nontouchm.com:4000/webhook";
 
 export default function ChannelCreate() {
   const [channelId, setChannelId] = useState();
@@ -69,7 +69,7 @@ export default function ChannelCreate() {
       //webhook url must be valid, currently for example
       const resultWebhook = await setWebhookURL(
         channelAccessToken,
-        customWebhook
+        WEBHOOK_URL
       );
       // if return {message: ""}
       if (Object.keys(resultWebhook).length !== 0) {
