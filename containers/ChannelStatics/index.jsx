@@ -60,10 +60,17 @@ const processLogs = (logs) => {
 
   console.log(logs);
   logs.forEach(log => {
-    const date = new Date(log.createdAt);
+    
+    // log.createdAt = "08/02/2025 02:31"
+    const daykey = log.createdAt.split("/")[0];
+    const month = log.createdAt.split("/")[2];
+    const year = log.createdAt.split("/")[3];
 
-    const monthKey = `${String(date.getMonth() + 1).padStart(2, "0")}-${date.getFullYear()}`;
-    const dayKey = date.toISOString().split("T")[0];
+    console.log(daykey);
+    console.log(month);
+    console.log(year);
+
+    const monthKey = `${String(month + 1).padStart(2, "0")}-${year.getFullYear()}`;
 
     if (!groupedData[log.direction]) {
       groupedData[log.direction] = { monthly: {}, daily: {} };
@@ -80,6 +87,7 @@ const processLogs = (logs) => {
     groupedData[log.direction].daily[dayKey]++;
   });
 
+  console.log("groupedDate : ", groupedData);
   return groupedData;
 };
 
