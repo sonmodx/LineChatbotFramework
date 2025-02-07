@@ -8,6 +8,18 @@ import { formatDate,formatResponse } from "@/lib/utils";
 import Audience from "@/models/audience";
 import Log from "@/models/log";
 
+function formatDateTime(date) {
+  return new Date(date).toLocaleString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false, // Use 24-hour format
+  });
+}
+
 export async function GET(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
