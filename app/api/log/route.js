@@ -128,8 +128,14 @@ export async function GET(req) {
         })
       );
 
+      const formattedlogsWithUserNamesAndContent = logsWithUserNamesAndContent.map((api) => ({
+        ...api._doc,
+        createdAt: formatDate(new Date(api.createdAt)),
+        updatedAt: formatDate(new Date(api.updatedAt)),
+      }));
+
       return formatResponse(200, {
-        log: logsWithUserNamesAndContent,
+        log: formattedlogsWithUserNamesAndContent,
         Total: totalLog,
       });
     }

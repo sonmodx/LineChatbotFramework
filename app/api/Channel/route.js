@@ -64,8 +64,14 @@ export async function GET(req) {
         .skip((pageNumber - 1) * pageSize)
         .limit(pageSize);
 
+      const formattedchannels = channels.map((api) => ({
+        ...api._doc,
+        createdAt: formatDate(new Date(api.createdAt)),
+        updatedAt: formatDate(new Date(api.updatedAt)),
+      }));
+
       return formatResponse(200, {
-        Channel: channels,
+        Channel: formattedchannels,
         Total: totalChannels,
       });
     }

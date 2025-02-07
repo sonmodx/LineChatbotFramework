@@ -87,8 +87,15 @@ export async function GET(req) {
         api_name: apiNameMap[action.api_id?.toString()] || null, // Get api_name if api_id exists
       }));
 
+      
+      const formattedupdatedActions = updatedActions.map((api) => ({
+        ...api._doc,
+        createdAt: formatDate(new Date(api.createdAt)),
+        updatedAt: formatDate(new Date(api.updatedAt)),
+      }));
+
       return formatResponse(200, {
-        Actions: updatedActions,
+        Actions: formattedupdatedActions,
         Total: totalActions,
       });
     }

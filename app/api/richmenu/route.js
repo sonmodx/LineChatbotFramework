@@ -82,6 +82,17 @@ export async function GET(req) {
         volume: RichmenuDoc.Richmenus ? RichmenuDoc.Richmenus.length : 0, // Add volume field
       }));
 
+      const formattedRichmenuWithVolume = RichmenuWithVolume.map((api) => ({
+        ...api._doc,
+        createdAt: formatDate(new Date(api.createdAt)),
+        updatedAt: formatDate(new Date(api.updatedAt)),
+      }));
+
+      return formatResponse(200, {
+        API: formattedRichmenuWithVolume,
+        Total: totalAPIs,
+      });
+
       return formatResponse(200, {
         Richmenu: RichmenuWithVolume,
         Total: totalRichmenu,
