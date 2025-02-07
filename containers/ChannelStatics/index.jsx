@@ -61,16 +61,11 @@ const processLogs = (logs) => {
   console.log(logs);
   logs.forEach(log => {
     
-    // log.createdAt = "08/02/2025 02:31"
-    const dayKey = int(log.createdAt.split("/")[0]);
-    const month = int(log.createdAt.split("/")[1]);
-    const year = int(log.createdAt.split("/")[2].split(" ")[0]);
+    const [datePart] = log.createdAt.split(" ");
+    const [day, month, year] = datePart.split("/");
 
-    console.log(dayKey);
-    console.log(month);
-    console.log(year);
-
-    const monthKey = `${String(month + 1).padStart(2, "0")}-${year}`;
+    const dayKey = `${day}/${month}/${year}`;
+    const monthKey = `${month}-${year}`;
 
     if (!groupedData[log.direction]) {
       groupedData[log.direction] = { monthly: {}, daily: {} };
@@ -97,9 +92,9 @@ const getLast7DaysLabels = () => {
     const date = new Date();
     date.setDate(date.getDate() - i);
     labels.push(
-      `${String(date.getDate()).padStart(2, "0")}-${String(
+      `${String(date.getDate()).padStart(2, "0")}/${String(
         date.getMonth() + 1
-      ).padStart(2, "0")}-${date.getFullYear()}`
+      ).padStart(2, "0")}/${date.getFullYear()}`
     );
   }
   return labels;
