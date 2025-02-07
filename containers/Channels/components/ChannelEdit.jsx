@@ -20,10 +20,10 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getBotInfo } from "./action";
+import { useSearchParams } from "next/navigation";
 
-export default function ChannelEdit({ channelId }) {
-  const WEBHOOK_URL =
-    "https://linefrontendframework.nontouchm.com:4000/webhook";
+export default function ChannelEdit() {
+  const WEBHOOK_URL = "https://linefrontendframework.nontouchm.com:4000/webhook";
   //   const [channelId, setChannelId] = useState();
   //   const [channelSecret, setChannelSecret] = useState();
   //   const [channelAccessToken, setChannelAccessToken] = useState();
@@ -31,14 +31,15 @@ export default function ChannelEdit({ channelId }) {
   const [isError, setIsError] = useState(false);
   //   const [isActive, setIsActive] = useState(true);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const channelId = searchParams.get("channelId");
+
   const [channel, setChannel] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const [isOpenSnackbar, setIsOpenSnackbar] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [customWebhook, setCustomWebhook] = useState("");
-
-  console.log(channel);
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
@@ -255,17 +256,18 @@ export default function ChannelEdit({ channelId }) {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={channel?.status === "true"}
+                    checked={channel?.status === "true"} 
                     onChange={(e) => {
                       setChannel((prev) => ({
                         ...prev,
-                        status: e.target.checked ? "true" : "false",
+                        status: e.target.checked ? "true" : "false", 
                       }));
                     }}
                   />
                 }
                 label="Status"
               />
+
             </Stack>
             <Stack direction="row" sx={{ mt: 4, justifyContent: "flex-end" }}>
               <Button variant="contained" sx={{ width: 125 }} type="submit">

@@ -58,13 +58,14 @@ const getLineColor = (index) => {
 const processLogs = (logs) => {
   const groupedData = {};
 
-  logs.forEach((log) => {
+  console.log(logs);
+  logs.forEach(log => {
     const date = new Date(log.createdAt);
-    const monthKey = `${String(date.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}-${date.getFullYear()}`;
-    const dayKey = date.toISOString().split("T")[0];
+
+    const gmt7Date = new Date(date.getTime() + (7 * 60 * 60 * 1000));
+
+    const monthKey = `${String(gmt7Date.getMonth() + 1).padStart(2, "0")}-${gmt7Date.getFullYear()}`;
+    const dayKey = gmt7Date.toISOString().split("T")[0];
 
     if (!groupedData[log.direction]) {
       groupedData[log.direction] = { monthly: {}, daily: {} };
@@ -131,10 +132,13 @@ export default function ChannelStatics({ listTitle, channelId }) {
       const res = await axios.get(`/api/log?channel_id=${channelId}`);
       if (res.status === 200) {
         const { log } = res.data;
+
+        console.log("log",log)
         setLogs(log);
 
         const processedData = processLogs(log);
         setActionTypes(processedData);
+        
 
         // Set individual counts
         const sentLogs = log.filter((l) => l.direction === "send_Reply");
