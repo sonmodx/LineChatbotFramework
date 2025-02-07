@@ -198,7 +198,7 @@ export default function ChannelStatics({ listTitle, channelId }) {
 
   return (
     <Container>
-      <Box sx={{ marginTop: 5 }}>
+      <Box sx={{ marginTop: 5, marginBottom: 5 }}>
         <Typography
           variant="h4"
           gutterBottom
