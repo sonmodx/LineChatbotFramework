@@ -62,9 +62,9 @@ const processLogs = (logs) => {
   logs.forEach(log => {
     
     // log.createdAt = "08/02/2025 02:31"
-    const dayKey = log.createdAt.split("/")[0];
-    const month = log.createdAt.split("/")[1];
-    const year = log.createdAt.split("/")[2].split(" ")[0];
+    const dayKey = int(log.createdAt.split("/")[0]);
+    const month = int(log.createdAt.split("/")[1]);
+    const year = int(log.createdAt.split("/")[2].split(" ")[0]);
 
     console.log(dayKey);
     console.log(month);
