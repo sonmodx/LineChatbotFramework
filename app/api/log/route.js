@@ -8,19 +8,6 @@ import { formatDate,formatResponse } from "@/lib/utils";
 import Audience from "@/models/audience";
 import Log from "@/models/log";
 
-// Helper function to properly format the full date and time
-function formatDateTime(date) {
-  return new Date(date).toLocaleString("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false, // Use 24-hour format
-  });
-}
-
 export async function GET(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -136,8 +123,8 @@ export async function GET(req) {
             ...log, // No need for .toObject() since we used .lean()
             line_user_name,
             content: joinedContent,
-            createdAt: formatDateTime(log.createdAt),
-            updatedAt: formatDateTime(log.updatedAt),
+            createdAt: formatDateTime(new Date(log.createdAt)),
+            updatedAt: formatDateTime(new Date(log.updatedAt)),
           };
         })
       );
