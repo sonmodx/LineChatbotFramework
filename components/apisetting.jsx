@@ -29,6 +29,8 @@ import {
 } from "@mui/material";
 import Loading from "./Loading";
 import Notification from "./Notification";
+import { useRouter } from "next/navigation";
+import ResponseComponent from "./ResponseComponent";
 
 function ApiSetting({ mode = "create", id = null, channelId = null }) {
   const [method, setMethod] = useState("GET");
@@ -37,6 +39,8 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
   const [urlParams, setUrlParams] = useState([{ key: "", value: "" }]);
   const [body, setBody] = useState("");
   const [errorBody, setErrorBody] = useState();
+  const router = useRouter();
+  const [responseData, setResponseData] = useState(null);
   // [
   //  { key: "", content_type: "", content: "" },
   // ]
@@ -209,8 +213,13 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
 
       console.log("API Request Successful:", response.data);
 
-      if (response.status === 200 || response.status === 201) {
-        setNotification(true);
+      if (response.status === 200 || response.status === 201) {        
+        setNotification({
+          open: true,
+          message:  "save successfully!",
+          statusMessage: "success",
+        });
+            
       }
     } catch (error) {
       console.error(
@@ -226,7 +235,12 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
     try {
       const response = await getResponseAPI();
       if (response) {
-        setNotificationRequest(true);
+        setNotificationRequest({
+          open: true,
+          message: "Request successfully!",
+          statusMessage: "success",
+        });
+        setResponseData(response);
       } else {
         window.alert("Request Failed!!!");
       }
@@ -560,6 +574,9 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
               </Button>
             </CardContent>
           </Card>
+
+          
+
           <Stack>
             <Button
               variant="contained"
@@ -570,6 +587,7 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
               Save
             </Button>
           </Stack>
+          {responseData && <ResponseComponent response={responseData} />}
         </Box>
       </Box>
 
