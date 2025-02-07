@@ -8,7 +8,19 @@ import Channel from "@/models/channel";
 import API from "@/models/API";
 
 
-// method get
+// Helper function to format the full date and time properly
+function formatDateTime(date) {
+  return new Date(date).toLocaleString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false, // Use 24-hour format
+  });
+}
+
 export async function GET(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -28,11 +40,11 @@ export async function GET(req) {
     const pageSize = parseInt(searchParams.get("pageSize")) || 10;
 
     if (id) {
-      const action = await Action.findById(id);
+      const action = await Action.findById(id).lean();
       if (!action) {
         return formatResponse(404, { message: "Message not found." });
       }
-      const channel = await Channel.findById(action.channel_id.toString());
+      const channel = await Channel.findById(action.channel_id.toString()).lean();
       if (!channel) {
         return formatResponse(404, { message: "Channel not found." });
       }
@@ -43,9 +55,15 @@ export async function GET(req) {
         return formatResponse(400, { message: "No access this Channel" });
       }
 
-      return formatResponse(200, { Action: action });
+      return formatResponse(200, {
+        Action: {
+          ...action,
+          createdAt: formatDateTime(action.createdAt),
+          updatedAt: formatDateTime(action.updatedAt),
+        },
+      });
     } else {
-      const channel = await Channel.findById(channel_id);
+      const channel = await Channel.findById(channel_id).lean();
       if (!channel) {
         return formatResponse(404, { message: "Channel not found." });
       }
@@ -81,22 +99,17 @@ export async function GET(req) {
         return acc;
       }, {});
 
-      // Attach API names to the actions list
-      const updatedActions = actions.map((action) => ({
+      // Attach API names and format dates
+      const formattedActions = actions.map((action) => ({
         ...action,
         activeString: action.isActivated ? "active" : "inactive",
-        api_name: apiNameMap[action.api_id?.toString()] || null, // Get api_name if api_id exists
-      }));
-
-      
-      const formattedupdatedActions = updatedActions.map((api) => ({
-        ...api._doc,
-        createdAt: formatDate(new Date(api.createdAt)),
-        updatedAt: formatDate(new Date(api.updatedAt)),
+        api_name: apiNameMap[action.api_id?.toString()] || null,
+        createdAt: formatDateTime(action.createdAt),
+        updatedAt: formatDateTime(action.updatedAt),
       }));
 
       return formatResponse(200, {
-        Actions: formattedupdatedActions,
+        Actions: formattedActions,
         Total: totalActions,
       });
     }
