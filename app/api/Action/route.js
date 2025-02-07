@@ -103,8 +103,8 @@ export async function GET(req) {
         ...action,
         activeString: action.isActivated ? "active" : "inactive",
         api_name: apiNameMap[action.api_id?.toString()] || null,
-        createdAt: formatDateTime(action.createdAt),
-        updatedAt: formatDateTime(action.updatedAt),
+        createdAt: formatDateTime(new Date(action.createdAt)),
+        updatedAt: formatDateTime(new Date(action.updatedAt)),
       }));
 
       return formatResponse(200, {

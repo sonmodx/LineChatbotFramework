@@ -57,8 +57,8 @@ export async function GET(req) {
 
       return formatResponse(200, { audience: { 
         ...LineLog, 
-        createdAt: formatDateTime(LineLog.createdAt),
-        updatedAt: formatDateTime(LineLog.updatedAt),
+        createdAt: formatDateTime(new Date(LineLog.createdAt)),
+        updatedAt: formatDateTime(new Date(LineLog.updatedAt)),
       }});
     } else {
       const channels = await Channel.findById(channel_id).lean();
