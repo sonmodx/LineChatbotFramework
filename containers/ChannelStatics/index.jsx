@@ -62,10 +62,8 @@ const processLogs = (logs) => {
   logs.forEach(log => {
     const date = new Date(log.createdAt);
 
-    const gmt7Date = new Date(date.getTime() + (7 * 60 * 60 * 1000));
-
-    const monthKey = `${String(gmt7Date.getMonth() + 1).padStart(2, "0")}-${gmt7Date.getFullYear()}`;
-    const dayKey = gmt7Date.toISOString().split("T")[0];
+    const monthKey = `${(date.getMonth() + 1).padStart(2, "0")}-${date.getFullYear()}`;
+    const dayKey = Date.toISOString().split("T")[0];
 
     if (!groupedData[log.direction]) {
       groupedData[log.direction] = { monthly: {}, daily: {} };
