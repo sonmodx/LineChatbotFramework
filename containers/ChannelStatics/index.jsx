@@ -58,12 +58,23 @@ const getLineColor = (index) => {
 const processLogs = (logs) => {
   const groupedData = {};
 
+<<<<<<< HEAD
   logs.forEach((log) => {
     const [datePart] = log.createdAt.split(" "); // Extracts "DD/MM/YYYY"
     const [day, month, year] = datePart.split("/");
 
     const dayKey = `${day}/${month}/${year}`; // Full date
     const monthKey = `${month}-${year}`; // Month-Year
+=======
+  console.log(logs);
+  logs.forEach(log => {
+    
+    const [datePart] = log.createdAt.split(" ");
+    const [day, month, year] = datePart.split("/");
+
+    const dayKey = `${day}/${month}/${year}`;
+    const monthKey = `${month}-${year}`;
+>>>>>>> ec30218b3666705c26cfa22723096db6f35caffd
 
     if (!groupedData[log.direction]) {
       groupedData[log.direction] = { monthly: {}, daily: {} };
@@ -196,7 +207,7 @@ export default function ChannelStatics({ listTitle, channelId }) {
 
   return (
     <Container>
-      <Box sx={{ marginTop: 5 }}>
+      <Box sx={{ marginTop: 5, marginBottom: 5 }}>
         <Typography
           variant="h4"
           gutterBottom
