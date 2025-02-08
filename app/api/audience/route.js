@@ -80,6 +80,7 @@ export async function GET(req) {
       const audienceWithVolume = LineAudience.map((audienceDoc) => ({
         ...audienceDoc.toObject(), // Convert to plain object to allow modifications
         volume: audienceDoc.audiences ? audienceDoc.audiences.length : 0, // Add volume field
+        createdAt: formatDate(audienceDoc.createdAt)
       }));
 
       return formatResponse(200, {
