@@ -58,14 +58,6 @@ const getLineColor = (index) => {
 const processLogs = (logs) => {
   const groupedData = {};
 
-<<<<<<< HEAD
-  logs.forEach((log) => {
-    const [datePart] = log.createdAt.split(" "); // Extracts "DD/MM/YYYY"
-    const [day, month, year] = datePart.split("/");
-
-    const dayKey = `${day}/${month}/${year}`; // Full date
-    const monthKey = `${month}-${year}`; // Month-Year
-=======
   console.log(logs);
   logs.forEach(log => {
     
@@ -73,8 +65,7 @@ const processLogs = (logs) => {
     const [day, month, year] = datePart.split("/");
 
     const dayKey = `${day}/${month}/${year}`;
-    const monthKey = `${month}-${year}`;
->>>>>>> ec30218b3666705c26cfa22723096db6f35caffd
+    const monthKey = `${month}/${year}`;
 
     if (!groupedData[log.direction]) {
       groupedData[log.direction] = { monthly: {}, daily: {} };
@@ -95,9 +86,9 @@ const processLogs = (logs) => {
 };
 
 
-const getLast7DaysLabels = () => {
+const getLastNDaysLabels = (days) => {
   const labels = [];
-  for (let i = 6; i >= 0; i--) {
+  for (let i = days - 1; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
     labels.push(
@@ -135,6 +126,8 @@ export default function ChannelStatics({ listTitle, channelId }) {
   const [actionTypes, setActionTypes] = useState({});
   const [block, setBlock] = useState(0);
   const [viewDaily, setViewDaily] = useState(true);
+  const [timeRange, setTimeRange] = useState(7); // Default: Last 7 Days
+
 
   const getLogs = async () => {
     try {
@@ -149,8 +142,6 @@ export default function ChannelStatics({ listTitle, channelId }) {
         const processedData = processLogs(log);
         setActionTypes(processedData);
         
-
-        // Set individual counts
         const sentLogs = log.filter((l) => l.direction === "send_Reply");
         const boardcastLogs = log.filter(
           (l) => l.direction === "send_Broadcast"
@@ -288,46 +279,54 @@ export default function ChannelStatics({ listTitle, channelId }) {
               marginTop={3}
               marginBottom={3}
               gutterBottom
+              sx={{ py: 1, fontWeight: "bolder" }}
             >
               {listTitle} Chart
             </Typography>
+            <Box display="flex" alignItems="center" gap={2} my={2}>
             <FormControlLabel
-              control={
-                <Switch
-                  checked={viewDaily}
-                  onChange={() => setViewDaily(!viewDaily)}
-                  color="primary"
-                />
-              }
-              label={`View ${viewDaily ? "Daily(Last 7 days)" : "Monthly"}`}
+            control={
+            <Switch
+            checked={viewDaily}
+            onChange={() => setViewDaily(!viewDaily)}
+            color="primary"
+            />
+            }
+            label={`View ${viewDaily ? `Daily` : "Monthly"}`}
             />
 
+            {viewDaily && (
+            <Box display="flex" alignItems="center" gap={2} my={2} >
+            <Typography variant="body1">
+            Select Days:
+            </Typography>
+            <select
+            value={timeRange}
+            onChange={(e) => setTimeRange(Number(e.target.value))}
+            style={{ padding: "5px", fontSize: "16px", borderRadius: "5px" }}
+            >
+            <option value={7}>Last 7 Days</option>
+            <option value={15}>Last 15 Days</option>
+            <option value={30}>Last 30 Days</option>
+            </select>
+            </Box>
+            )}
+          </Box>
             <Grid container spacing={3} sx={{ mt: 3 }}>
               {Object.keys(actionTypes).map((key, index) => {
                 const color = getLineColor(index);
                 const labels = viewDaily
-                  ? getLast7DaysLabels()
-                  : Object.keys(actionTypes[key].monthly);
+                ? getLastNDaysLabels(timeRange)
+                : Object.keys(actionTypes[key].monthly);
                 const data = viewDaily
-                  ? labels.map(
-                      (label) =>
-                        actionTypes[key].daily[
-                          label.split("-").reverse().join("-")
-                        ] || 0
-                    )
-                  : Object.values(actionTypes[key].monthly);
-
+                ? labels.map((label) => actionTypes[key].daily[label] || 0)
+                : Object.values(actionTypes[key].monthly);
                 return (
-                  <Grid item xs={12} sm={4} key={index}>
-                    <Paper sx={{ p: 2 }}>
-                      <Typography variant="h6">
-                        {key.replace(/_/g, " ")}
-                      </Typography>
-                      <Line
-                        data={chartData(labels, data, color)}
-                        options={staticsOptions}
-                      />
-                    </Paper>
+                  <Grid item xs={12} sm={viewDaily ? (timeRange === 7 ? 4 : timeRange === 15 ? 6 : 12) : 4}  key={index}>
+                  <Paper sx={{ p: 2 }}>
+                  <Typography variant="h6">{key.replace(/_/g, " ")}</Typography>
+                  <Line data={chartData(labels, data, color)} options={staticsOptions} />
+                  </Paper>
                   </Grid>
                 );
               })}
