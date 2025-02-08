@@ -213,13 +213,13 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
 
       console.log("API Request Successful:", response.data);
 
-      if (response.status === 200 || response.status === 201) {        
+      if (response.status === 200 || response.status === 201) {
         setNotification({
           open: true,
-          message:  "save successfully!",
+          message: "save successfully!",
           statusMessage: "success",
         });
-            
+        router.back();
       }
     } catch (error) {
       console.error(
@@ -574,8 +574,6 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
               </Button>
             </CardContent>
           </Card>
-
-          
 
           <Stack>
             <Button

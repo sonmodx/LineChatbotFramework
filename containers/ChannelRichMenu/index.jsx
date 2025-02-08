@@ -16,12 +16,14 @@ export default function ChannelAction({ listTitle, channelId }) {
   const [total, setTotal] = useState();
   const [isOpenSnackbar, setIsOpenSnackbar] = useState(false);
   const [anchorEl, setAnchorEl] = useState();
-  const [linkanchorEl, setlinkAnchorEl] = useState()
+  const [linkanchorEl, setlinkAnchorEl] = useState();
   const { data: session } = useSession(authOptions);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [state, setState] = useState("actions");
   const [selectedActionId, setSelectedActionId] = useState();
+  const [alertMessage, setAlertMessage] = useState("");
+
   const searchParams = useSearchParams();
   const channel_Id = searchParams.get("channel_id");
   const getAllActions = async () => {
@@ -47,8 +49,7 @@ export default function ChannelAction({ listTitle, channelId }) {
 
   const handleLinkRichMenu = async (selectId) => {
     try {
-
-      console.log("selectId",selectId)
+      console.log("selectId", selectId);
       const body = {
         type: "setrichmenuforalluser",
         destination: channel_Id,
@@ -62,6 +63,7 @@ export default function ChannelAction({ listTitle, channelId }) {
         }
       );
       if (res.status === 200) {
+        setAlertMessage("Linked richmenu successfully");
         getAllActions();
         setlinkAnchorEl(null);
         console.log("Richmenu Linked successfully.");
@@ -103,8 +105,7 @@ export default function ChannelAction({ listTitle, channelId }) {
 
   const handleDeleteRichMenu = async (selectId) => {
     try {
-
-      console.log("selectId",selectId)
+      console.log("selectId", selectId);
       const body = {
         type: "deleterichmenu",
         destination: channel_Id,
@@ -118,6 +119,7 @@ export default function ChannelAction({ listTitle, channelId }) {
         }
       );
       if (res.status === 200) {
+        setAlertMessage("Delete richmenu successfully");
         getAllActions();
         setAnchorEl(null);
         console.log("Richmenu deleted successfully.");
@@ -163,12 +165,7 @@ export default function ChannelAction({ listTitle, channelId }) {
               "Status",
               "",
             ]}
-            bodyColumns={[
-              "richmenuId",
-              "updatedAt",
-              "createdAt",
-              "status"
-            ]}
+            bodyColumns={["richmenuId", "updatedAt", "createdAt", "status"]}
             canSetting={true}
             statusState={[]}
             callbackGetData={getAllActions}
@@ -181,7 +178,7 @@ export default function ChannelAction({ listTitle, channelId }) {
             headerCell={"richmenuAlias"}
             headerLink={""}
             anchorEl={anchorEl}
-            setAnchorEl={setAnchorEl}  
+            setAnchorEl={setAnchorEl}
             linkanchorEl={linkanchorEl}
             setlinkAnchorEl={setlinkAnchorEl}
             isOpenSnackbar={isOpenSnackbar}
@@ -191,6 +188,7 @@ export default function ChannelAction({ listTitle, channelId }) {
             setPage={setPage}
             rowsPerPage={rowsPerPage}
             setRowsPerPage={setRowsPerPage}
+            alertMessage={alertMessage}
           />
         </>
       )}
