@@ -351,16 +351,14 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
       if (res.status === 200) {
         setRichMenuId(res.data);
 
+        setIsCreateState("actions");
         setNotification({
           open: true,
           message: "Successfully create rih menu",
           statusMessage: "success",
         });
-
-        setIsCreateState("actions");
         console.log("Response from webhook:", res.data);
       }
-      
     } catch (error) {
       console.error(
         "Error sending request to webhook:",
