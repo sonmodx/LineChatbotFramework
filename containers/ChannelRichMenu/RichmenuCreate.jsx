@@ -12,8 +12,12 @@ import {
   Input,
   Modal,
   Grid2,
-  Paper,
+  Paper
 } from "@mui/material";
+
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 
@@ -280,6 +284,52 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
   console.log("template area", selectedAreaTemplate);
   const [richMenuId, setRichMenuId] = useState();
 
+  const [validationStatus, setValidationStatus] = useState({
+    fileTypeValid: null,
+    fileSizeValid: null,
+    widthValid: null,
+    heightValid: null,
+    aspectRatioValid: null,
+    color: "text.secondary",
+    icon: null, 
+  });
+  
+  const validateImage = (file) => {
+    const img = new window.Image();
+    img.src = URL.createObjectURL(file);
+  
+    img.onload = () => {
+      const width = img.width;
+      const height = img.height;
+      const aspectRatio = width / height;
+  
+      const fileTypeValid = ["image/jpeg", "image/png"].includes(file.type);
+      const fileSizeValid = file.size <= 1024 * 1024;
+      const widthValid = width >= 800 && width <= 2500;
+      const heightValid = height >= 250;
+      const aspectRatioValid = aspectRatio >= 1.45;
+  
+      setValidationStatus((prevStatus) => ({
+        ...prevStatus,
+        fileTypeValid,
+        fileSizeValid,
+        widthValid,
+        heightValid,
+        aspectRatioValid,
+        color: fileTypeValid && fileSizeValid && widthValid && heightValid && aspectRatioValid ? 'green' : 'red',
+        icon: fileTypeValid && fileSizeValid && widthValid && heightValid && aspectRatioValid ? <CheckCircleIcon /> : <CancelIcon />,
+      }));
+    };
+  
+    img.onerror = () => {
+      setValidationStatus((prevStatus) => ({
+        ...prevStatus,
+        color: 'red',
+        icon: <CancelIcon />,
+      }));
+    };
+  };
+  
   const richmenuconfig = {
     richmenu: {
       size: selectedSizeTemplate,
@@ -289,12 +339,11 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
       areas: selectedAreaTemplate,
     },
     richmenuAlias: richMenuAlias,
-    // richmenu_id: "richmenu-4898296a626d2b4bc29aa3fdb17203cc",
     image: image,
   };
-
-  console.log("rich oncifg", richmenuconfig);
-
+  
+  console.log("richmenuconfig", richmenuconfig);
+  
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     console.log("file", file);
@@ -303,17 +352,18 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
         alert("File size must be less than 1MB");
         return;
       }
-
+  
       if (!["image/jpeg", "image/png"].includes(file.type)) {
         alert("Only JPEG and PNG formats are supported");
         return;
       }
-
+  
       const reader = new FileReader();
       reader.onload = () => {
         setImage(reader.result);
       };
       reader.readAsDataURL(file);
+      validateImage(file);
     }
   };
 
@@ -331,7 +381,33 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
     setSelectedAreaTemplate(updatedAreas);
   };
 
+  const validateForm = () => {
+    return (
+      chatBarTitle.trim() !== "" &&
+      richMenuAlias.trim() !== "" &&
+      image !== null &&
+      validationStatus.fileTypeValid &&
+      validationStatus.fileSizeValid &&
+      validationStatus.widthValid &&
+      validationStatus.heightValid &&
+      validationStatus.aspectRatioValid &&
+      selectedAreaTemplate.every((area, index) => {
+        const isActionValid = area.action && Object.keys(area.action).length > 0 && Object.values(area.action).every(value => value.trim() !== "");
+        return isActionValid;
+      })
+    )
+  }
+  
   const handleCreateRichMenu = async () => {
+    if (!validateForm()) {
+      setNotification({
+        open: true,
+        message: "Please fill in all fields correctly before submitting.",
+        statusMessage: "error",
+      });
+      return;
+    }
+  
     const body = {
       type: "createrichmenu",
       destination: channelId,
@@ -347,59 +423,16 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
         }
       );
       console.log("result", res);
-
+  
       if (res.status === 200) {
         setRichMenuId(res.data);
-
         setIsCreateState("actions");
         setNotification({
           open: true,
-          message: "Successfully create rih menu",
+          message: "Successfully created rich menu.",
           statusMessage: "success",
         });
         console.log("Response from webhook:", res.data);
-      }
-    } catch (error) {
-      console.error(
-        "Error sending request to webhook:",
-        error.response?.data || error.message
-      );
-    }
-  };
-
-  const handleUpdateRichMenu = async () => {
-    try {
-      const richmenuconfigWithRichId = {
-        richmenu_id: richMenuId,
-        richmenu: {
-          size: selectedSizeTemplate,
-          selected: false,
-          name: "Rich menu",
-          chatBarText: chatBarTitle,
-          areas: selectedAreaTemplate,
-        },
-
-        image: image,
-      };
-      const body2 = {
-        type: "setrichmenuforalluser",
-        destination: channelId,
-        richmenu_config: richmenuconfigWithRichId,
-      };
-      const res2 = await axios.post(
-        `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/richmenu`,
-        body2,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-      if (res2.status === 200) {
-        console.log("Response from webhook:", res2.data);
-        setNotification({
-          open: true,
-          message: "Successfully update rich menu",
-          statusMessage: "success",
-        });
       }
     } catch (error) {
       console.error(
@@ -479,14 +512,25 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
               alt="Uploaded preview"
               style={{ width: "100%", borderRadius: 4 }}
             />
-            <Button
-              variant="contained"
-              color="error"
-              sx={{ mt: 2 }}
-              onClick={() => setImage(null)}
-            >
-              Remove Image
-            </Button>
+          <Button
+            variant="contained"
+            color="error"
+            sx={{ mt: 2 }}
+            onClick={() => {
+              setImage(null);
+              setValidationStatus({ 
+                fileTypeValid: null,
+                fileSizeValid: null,
+                widthValid: null,
+                heightValid: null,
+                aspectRatioValid: null,
+                color: "text.secondary",
+                icon: null,
+              });
+            }}
+          >
+            Remove Image
+          </Button>
           </Box>
         ) : (
           <label htmlFor="image-upload">
@@ -503,18 +547,69 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
         )}
       </Box>
 
-      <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-        Supported formats: JPEG, PNG
-      </Typography>
+      <Typography variant="body2" sx={{ mt: 2 }}>
+        <div style={{ color: validationStatus.fileTypeValid === false ? "red" : "green" }}>
+          Image format: JPEG or PNG
+          {validationStatus.fileTypeValid === false ? (
+            <CancelIcon style={{ color: "red", marginLeft: 5 }} />
+          ) : (
+            <CheckCircleIcon style={{ color: "green", marginLeft: 5 }} />
+          )}
+        </div>
 
+        <div style={{ color: validationStatus.widthValid === false ? "red" : "green" }}>
+          Image width: 800 to 2500 pixels
+          {validationStatus.widthValid === false ? (
+            <CancelIcon style={{ color: "red", marginLeft: 5 }} />
+          ) : (
+            <CheckCircleIcon style={{ color: "green", marginLeft: 5 }} />
+          )}
+        </div>
+
+        <div style={{ color: validationStatus.heightValid === false ? "red" : "green" }}>
+          Image height: 250 pixels or more
+          {validationStatus.heightValid === false ? (
+            <CancelIcon style={{ color: "red", marginLeft: 5 }} />
+          ) : (
+            <CheckCircleIcon style={{ color: "green", marginLeft: 5 }} />
+          )}
+        </div>
+
+        <div style={{ color: validationStatus.aspectRatioValid === false ? "red" : "green" }}>
+          Image aspect ratio (width / height): 1.45 or more
+          {validationStatus.aspectRatioValid === false ? (
+            <CancelIcon style={{ color: "red", marginLeft: 5 }} />
+          ) : (
+            <CheckCircleIcon style={{ color: "green", marginLeft: 5 }} />
+          )}
+        </div>
+
+        <div style={{ color: validationStatus.fileSizeValid === false ? "red" : "green" }}>
+          Max file size: 1 MB
+          {validationStatus.fileSizeValid === false ? (
+            <CancelIcon style={{ color: "red", marginLeft: 5 }} />
+          ) : (
+            <CheckCircleIcon style={{ color: "green", marginLeft: 5 }} />
+          )}
+        </div>
+      </Typography>
       <Box mt={4} width="100%">
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setOpenModal(true)}
-        >
-          Select template
-        </Button>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => setOpenModal(true)}
+        disabled={
+          !(
+            validationStatus.fileTypeValid &&
+            validationStatus.fileSizeValid &&
+            validationStatus.widthValid &&
+            validationStatus.heightValid &&
+            validationStatus.aspectRatioValid
+          )
+        }
+      >
+        Select template
+      </Button>
       </Box>
       {imagePreview && (
         <Image
@@ -641,13 +736,14 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
 
             {/* Send Button */}
             <Box mt={4} textAlign="right" width="100%">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleCreateRichMenu}
-              >
-                Create
-              </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleCreateRichMenu}
+              disabled={!validateForm()}
+            >
+              Create
+            </Button>
             </Box>
           </Box>
         </>

@@ -4,74 +4,62 @@ import { useSearchParams } from "next/navigation";
 import { getAllRichMenus } from "@/actions";
 
 const ActionComponent = ({ handleAreaChange, index, imagePreview }) => {
-  const [action, setAction] = useState("No action");
+  const [action, setAction] = useState("Text");
   const [text, setText] = useState("");
   const [label, setLabel] = useState("");
   const [uri, setUri] = useState("");
-  const [richMenuAliasId, setRichMenuAliasId] = useState("");
+  const [richMenuAliasId, setRichMenuAliasId] = useState(null);
   const [richMenuList, setRichMenuList] = useState([]);
   const searchParams = useSearchParams();
   const channelObjectId = searchParams.get("id");
-  const actions = ["Link", "Text", "Switch rich menu", "No action"];
+  const actions = ["Text", "Link", "Switch rich menu"];
 
   const handleTextChange = (event) => {
     setText(event.target.value);
   };
 
+  const handleUriChange = (event) => {
+    setUri(event.target.value);
+  };
+
+  const handleLabelChange = (event) => {
+    setLabel(event.target.value);
+  };
+
   const objectValue = (type) => {
-    if (type === "text") {
+    if (type === "Text") {
       return {
         type: "message",
-        // label: text,
         text: text,
       };
-    } else if (type === "uri") {
+    } else if (type === "Link") {
       return {
         type: "uri",
         label: label,
         uri: uri,
       };
     } else if (type === "Switch rich menu") {
-      return {
+      return richMenuAliasId ? {
         type: "richmenuswitch",
         richMenuAliasId: richMenuAliasId.richmenuAlias,
         data: "Hello",
-      };
+      } : {};
     }
+    return {};
   };
+
   useEffect(() => {
-    setAction("No action");
+    handleAreaChange(index, "action", objectValue(action));
+  }, [action, text, label, uri, richMenuAliasId]);
+
+  useEffect(() => {
+    setAction("Text");
     setText("");
     setUri("");
     setLabel("");
     setRichMenuList([]);
-    setRichMenuAliasId("");
+    setRichMenuAliasId(null);
   }, [imagePreview]);
-
-  useEffect(() => {
-    handleAreaChange(index, "action", objectValue("text"));
-  }, [text]);
-
-  useEffect(() => {
-    handleAreaChange(index, "action", objectValue("uri"));
-  }, [label, uri]);
-
-  useEffect(() => {
-    handleAreaChange(index, "action", objectValue("Switch rich menu"));
-  }, [richMenuAliasId]);
-
-  useEffect(() => {
-    if (action === "Text") {
-      setText("");
-    } else if (action === "Link") {
-      setLabel("");
-      setUri("");
-    } else if (action === "Switch rich menu") {
-      setRichMenuAliasId("");
-    } else {
-      handleAreaChange(index, "action", {});
-    }
-  }, [action]);
 
   const handleGetAllRichMenuAlias = async () => {
     const _richmenu = await getAllRichMenus(channelObjectId);
@@ -142,7 +130,7 @@ const ActionComponent = ({ handleAreaChange, index, imagePreview }) => {
             label="Enter URL"
             variant="outlined"
             value={uri}
-            onChange={(event) => setUri(event.target.value)}
+            onChange={handleUriChange}
             fullWidth
             required
           />
@@ -152,7 +140,7 @@ const ActionComponent = ({ handleAreaChange, index, imagePreview }) => {
             placeholder="Link label (Examples: Open link, Home page, etc.)"
             variant="outlined"
             value={label}
-            onChange={(event) => setLabel(event.target.value)}
+            onChange={handleLabelChange}
             fullWidth
             required
           />
