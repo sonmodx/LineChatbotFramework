@@ -44,10 +44,18 @@ export default function ChannelCreate() {
     e.preventDefault();
 
     try {
-      if (!(channelId && channelName && channelSecret && channelAccessToken)) {
+      if (
+        !(
+          channelId?.trim() &&
+          channelName?.trim() &&
+          channelSecret?.trim() &&
+          channelAccessToken?.trim()
+        )
+      ) {
         setIsError(true);
         return;
       }
+
       //validate channel and get bot's userId
       const { userId: destination } = await getBotInfo(channelAccessToken);
 
@@ -80,13 +88,13 @@ export default function ChannelCreate() {
       }
 
       const body = {
-        name: channelName,
+        name: channelName?.trim(),
         description: description, //No field description
         webhook_url: WEBHOOK_URL,
         status: isActive, //No field status
-        channel_id: channelId,
-        channel_secret: channelSecret,
-        channel_access_token: channelAccessToken,
+        channel_id: channelId?.trim(),
+        channel_secret: channelSecret?.trim(),
+        channel_access_token: channelAccessToken?.trim(),
         destination: destination,
       };
       console.log(body);
@@ -136,9 +144,9 @@ export default function ChannelCreate() {
                 onChange={(e) => setChannelId(e.target.value)}
                 value={channelId}
                 label="Channel ID"
-                error={isError && !channelId}
+                error={isError && !channelId.trim()}
               />
-              {isError && !channelId && (
+              {isError && !channelId.trim() && (
                 <FormHelperText error>Please enter channel ID</FormHelperText>
               )}
             </FormControl>
@@ -148,9 +156,9 @@ export default function ChannelCreate() {
                 value={channelName}
                 label="Channel Name"
                 fullWidth
-                error={isError && !channelName}
+                error={isError && !channelName.trim()}
               />
-              {isError && !channelName && (
+              {isError && !channelName.trim() && (
                 <FormHelperText error>Please enter channel name</FormHelperText>
               )}
             </FormControl>
@@ -163,9 +171,9 @@ export default function ChannelCreate() {
                 name="channel-secret"
                 label="Channel Secret"
                 fullWidth
-                error={isError && !channelSecret}
+                error={isError && !channelSecret.trim()}
               />
-              {isError && !channelSecret && (
+              {isError && !channelSecret.trim() && (
                 <FormHelperText error>
                   Please enter channel secret
                 </FormHelperText>
@@ -178,9 +186,9 @@ export default function ChannelCreate() {
                 name="channel-access-token"
                 label="Channel Access Token"
                 fullWidth
-                error={isError && !channelAccessToken}
+                error={isError && !channelAccessToken.trim()}
               />
-              {isError && !channelAccessToken && (
+              {isError && !channelAccessToken.trim() && (
                 <FormHelperText error>
                   Please enter channel access token
                 </FormHelperText>
