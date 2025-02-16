@@ -71,6 +71,8 @@ export default function Replyaction({ data, setState, state }) {
     if (!newValue) return;
     console.log("API", newValue);
     setSelectedApi(newValue);
+    setSelectedApiParam(null);
+    setApiParams([]);
     setApiParamOptions(
       newValue?.api_params.map((param, index) => ({
         ...param,

@@ -15,12 +15,16 @@ import {
   OutlinedInput,
   Stack,
   TextField,
+  IconButton,
+  Tooltip,
+  Paper,
 } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getBotInfo } from "./action";
 import { useSearchParams } from "next/navigation";
+import { CheckOutlined, ContentCopyOutlined } from "@mui/icons-material";
 
 export default function ChannelEdit() {
   const WEBHOOK_URL =
@@ -41,6 +45,8 @@ export default function ChannelEdit() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [customWebhook, setCustomWebhook] = useState("");
+  const [copyWebhook, setCopyWebhook] = useState(false);
+  const webhookRef = useRef();
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
@@ -246,15 +252,63 @@ export default function ChannelEdit() {
                 />
               </FormControl>
 
-              <TextField
-                name="webhook-api"
-                label="Webhook API"
-                fullWidth
-                defaultValue={WEBHOOK_URL}
-                disabled
-                onChange={(e) => setCustomWebhook(e.target.value)}
-              />
-
+              <Box display="flex" alignItems="center">
+                <TextField
+                  name="webhook-api"
+                  label="Webhook API"
+                  fullWidth
+                  defaultValue={WEBHOOK_URL}
+                  disabled
+                  onChange={(e) => {
+                    setCustomWebhook(e.target.value);
+                  }}
+                  inputRef={webhookRef}
+                  sx={{
+                    flexGrow: 1,
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderRight: "none", // Remove the right border
+                        borderTopRightRadius: "0",
+                        borderBottomRightRadius: "0",
+                      },
+                    },
+                  }}
+                />
+                <Paper
+                  sx={{
+                    p: 1.125,
+                    border: "1px solid #ccc",
+                    borderTopLeftRadius: "0",
+                    borderBottomLeftRadius: "0",
+                    backgroundColor: "transparent",
+                    borderLeft: "none",
+                    boxShadow: "none",
+                  }}
+                >
+                  <Tooltip title="Copy to clipboard">
+                    <IconButton
+                      onClick={() => {
+                        navigator.clipboard.writeText(WEBHOOK_URL);
+                        webhookRef.current.select();
+                        setCopyWebhook(true);
+                        setTimeout(() => {
+                          setCopyWebhook(false);
+                        }, 2000);
+                      }}
+                    >
+                      {!copyWebhook ? (
+                        <ContentCopyOutlined
+                          sx={{ height: "20px", color: "primary.main" }}
+                        />
+                      ) : (
+                        <CheckOutlined
+                          sx={{ height: "20px", color: "primary.main" }}
+                        />
+                      )}
+                    </IconButton>
+                  </Tooltip>
+                </Paper>
+              </Box>
               <FormControlLabel
                 control={
                   <Checkbox
