@@ -26,7 +26,7 @@ export default function ChannelAction({ listTitle, channelId }) {
       const res = await axios.get(
         `/api/Action?channel_id=${channelId}&pageNumber=${
           page + 1
-        }&pageSize=${rowsPerPage}`
+        }&pageSize=${rowsPerPage}&orderBy=createdAt&orderDirection=desc`
       );
       if (res.status === 200) {
         const data = res.data;
