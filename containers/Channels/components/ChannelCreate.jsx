@@ -21,7 +21,12 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { getBotInfo, isDestinationExists, setWebhookURL } from "./action";
-import { CheckOutlined, ContentCopyOutlined } from "@mui/icons-material";
+import dynamic from "next/dynamic";
+
+// Dynamically import the CopyWebhookButton with ssr: false
+const CopyWebhookButton = dynamic(() => import("./CopyWebhookButton"), {
+  ssr: false, // This ensures the component is only rendered on the client-side
+});
 
 const WEBHOOK_URL = "https://linefrontendframework.nontouchm.com:4000/webhook";
 
@@ -36,7 +41,7 @@ export default function ChannelCreate() {
   const [isActive, setIsActive] = useState(true);
   const [isOpenSnackbar, setIsOpenSnackbar] = useState(false);
   const [customWebhook, setCustomWebhook] = useState("");
-  const [copyWebhook, setCopyWebhook] = useState(false);
+
   const router = useRouter();
   const webhookRef = useRef();
 
@@ -244,34 +249,7 @@ export default function ChannelCreate() {
                 }}
               >
                 <Tooltip title="Copy to clipboard">
-                  <IconButton
-                    onClick={async () => {
-                      if (
-                        typeof window !== "undefined" &&
-                        navigator.clipboard
-                      ) {
-                        await navigator.clipboard.writeText(WEBHOOK_URL);
-                      } else {
-                        console.error("Clipboard API is not available.");
-                      }
-
-                      webhookRef.current.select();
-                      setCopyWebhook(true);
-                      setTimeout(() => {
-                        setCopyWebhook(false);
-                      }, 2000);
-                    }}
-                  >
-                    {!copyWebhook ? (
-                      <ContentCopyOutlined
-                        sx={{ height: "20px", color: "primary.main" }}
-                      />
-                    ) : (
-                      <CheckOutlined
-                        sx={{ height: "20px", color: "primary.main" }}
-                      />
-                    )}
-                  </IconButton>
+                  <CopyWebhookButton webhook={WEBHOOK_URL} />
                 </Tooltip>
               </Paper>
             </Box>

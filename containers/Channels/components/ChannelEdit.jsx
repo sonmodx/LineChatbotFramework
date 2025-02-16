@@ -25,6 +25,12 @@ import { useEffect, useRef, useState } from "react";
 import { getBotInfo } from "./action";
 import { useSearchParams } from "next/navigation";
 import { CheckOutlined, ContentCopyOutlined } from "@mui/icons-material";
+import dynamic from "next/dynamic";
+
+// Dynamically import the CopyWebhookButton with ssr: false
+const CopyWebhookButton = dynamic(() => import("./CopyWebhookButton"), {
+  ssr: false, // This ensures the component is only rendered on the client-side
+});
 
 export default function ChannelEdit() {
   const WEBHOOK_URL =
@@ -45,7 +51,6 @@ export default function ChannelEdit() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [customWebhook, setCustomWebhook] = useState("");
-  const [copyWebhook, setCopyWebhook] = useState(false);
   const webhookRef = useRef();
 
   const handleCloseSnackbar = (event, reason) => {
@@ -286,33 +291,7 @@ export default function ChannelEdit() {
                   }}
                 >
                   <Tooltip title="Copy to clipboard">
-                    <IconButton
-                      onClick={async () => {
-                        if (
-                          typeof window !== "undefined" &&
-                          navigator.clipboard
-                        ) {
-                          await navigator.clipboard.writeText(WEBHOOK_URL);
-                        } else {
-                          console.error("Clipboard API is not available.");
-                        }
-                        webhookRef.current.select();
-                        setCopyWebhook(true);
-                        setTimeout(() => {
-                          setCopyWebhook(false);
-                        }, 2000);
-                      }}
-                    >
-                      {!copyWebhook ? (
-                        <ContentCopyOutlined
-                          sx={{ height: "20px", color: "primary.main" }}
-                        />
-                      ) : (
-                        <CheckOutlined
-                          sx={{ height: "20px", color: "primary.main" }}
-                        />
-                      )}
-                    </IconButton>
+                    <CopyWebhookButton webhook={WEBHOOK_URL} />
                   </Tooltip>
                 </Paper>
               </Box>
