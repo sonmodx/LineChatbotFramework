@@ -267,10 +267,10 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
     statusMessage: "",
   });
   const [chatBarTitle, setChatBarTitle] = useState("");
+  const [chatBarTitleError, setChatBarTitleError] = useState("");
   const searchParams = useSearchParams();
   const channelObjectId = searchParams.get("id");
   const channelId = searchParams.get("channel_id");
-  // const typeMessage = "RichMenu";
   const [image, setImage] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [selectedAreaTemplate, setSelectedAreaTemplate] = useState([]);
@@ -281,7 +281,7 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
   console.log("image", image);
   const [imagePreview, setImagePreview] = useState(null);
   const [richMenuAlias, setRichMenuAlias] = useState(null);
-  console.log("template area", selectedAreaTemplate);
+  const [richMenuAliasError, setRichMenuAliasError] = useState("");
   const [richMenuId, setRichMenuId] = useState();
 
   const [validationStatus, setValidationStatus] = useState({
@@ -386,6 +386,8 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
       chatBarTitle.trim() !== "" &&
       richMenuAlias.trim() !== "" &&
       image !== null &&
+      !richMenuAliasError &&
+      !chatBarTitleError &&
       validationStatus.fileTypeValid &&
       validationStatus.fileSizeValid &&
       validationStatus.widthValid &&
@@ -395,14 +397,20 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
         const isActionValid = area.action && Object.keys(area.action).length > 0 && Object.values(area.action).every(value => value.trim() !== "");
         return isActionValid;
       })
-    )
-  }
+    );
+  };
+
+
+  const validateRichMenuAlias = () => {
+    return richMenuAlias === richMenuAlias.toLowerCase();
+  };
+  
   
   const handleCreateRichMenu = async () => {
-    if (!validateForm()) {
+    if (!validateForm() || !validateRichMenuAlias()) {
       setNotification({
         open: true,
-        message: "Please fill in all fields correctly before submitting.",
+        message: !validateRichMenuAlias() ? "Rich menu alias must be in lowercase." : "Please fill in all fields correctly before submitting.",
         statusMessage: "error",
       });
       return;
@@ -454,7 +462,23 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
     if (word[word.length - 1] === " ") {
       window.alert("Can not input space");
     }
-    setRichMenuAlias(word.replace(/\s/g, ""));
+    const lowerCaseWord = word.replace(/\s/g, "");
+    setRichMenuAlias(lowerCaseWord);
+    if (lowerCaseWord !== lowerCaseWord.toLowerCase()) {
+      setRichMenuAliasError("Rich menu alias must be in lowercase.");
+    } else {
+      setRichMenuAliasError("");
+    }
+  };
+
+  const handleChatBarTitleChange = (e) => {
+    const value = e.target.value;
+    if (value.length > 14) {
+      setChatBarTitleError("Max character limit is 14.");
+    } else {
+      setChatBarTitleError("");
+    }
+    setChatBarTitle(value);
   };
 
   return (
@@ -706,6 +730,8 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
             value={richMenuAlias}
             onChange={handleInputRichMenuName}
             inputProps={{ maxLength: 14 }}
+            error={Boolean(richMenuAliasError)}
+            helperText={richMenuAliasError}
           />
 
           <Typography mt={4}>Chat Bar Title</Typography>
@@ -713,8 +739,10 @@ export default function ChannelRichMenu({ setIsCreateState, state }) {
             fullWidth
             variant="outlined"
             value={chatBarTitle}
-            onChange={(e) => setChatBarTitle(e.target.value)}
+            onChange={handleChatBarTitleChange}
             inputProps={{ maxLength: 14 }}
+            error={Boolean(chatBarTitleError)}
+            helperText={chatBarTitleError}
           />
           <Box>
             <Typography mt={4}>Action Bar</Typography>
