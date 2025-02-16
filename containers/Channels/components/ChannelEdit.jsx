@@ -288,7 +288,14 @@ export default function ChannelEdit() {
                   <Tooltip title="Copy to clipboard">
                     <IconButton
                       onClick={async () => {
-                        await navigator.clipboard.writeText(WEBHOOK_URL);
+                        if (
+                          typeof window !== "undefined" &&
+                          navigator.clipboard
+                        ) {
+                          await navigator.clipboard.writeText(WEBHOOK_URL);
+                        } else {
+                          console.error("Clipboard API is not available.");
+                        }
                         webhookRef.current.select();
                         setCopyWebhook(true);
                         setTimeout(() => {
