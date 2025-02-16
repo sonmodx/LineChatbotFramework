@@ -163,6 +163,11 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
           content: value,
         }));
       } catch (error) {
+        setNotification({
+          open: true,
+          message: `Invalid input format: ${error.message}`,
+          statusMessage: "error",
+        });
         setErrorBody(`Invalid input format: ${error.message}`);
         // Return an error message or handle it as required
         console.error("Invalid input format:", error.message);
@@ -254,11 +259,37 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
 
   const getResponseAPI = async () => {
     try {
-      const response = await axios(url, {
-        headers: { "Content-Type": "application/json" },
+      const formattedHeaders = headers.reduce((acc, { key, value }) => {
+        if (key && value) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+      const authHeader =
+        auth.type === "Bearer" && auth.secret_token
+          ? { Authorization: `Bearer ${auth.secret_token}` }
+          : {};
+      const formattedParams = urlParams.reduce((acc, { key, value }) => {
+        if (key && value) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+
+      const config = {
+        url: url,
         method: method,
-      });
-      console.log("RESPINSE FROM API,", response);
+        headers: {
+          ...authHeader,
+          ...formattedHeaders,
+        },
+        params: {
+          ...formattedParams,
+        },
+        data: JSON.parse(body),
+      };
+      const response = await axios(config);
+      console.log("RESPONSE FROM API,", response);
 
       if (
         response.status === 200 ||
@@ -339,7 +370,6 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
                 <Tab label="Headers" />
                 <Tab label="Body" />
                 <Tab label="Auth" />
-                <Tab label="Scripts" />
                 <Tab label="URL Params" />
               </Tabs>
 
@@ -412,74 +442,6 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
                 </Box>
               )}
 
-              {activeTab === 4 && (
-                <Box sx={{ marginTop: 2 }}>
-                  {/* URL Params Section */}
-                  <Typography variant="h6" sx={{ marginBottom: 2 }}>
-                    URL Params
-                  </Typography>
-                  <TableContainer component={Paper}>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Key</TableCell>
-                          <TableCell>Value</TableCell>
-                          <TableCell>Action</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {urlParams.map((param, index) => (
-                          <TableRow key={index}>
-                            <TableCell>
-                              <TextField
-                                value={param.key}
-                                onChange={(e) =>
-                                  handleUrlParamChange(
-                                    index,
-                                    "key",
-                                    e.target.value
-                                  )
-                                }
-                                fullWidth
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <TextField
-                                value={param.value}
-                                onChange={(e) =>
-                                  handleUrlParamChange(
-                                    index,
-                                    "value",
-                                    e.target.value
-                                  )
-                                }
-                                fullWidth
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant="outlined"
-                                color="error"
-                                onClick={() => removeUrlParam(index)}
-                              >
-                                Remove
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                  <Button
-                    variant="outlined"
-                    sx={{ marginTop: 2 }}
-                    onClick={addUrlParam}
-                  >
-                    Add URL Param
-                  </Button>
-                </Box>
-              )}
-
               {activeTab === 1 && (
                 <Box sx={{ marginTop: 2 }}>
                   {/* Body Section */}
@@ -544,22 +506,71 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
                   )}
                 </Box>
               )}
-
               {activeTab === 3 && (
                 <Box sx={{ marginTop: 2 }}>
-                  {/* Scripts Section */}
+                  {/* URL Params Section */}
                   <Typography variant="h6" sx={{ marginBottom: 2 }}>
-                    Pre-request Script
+                    URL Params
                   </Typography>
-                  <TextField
-                    label="Script"
+                  <TableContainer component={Paper}>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Key</TableCell>
+                          <TableCell>Value</TableCell>
+                          <TableCell>Action</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {urlParams.map((param, index) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <TextField
+                                value={param.key}
+                                onChange={(e) =>
+                                  handleUrlParamChange(
+                                    index,
+                                    "key",
+                                    e.target.value
+                                  )
+                                }
+                                fullWidth
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <TextField
+                                value={param.value}
+                                onChange={(e) =>
+                                  handleUrlParamChange(
+                                    index,
+                                    "value",
+                                    e.target.value
+                                  )
+                                }
+                                fullWidth
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="outlined"
+                                color="error"
+                                onClick={() => removeUrlParam(index)}
+                              >
+                                Remove
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                  <Button
                     variant="outlined"
-                    fullWidth
-                    multiline
-                    rows={6}
-                    value={scripts}
-                    onChange={(e) => setScripts(e.target.value)}
-                  />
+                    sx={{ marginTop: 2 }}
+                    onClick={addUrlParam}
+                  >
+                    Add URL Param
+                  </Button>
                 </Box>
               )}
 
