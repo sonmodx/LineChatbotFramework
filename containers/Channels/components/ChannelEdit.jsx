@@ -25,12 +25,7 @@ import { useEffect, useRef, useState } from "react";
 import { getBotInfo } from "./action";
 import { useSearchParams } from "next/navigation";
 import { CheckOutlined, ContentCopyOutlined } from "@mui/icons-material";
-import dynamic from "next/dynamic";
-
-// Dynamically import the CopyWebhookButton with ssr: false
-const CopyWebhookButton = dynamic(() => import("./CopyWebhookButton"), {
-  ssr: false, // This ensures the component is only rendered on the client-side
-});
+import CopyWebhookButton from "./CopyWebhookButton";
 
 export default function ChannelEdit() {
   const WEBHOOK_URL =
@@ -51,6 +46,7 @@ export default function ChannelEdit() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [customWebhook, setCustomWebhook] = useState("");
+  const [copyWebhook, setCopyWebhook] = useState(false);
   const webhookRef = useRef();
 
   const handleCloseSnackbar = (event, reason) => {

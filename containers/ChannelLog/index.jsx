@@ -52,7 +52,7 @@ export default function ChannelLog({ listTitle, channelId }) {
       const res = await axios.get(
         `/api/log?channel_id=${channelId}&pageNumber=${
           page + 1
-        }&pageSize=${rowsPerPage}&search=${search}`
+        }&pageSize=${rowsPerPage}&search=${search}&orderBy=createdAt&orderDirection=desc`
       );
       if (res.status === 200) {
         const data = res.data;

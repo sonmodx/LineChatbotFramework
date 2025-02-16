@@ -72,7 +72,7 @@ export default function ListAudience({ channelId, channelIdLine }) {
       const res = await axios.get(
         `/api/audience?channel_id=${channelId}&pageNumber=${
           page + 1
-        }&pageSize=${rowsPerPage}`
+        }&pageSize=${rowsPerPage}&orderBy=createdAt&orderDirection=desc`
       );
 
       if (res.status === 200) {

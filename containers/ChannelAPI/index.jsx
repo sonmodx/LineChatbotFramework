@@ -23,7 +23,7 @@ export default function ChannelAPI({ listTitle, channelId }) {
       const res = await axios.get(
         `/api/uAPI?channel_id=${channelId}&pageNumber=${
           page + 1
-        }&pageSize=${rowsPerPage}`
+        }&pageSize=${rowsPerPage}&orderBy=createdAt&orderDirection=desc`
       );
       console.log("GET ALL API", res);
       if (res.status === 200) {
