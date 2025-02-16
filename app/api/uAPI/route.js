@@ -6,7 +6,6 @@ import Channel from "@/models/channel";
 import mongoose from "mongoose";
 import { formatDate, formatResponse } from "@/lib/utils";
 
-
 export async function GET(req) {
   const session = await getServerSession(authOptions);
   if (!session) {
