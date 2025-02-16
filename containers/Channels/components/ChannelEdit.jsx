@@ -287,8 +287,8 @@ export default function ChannelEdit() {
                 >
                   <Tooltip title="Copy to clipboard">
                     <IconButton
-                      onClick={() => {
-                        navigator.clipboard.writeText(WEBHOOK_URL);
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(WEBHOOK_URL);
                         webhookRef.current.select();
                         setCopyWebhook(true);
                         setTimeout(() => {
