@@ -480,6 +480,7 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
                     Authentication
                   </Typography>
                   <FormControl fullWidth>
+                    <InputLabel>Auth Type</InputLabel>
                     <Select
                       value={auth?.type}
                       onChange={(e) =>
