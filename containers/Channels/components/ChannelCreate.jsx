@@ -156,9 +156,9 @@ export default function ChannelCreate() {
                 onChange={(e) => setChannelId(e.target.value)}
                 value={channelId}
                 label="Channel ID"
-                error={isError && !channelId.trim()}
+                error={isError && !channelId?.trim()}
               />
-              {isError && !channelId.trim() && (
+              {isError && !channelId?.trim() && (
                 <FormHelperText error>Please enter channel ID</FormHelperText>
               )}
             </FormControl>
@@ -168,9 +168,9 @@ export default function ChannelCreate() {
                 value={channelName}
                 label="Channel Name"
                 fullWidth
-                error={isError && !channelName.trim()}
+                error={isError && !channelName?.trim()}
               />
-              {isError && !channelName.trim() && (
+              {isError && !channelName?.trim() && (
                 <FormHelperText error>Please enter channel name</FormHelperText>
               )}
             </FormControl>
@@ -183,9 +183,9 @@ export default function ChannelCreate() {
                 name="channel-secret"
                 label="Channel Secret"
                 fullWidth
-                error={isError && !channelSecret.trim()}
+                error={isError && !channelSecret?.trim()}
               />
-              {isError && !channelSecret.trim() && (
+              {isError && !channelSecret?.trim() && (
                 <FormHelperText error>
                   Please enter channel secret
                 </FormHelperText>
@@ -198,9 +198,9 @@ export default function ChannelCreate() {
                 name="channel-access-token"
                 label="Channel Access Token"
                 fullWidth
-                error={isError && !channelAccessToken.trim()}
+                error={isError && !channelAccessToken?.trim()}
               />
-              {isError && !channelAccessToken.trim() && (
+              {isError && !channelAccessToken?.trim() && (
                 <FormHelperText error>
                   Please enter channel access token
                 </FormHelperText>
