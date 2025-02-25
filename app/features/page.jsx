@@ -1,56 +1,86 @@
 import React from "react";
-import { Container, Grid, Typography, Card, CardContent, List, ListItem, ListItemText } from "@mui/material";
+import { Container, Grid, Typography, Card, CardContent, List, ListItem, ListItemText, CardMedia } from "@mui/material";
+import { Send, Group, BarChart, History, Api, SmartToy } from "@mui/icons-material";
 
 const features = [
   {
-    title: "Basic Line Messaging",
-    description:
-      "Enhance your chatbot with powerful messaging features, including rich menus, flex messages, and automated replies.",
+    title: "ส่งข้อความตามต้องการ",
+    description: "รองรับการส่งข้อความหลายรูปแบบ เช่น ข้อความธรรมดา, รูปภาพ, วิดีโอ และข้อความตอบกลับอัตโนมัติ.",
     details: [
-      "Rich Menu: Create interactive menus for easy navigation.",
-      "Flex Messages: Design custom messages with flexible layouts.",
-      "Reply Messages: Set up automated responses triggered by keywords or events.",
-      "Message Sending Options: Direct Messages, Broadcast Messages, and Narrowcast Messages for personalized or targeted communication.",
+      "ข้อความตอบกลับอัตโนมัติ",
+      "Broadcast Messages",
+      "Rich Menu & Flex Messages",
     ],
+    icon: <Send fontSize="large" color="primary" />, 
+    image: "/msg1.png",
   },
   {
-    title: "Audience Management",
-    description:
-      "Effectively manage your audience for targeted and personalized messaging.",
+    title: "จัดกลุ่มลูกค้า (Audiences)",
+    description: "บริหารกลุ่มลูกค้า แบ่งกลุ่มตามพฤติกรรมการใช้งาน เพื่อส่งข้อความที่ตรงเป้าหมายมากขึ้น.",
     details: [
-      "Define and manage user groups for specific messaging needs.",
-      "Segment users based on interaction history or predefined criteria.",
-      "Customize content delivery for specific audience needs.",
+      "สร้างและจัดการกลุ่มผู้ใช้",
+      "กำหนดเงื่อนไขการแบ่งกลุ่ม",
+      "ส่งข้อความเฉพาะกลุ่ม",
     ],
+    icon: <Group fontSize="large" color="primary" />, 
+    image: "/audiences.png",
   },
   {
-    title: "Log History",
-    description:
-      "Keep track of all chatbot-user interactions with robust logging tools.",
+    title: "ดูสถิติการใช้งาน",
+    description: "วิเคราะห์ข้อมูลการใช้งาน chatbot ผ่านรายงานและกราฟสถิติ.",
     details: [
-      "Conversation Logging: Track all interactions for analysis.",
-      "Log Viewing: Access detailed conversation logs in the dashboard.",
-      "Export Logs: Download logs in CSV format for external reporting.",
+      "จำนวนข้อความที่ส่ง-รับ",
+      "จำนวนผู้ใช้งาน",
+      "พฤติกรรมการใช้งาน chatbot",
     ],
+    icon: <BarChart fontSize="large" color="primary" />, 
+    image: "/static.png",
   },
   {
-    title: "Third-Party API Integration",
-    description:
-      "Expand your chatbot's capabilities with seamless integration of external APIs.",
+    title: "บันทึกการส่งข้อความ (Log)",
+    description: "จัดเก็บประวัติการสนทนา และสามารถนำไปวิเคราะห์เพิ่มเติมได้.",
     details: [
-      "Configure API connections to integrate external services.",
-      "Validate API credentials and endpoints.",
-      "Enable advanced chatbot actions powered by external APIs, such as fetching live data or automating workflows.",
+      "บันทึกประวัติการสนทนา",
+      "เรียกดูของแต่ละคน",
+
     ],
+    icon: <History fontSize="large" color="primary" />, 
+    image: "/log.png",
+  },
+  {
+    title: "เรียกใช้ Third-Party APIs",
+    description: "สามารถเชื่อมต่อ API ภายนอกเพื่อเพิ่มความสามารถของ chatbot ได้.",
+    details: [
+      "รองรับการเชื่อมต่อ API",
+      "กำหนดค่าและทดสอบ API",
+      "ดึงข้อมูลแบบ Real-time",
+    ],
+    icon: <Api fontSize="large" color="primary" />, 
+    image: "/api2.png",
+  },
+  {
+    title: "ตอบกลับด้วย AI Model",
+    description: "เพิ่มความสามารถของ chatbot ด้วย AI ที่สามารถเรียนรู้และโต้ตอบได้อย่างชาญฉลาด.",
+    details: [
+      "รองรับ AI Chatbot",
+      "ฝึกโมเดลเพื่อพัฒนาการตอบ",
+      "AI วิเคราะห์คำถามและตอบให้ตรงจุด",
+    ],
+    icon: <SmartToy fontSize="large" color="primary" />, 
+    image: "/ai.png",
   },
 ];
 
-const FeatureCard = ({ title, description, details }) => (
-  <Card variant="outlined" sx={{ height: "100%" }}>
-    <CardContent>
-      <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }} gutterBottom>
-        {title}
-      </Typography>
+const FeatureCard = ({ title, description, details, icon, image }) => (
+  <Card variant="outlined" sx={{ height: "100%", p: 2, display: "flex", flexDirection: "column" }}>
+
+    <CardContent sx={{ flexGrow: 1 }}>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+        {icon}
+        <Typography variant="h6" component="div" sx={{ fontWeight: "bold", marginLeft: 1 }}>
+          {title}
+        </Typography>
+      </div>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {description}
       </Typography>
@@ -62,6 +92,15 @@ const FeatureCard = ({ title, description, details }) => (
         ))}
       </List>
     </CardContent>
+    <CardMedia
+      component="img"
+      height="200"  // Set a fixed height for consistency
+      image={image}
+      alt={title}
+      sx={{
+        objectFit: "cover",  // Ensures the image fills the space without stretching
+      }}
+    />
   </Card>
 );
 
@@ -73,7 +112,7 @@ const FeaturesPage = () => {
       </Typography>
       <Grid container spacing={4}>
         {features.map((feature, index) => (
-          <Grid item xs={12} sm={6} key={index}>
+          <Grid item xs={12} sm={6} md={4} key={index}>
             <FeatureCard {...feature} />
           </Grid>
         ))}

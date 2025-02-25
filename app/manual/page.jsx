@@ -1,210 +1,380 @@
 "use client";
-
-import { Box, Typography, Container, List, ListItem, ListItemText, Divider, Paper } from "@mui/material";
+import React, { useState, useRef, useEffect } from "react";
+import { Box, Typography, Container, List, ListItem, ListItemText, Grid, Card, CardContent, Button } from "@mui/material";
+import { Info as InfoIcon } from "@mui/icons-material";
 
 const Manual = () => {
-  const sections = [
-    {
-      title: "Overview",
-      content:
-        "This user manual provides step-by-step instructions for configuring and managing a chatbot on the Line platform using middleware. It covers functionalities available to both Admin and Customers and explains how to set up various chatbot types and message configurations.",
-    },
-    {
-      title: "Login",
-      steps: [
-        "Open the login page.",
-        "Enter your credentials (email and password).",
-        "Click Login.",
-        "If the credentials are valid, you will be redirected to the dashboard.",
-        "If invalid, the system will display an error message. Re-enter your credentials and try again.",
-      ],
-      tips: [
-        "Ensure your email and password are correct.",
-        'Use the "Forgot Password" option if you can\'t log in.',
-      ],
-    },
-    {
-      title: "Register",
-      steps: [
-        "Open the registration page.",
-        "Fill in the required details: Full Name, Email, Password, Organization (optional).",
-        "Click Register.",
-        "If successful, the system will confirm registration and redirect you to the login page.",
-      ],
-      tips: [
-        "Use a strong password for better security.",
-        "Verify your email if required.",
-      ],
-    },
-    {
-      title: "Creating a Channel Chatbot",
-      steps: [
-        "Navigate to the Chatbot Management section.",
-        "Click Create Chatbot.",
-        "Enter the channel details: Channel Name, Channel Secret, Channel Access Token.",
-        "Click Create.",
-      ],
-      tips: [
-        "Double-check your access token and secret before saving.",
-        "Use a descriptive channel name for easy identification.",
-      ],
-    },
-    {
-      title: "Configuring Chatbot",
-      steps: [
-        "Select the chatbot you want to configure.",
-        "Set the chatbot type: Text Chatbot, Action Chatbot, API Chatbot.",
-        "Define the bot’s behavior: Response logic, Message templates.",
-        "Click Save.",
-      ],
-      tips: [
-        "Test the configuration with sample messages before deploying.",
-      ],
-    },
-    {
-      title: "Setting up Rich Menu",
-      steps: [
-        "Go to the Rich Menu tab under the selected chatbot.",
-        "Upload a menu image (recommended size: 1200x810 px).",
-        "Define menu actions (e.g., URL links, postbacks).",
-        "Click Save Menu.",
-      ],
-      tips: [
-        "Ensure menu items are clearly labeled for users.",
-        "Use interactive buttons for better engagement.",
-      ],
-    },
-    {
-      title: "Sending Messages",
-      steps: [
-        "Send a Direct Message to Line:",
-        "Navigate to the Messaging section.",
-        "Select Send Message.",
-        "Choose the recipient and type the message.",
-        "Click Send.",
-      ],
-    },
-    {
-      title: "Broadcast a Message",
-      steps: [
-        "Go to the Broadcast tab.",
-        "Compose your message.",
-        "Click Send Broadcast.",
-      ],
-    },
-    {
-      title: "Narrowcast a Message",
-      steps: [
-        "Select Narrowcast from the menu.",
-        "Define the target audience (e.g., age, gender, location).",
-        "Compose and send your message.",
-      ],
-    },
-    {
-      title: "Using Flex Messages",
-      steps: [
-        "Go to the Flex Message Builder.",
-        "Use the drag-and-drop editor to design your message.",
-        "Preview the message and save it.",
-      ],
-      tips: [
-        "Use the official Flex Message Simulator for advanced designs.",
-      ],
-    },
-    {
-      title: "Reply Messages",
-      steps: [
-        "Define reply messages in the Response Settings.",
-        "Add conditions for triggering the replies (e.g., keywords).",
-        "Save the settings.",
-      ],
-    },
-    {
-      title: "Logging Conversations",
-      steps: [
-        "Enable logging in the Settings tab.",
-        "View logs in the Conversation Logs section.",
-        "Export logs as CSV for analysis.",
-      ],
-    },
-    {
-      title: "Testing the Chatbot",
-      steps: [
-        "Use the Test Mode in the dashboard to simulate user interactions.",
-        "Check responses for various scenarios.",
-      ],
-    },
-    {
-      title: "Troubleshooting",
-      steps: [
-        "Common Issues: Login Issues: Reset your password if unable to log in.",
-        "Message Errors: Ensure configurations are correctly saved.",
-        "API Errors: Verify API tokens and endpoints.",
-      ],
-    },
-    {
-      title: "FAQ",
-      steps: [
-        "Q1: How do I configure my chatbot settings?",
-        "A1: Click the edit pen in the table.",
-        "Q2: Can I create multiple chatbots?",
-        "A2: Yes, you can manage multiple chatbots under your account.",
-        "Q3: How do I delete a chatbot?",
-        "A3: Go to Chatbot Settings and click Delete.",
-      ],
-    },
-  ];
+  const [expandedIndex, setExpandedIndex] = useState(null);
+  const [contentHeight, setContentHeight] = useState([]);
+  const contentRefs = useRef([]);
+
+  useEffect(() => {
+    // Recalculate heights only after content has been updated
+    const heights = contentRefs.current.map((ref) => ref?.scrollHeight || 0);
+    setContentHeight(heights);
+  }, [expandedIndex]); // Recalculate heights when the expandedIndex changes
+
+const sections = [
+  {
+    title: "ภาพรวม",
+    content:
+      "คู่มือฉบับนี้จะช่วยให้คุณตั้งค่าและจัดการแชทบอทบน Line ด้วย middleware ได้อย่างง่ายดาย โดยครอบคลุมทั้งส่วนของผู้ดูแลระบบและผู้ใช้งานทั่วไป รวมถึงวิธีตั้งค่าบอทประเภทต่าง ๆ และกำหนดข้อความตอบกลับ",
+  },
+  {
+    title: "เข้าสู่ระบบ / ลงทะเบียน",
+    content: "คุณสามารถเข้าสู่ระบบหรือสมัครสมาชิกได้อย่างง่ายดายภายในไม่กี่ขั้นตอน:",
+    steps: [
+      "เปิดหน้าล็อกอินหรือหน้าลงทะเบียน",
+      "กรอกอีเมลและรหัสผ่าน (สำหรับเข้าสู่ระบบ) หรือกรอกข้อมูลที่จำเป็น (สำหรับสมัครสมาชิก)",
+      "คลิกปุ่มเข้าสู่ระบบหรือลงทะเบียน",
+      "หากสำเร็จ จะพาคุณไปยังหน้าหลัก",
+      "หากข้อมูลผิด ระบบจะแจ้งเตือนให้ลองใหม่",
+    ],
+    tips: [
+      "ตรวจสอบอีเมลและรหัสผ่านให้ถูกต้อง",
+      "ตั้งรหัสผ่านให้ปลอดภัย เช่น ตัวเลข + ตัวอักษรพิเศษ",
+      "หากลืมรหัสผ่าน ให้ใช้ตัวเลือก \"ลืมรหัสผ่าน\"",
+      "ตรวจสอบอีเมลเพื่อยืนยันตัวตน (หากระบบร้องขอ)",
+    ],
+  },
+  {
+    title: "สร้างแชทบอท",
+    content: "เชื่อมบอทเข้ากับ Line developer ได้อย่างง่ายดายภายในไม่กี่ขั้นตอน:",
+    steps: [
+      "ไปที่เมนูจัดการแชทบอท",
+      "กดปุ่ม \"สร้างแชทบอท\"",
+      "กรอกข้อมูลช่องทาง: ชื่อ, Channel Secret, Channel Access Token",
+      "กดบันทึก",
+    ],
+    tips: [
+      "ตรวจสอบ Token และ Secret ให้ถูกต้องก่อนบันทึก",
+      "ตั้งชื่อให้สื่อความหมายเพื่อให้ง่ายต่อการจัดการ",
+    ],
+  },
+  {
+    title: "ตั้งค่าบอท และ แก้ไขข้อความ",
+    content: "ในส่วนนี้คุณสามารถตั้งค่าบอทและกำหนดข้อความตอบกลับที่เหมาะสมกับการใช้งานได้:",
+    steps: [
+      "เลือกแชทบอทที่ต้องการตั้งค่า",
+      "กำหนดประเภท: ข้อความ, ปฏิกิริยา, API บอท",
+      "กำหนดพฤติกรรม เช่น ตอบกลับอัตโนมัติ, รูปแบบข้อความ",
+      "เพิ่มเงื่อนไขการตอบกลับ เช่น คำหลัก",
+      "บันทึกการตั้งค่า",
+    ],
+    tips: [
+      "ทดสอบการตั้งค่าก่อนใช้งานจริง",
+      "ใช้คำหลักให้ชัดเจนเพื่อให้การตอบกลับถูกต้อง",
+    ],
+  },
+  {
+    title: "ตั้งค่าเมนู Rich Menu",
+    content: "คุณสามารถสร้าง Rich Menu ได้อย่างง่ายดายภายในไม่กี่ขั้นตอน:",
+    steps: [
+      "ไปที่แท็บ Rich Menu ในแชทบอทที่เลือก",
+      "อัปโหลดภาพเมนู (ขนาดแนะนำ: 1200x810 px)",
+      "กำหนดปุ่มกด เช่น ลิงก์, คำสั่งตอบกลับ",
+      "กดบันทึก",
+    ],
+    tips: [
+      "ใช้เมนูที่เข้าใจง่ายและชัดเจน",
+      "เพิ่มปุ่มโต้ตอบเพื่อเพิ่มการมีส่วนร่วม",
+    ],
+  },
+  {
+    title: "ส่งข้อความ",
+    content: "คุณสามารถส่งข้อความต่างๆได้อย่างง่ายดายภายในไม่กี่ขั้นตอน:",
+    steps: [
+      "ไปที่เมนูส่งข้อความ",
+      "เลือกประเภทข้อความ: ข้อความทั่วไป, Broadcast, Narrowcast",
+      "กรอกเนื้อหาข้อความ",
+      "กดส่ง",
+    ],
+  },
+  {
+    title: "การดู Log (บันทึกเหตุการณ์)",
+    content:
+      "ฟีเจอร์ Log (บันทึกเหตุการณ์) ช่วยให้คุณติดตามและตรวจสอบการกระทำต่าง ๆ ของแชทบอท เช่น การตั้งค่าบอท, การส่งข้อความ และเหตุการณ์สำคัญอื่น ๆ ที่เกิดขึ้นในระบบ",
+    steps: [
+      "ไปที่เมนู **บันทึกเหตุการณ์ (Log)** ในแถบเมนู",
+      "ในหน้านี้คุณจะเห็นบันทึกเหตุการณ์ทั้งหมดในระบบ เช่น ข้อความที่ถูกส่ง, การตั้งค่าบอทที่มีการแก้ไข หรือเหตุการณ์สำคัญต่าง ๆ",
+      "คุณสามารถคลิกเพื่อดูรายละเอียดของเหตุการณ์ในแต่ละรายการได้",
+    ],
+    tips: [
+      "ควรตรวจสอบ Log ทุกครั้งเมื่อมีเหตุการณ์สำคัญที่ต้องการติดตาม",
+      "หากพบข้อผิดพลาดใน Log ควรรีบทำการตรวจสอบและแก้ไขปัญหาด่วน",
+    ],
+  },
+  {
+    title: "Static Data (ข้อมูลสถิติ)",
+    content:
+      "Static Data ใช้สำหรับดูข้อมูลสถิติที่ถูกบันทึกไว้ล่วงหน้า เช่น จำนวนข้อความที่ส่ง, ข้อความที่ตอบกลับ หรือข้อมูลอื่น ๆ ที่เกี่ยวข้องกับการทำงานของบอท",
+    steps: [
+      "ไปที่เมนู **ดูข้อมูลสถิติ** หรือ **Static Data** ในแถบเมนู",
+      "ในหน้านี้คุณจะเห็นข้อมูลที่ถูกบันทึกไว้ เช่น จำนวนข้อความที่ถูกส่งไปยังผู้ใช้งานในช่วงเวลาต่าง ๆ หรือสถานะการทำงานของบอท",
+      "ข้อมูลเหล่านี้จะไม่เปลี่ยนแปลงและใช้สำหรับการตรวจสอบประสิทธิภาพการทำงานของบอท",
+    ],
+    tips: [
+      "ใช้ข้อมูลจาก **Static Data** เพื่อประเมินประสิทธิภาพการทำงานของบอทและหาจุดที่สามารถปรับปรุงได้",
+      "ข้อมูลสถิติจะช่วยให้คุณทราบว่าบอทมีการทำงานได้ดีแค่ไหนในช่วงเวลาต่าง ๆ",
+    ],
+  },
+  {
+    title: "การตั้งเวลาส่งข้อความ",
+    content:
+      "การตั้งเวลาส่งข้อความช่วยให้คุณกำหนดเวลาที่ข้อความจะถูกส่งไปยังผู้ใช้งานหรือแชทบอทในเวลาที่เหมาะสม ซึ่งช่วยให้การส่งข้อความอัตโนมัติมีความยืดหยุ่นมากขึ้น",
+    steps: [
+      "ไปที่เมนู **ส่งข้อความ**",
+      "เลือกประเภทข้อความที่ต้องการส่ง เช่น **ข้อความทั่วไป**, **Broadcast**, หรือ **Narrowcast**",
+      "กรอกเนื้อหาข้อความที่ต้องการส่ง",
+      "ตั้งเวลาสำหรับการส่งข้อความ โดยระบุวันที่และเวลา",
+      "กดปุ่ม **ตั้งเวลา** หรือ **ส่ง** ข้อความที่ตั้งเวลาไว้",
+    ],
+    tips: [
+      "ตรวจสอบเวลาให้ถูกต้องก่อนกดส่งเพื่อหลีกเลี่ยงข้อผิดพลาด",
+      "การตั้งเวลาส่งข้อความมีประโยชน์ในกรณีที่ต้องการส่งข้อความในเวลาที่ผู้ใช้งานสะดวก หรือส่งข้อความแจ้งเตือน",
+    ],
+  },
+];
+
+  const handleToggle = (index) => {
+    setExpandedIndex(expandedIndex === index ? null : index);
+  };
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h4" sx={{ fontWeight: "bold", my: 3, textAlign: "center" }}>
-        User Manual for Line Chatbot Middleware
+        Manual Middleware
       </Typography>
-      {sections.map((section, index) => (
-        <Box key={index} sx={{ mb: 4 }}>
-          <Paper sx={{ p: 3, boxShadow: "none" }}>
-            <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2 }}>
-              {section.title}
-            </Typography>
-            {section.content && (
-              <Typography variant="body1" sx={{ mb: 2 }}>
-                {section.content}
-              </Typography>
-            )}
-            {section.steps && (
-              <>
-                <Typography variant="h6" sx={{ mb: 1 }}>
-                  Steps:
-                </Typography>
-                <List>
-                  {section.steps.map((step, idx) => (
-                    <ListItem key={idx} sx={{ pl: 0 }}>
-                      <ListItemText primary={step} />
-                    </ListItem>
-                  ))}
-                </List>
-              </>
-            )}
-            {section.tips && (
-              <>
-                <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-                  Tips:
-                </Typography>
-                <List>
-                  {section.tips.map((tip, idx) => (
-                    <ListItem key={idx} sx={{ pl: 0 }}>
-                      <ListItemText primary={`• ${tip}`} />
-                    </ListItem>
-                  ))}
-                </List>
-              </>
-            )}
-            {index < sections.length - 1 && <Divider sx={{ mt: 3 }} />}
-          </Paper>
-        </Box>
-      ))}
+      <Grid container spacing={4}>
+        {sections.map((section, index) => (
+          <Grid item xs={12} sm={6} md={4} key={index}>
+            <Card
+              variant="outlined"
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                // Set height to auto so each card adjusts based on its content
+                height: expandedIndex === index ? "100%" : 250, // Adjust based on expansion state
+                transition: "height 1.0s ease", // Animation for expanding and collapsing
+              }}
+            >
+              <CardContent sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                  <InfoIcon sx={{ color: "primary.main", mr: 2 }} />
+                  <Typography variant="h6" sx={{ fontWeight: "bold", flexGrow: 1 }}>
+                    {section.title}
+                  </Typography>
+                </Box>
+
+                {section.content && (
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 2,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "-webkit-box",
+                      WebkitBoxOrient: "vertical",
+                      WebkitLineClamp: expandedIndex === index ? "unset" : 2, // limit to 2 lines unless expanded
+                    }}
+                    ref={(el) => (contentRefs.current[index] = el)}
+                  >
+                    {section.content}
+                  </Typography>
+                )}
+
+                {/* Collapse "ขั้นตอน" and "เคล็ดลับ" sections */}
+                {section.steps && (
+                  <Box   sx={{
+                    display: expandedIndex === index ? "block" : "none",
+                    transition: "opacity 1.0s ease, transform 1.0s ease",
+                    opacity: expandedIndex === index ? 1 : 0,
+                    transform: expandedIndex === index ? "scale(1)" : "scale(0.95)", // Make it slightly shrink when collapsed
+                  }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      ขั้นตอน:
+                    </Typography>
+                    <List>
+                      {section.steps.map((step, idx) => (
+                        <ListItem key={idx} sx={{ pl: 0, py: 1 }}>
+                          <Typography variant="body2">{`• ${step}`}</Typography>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                )}
+
+                {section.tips && (
+                  <Box   sx={{
+                    display: expandedIndex === index ? "block" : "none",
+                    transition: "opacity 1.0s ease, transform 1.0s ease",
+                    opacity: expandedIndex === index ? 1 : 0,
+                    transform: expandedIndex === index ? "scale(1)" : "scale(0.95)", // Make it slightly shrink when collapsed
+                  }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 2, mb: 1 }}>
+                      เคล็ดลับ:
+                    </Typography>
+                    <List>
+                      {section.tips.map((tip, idx) => (
+                        <ListItem key={idx} sx={{ pl: 0, py: 1 }}>
+                          <Typography variant="body2">{`✓ ${tip}`}</Typography>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                )}
+
+                {/* Show the button only if the content exceeds 2 lines */}
+                {contentHeight[index] > 30 && (
+                  <Button onClick={() => handleToggle(index)} sx={{ mt: 2 }}>
+                    {expandedIndex === index ? "ย่อ" : "อ่านเพิ่มเติม"}
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
     </Container>
   );
 };
 
 export default Manual;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const sections = [
+//   {
+//     title: "ภาพรวม",
+//     content:
+//       "คู่มือฉบับนี้จะช่วยให้คุณตั้งค่าและจัดการแชทบอทบน Line ด้วย middleware ได้อย่างง่ายดาย โดยครอบคลุมทั้งส่วนของผู้ดูแลระบบและผู้ใช้งานทั่วไป รวมถึงวิธีตั้งค่าบอทประเภทต่าง ๆ และกำหนดข้อความตอบกลับ",
+//   },
+//   {
+//     title: "เข้าสู่ระบบ / ลงทะเบียน",
+//     content: "คุณสามารถเข้าสู่ระบบหรือสมัครสมาชิกได้อย่างง่ายดายภายในไม่กี่ขั้นตอน:",
+//     steps: [
+//       "เปิดหน้าล็อกอินหรือหน้าลงทะเบียน",
+//       "กรอกอีเมลและรหัสผ่าน (สำหรับเข้าสู่ระบบ) หรือกรอกข้อมูลที่จำเป็น (สำหรับสมัครสมาชิก)",
+//       "คลิกปุ่มเข้าสู่ระบบหรือลงทะเบียน",
+//       "หากสำเร็จ จะพาคุณไปยังหน้าหลัก",
+//       "หากข้อมูลผิด ระบบจะแจ้งเตือนให้ลองใหม่",
+//     ],
+//     tips: [
+//       "ตรวจสอบอีเมลและรหัสผ่านให้ถูกต้อง",
+//       "ตั้งรหัสผ่านให้ปลอดภัย เช่น ตัวเลข + ตัวอักษรพิเศษ",
+//       "หากลืมรหัสผ่าน ให้ใช้ตัวเลือก \"ลืมรหัสผ่าน\"",
+//       "ตรวจสอบอีเมลเพื่อยืนยันตัวตน (หากระบบร้องขอ)",
+//     ],
+//   },
+//   {
+//     title: "สร้างแชทบอท",
+//     content: "เชื่อบอทเข้ากับLineได้อย่างง่ายดายภายในไม่กี่ขั้นตอน:",
+//     steps: [
+//       "ไปที่เมนูจัดการแชทบอท",
+//       "กดปุ่ม \"สร้างแชทบอท\"",
+//       "กรอกข้อมูลช่องทาง: ชื่อ, Channel Secret, Channel Access Token",
+//       "กดบันทึก",
+//     ],
+//     tips: [
+//       "ตรวจสอบ Token และ Secret ให้ถูกต้องก่อนบันทึก",
+//       "ตั้งชื่อให้สื่อความหมายเพื่อให้ง่ายต่อการจัดการ",
+//     ],
+//   },
+//   {
+//     title: "ตั้งค่าบอท และ แก้ไขข้อความตอบกลับ",
+//     content: "ในส่วนนี้คุณสามารถตั้งค่าบอทและกำหนดข้อความตอบกลับที่เหมาะสมกับการใช้งานได้:",
+//     steps: [
+//       "เลือกแชทบอทที่ต้องการตั้งค่า",
+//       "กำหนดประเภท: ข้อความ, ปฏิกิริยา, API บอท",
+//       "กำหนดพฤติกรรม เช่น ตอบกลับอัตโนมัติ, รูปแบบข้อความ",
+//       "เพิ่มเงื่อนไขการตอบกลับ เช่น คำหลัก",
+//       "บันทึกการตั้งค่า",
+//     ],
+//     tips: [
+//       "ทดสอบการตั้งค่าก่อนใช้งานจริง",
+//       "ใช้คำหลักให้ชัดเจนเพื่อให้การตอบกลับถูกต้อง",
+//     ],
+//   },
+//   {
+//     title: "ตั้งค่าเมนู Rich Menu",
+//     content: "คุณสามารถสร้าง Rich Menu ได้อย่างง่ายดายภายในไม่กี่ขั้นตอน:",
+//     steps: [
+//       "ไปที่แท็บ Rich Menu ในแชทบอทที่เลือก",
+//       "อัปโหลดภาพเมนู (ขนาดแนะนำ: 1200x810 px)",
+//       "กำหนดปุ่มกด เช่น ลิงก์, คำสั่งตอบกลับ",
+//       "กดบันทึก",
+//     ],
+//     tips: [
+//       "ใช้เมนูที่เข้าใจง่ายและชัดเจน",
+//       "เพิ่มปุ่มโต้ตอบเพื่อเพิ่มการมีส่วนร่วม",
+//     ],
+//   },
+//   {
+//     title: "ส่งข้อความ",
+//     content: "คุณสามารถส่งข้อความต่างๆได้อย่างง่ายดายภายในไม่กี่ขั้นตอน:",
+//     steps: [
+//       "ไปที่เมนูส่งข้อความ",
+//       "เลือกประเภทข้อความ: ข้อความทั่วไป, Broadcast, Narrowcast",
+//       "กรอกเนื้อหาข้อความ",
+//       "กดส่ง",
+//     ],
+//   },
+//   {
+//     title: "การดู Log (บันทึกเหตุการณ์)",
+//     content:
+//       "ฟีเจอร์ Log (บันทึกเหตุการณ์) ช่วยให้คุณติดตามและตรวจสอบการกระทำต่าง ๆ ของแชทบอท เช่น การตั้งค่าบอท, การส่งข้อความ และเหตุการณ์สำคัญอื่น ๆ ที่เกิดขึ้นในระบบ",
+//     steps: [
+//       "ไปที่เมนู **บันทึกเหตุการณ์ (Log)** ในแถบเมนู",
+//       "ในหน้านี้คุณจะเห็นบันทึกเหตุการณ์ทั้งหมดในระบบ เช่น ข้อความที่ถูกส่ง, การตั้งค่าบอทที่มีการแก้ไข หรือเหตุการณ์สำคัญต่าง ๆ",
+//       "คุณสามารถคลิกเพื่อดูรายละเอียดของเหตุการณ์ในแต่ละรายการได้",
+//     ],
+//     tips: [
+//       "ควรตรวจสอบ Log ทุกครั้งเมื่อมีเหตุการณ์สำคัญที่ต้องการติดตาม",
+//       "หากพบข้อผิดพลาดใน Log ควรรีบทำการตรวจสอบและแก้ไขปัญหาด่วน",
+//     ],
+//   },
+//   {
+//     title: "Static Data (ข้อมูลสถิติ)",
+//     content:
+//       "Static Data ใช้สำหรับดูข้อมูลสถิติที่ถูกบันทึกไว้ล่วงหน้า เช่น จำนวนข้อความที่ส่ง, ข้อความที่ตอบกลับ หรือข้อมูลอื่น ๆ ที่เกี่ยวข้องกับการทำงานของบอท",
+//     steps: [
+//       "ไปที่เมนู **ดูข้อมูลสถิติ** หรือ **Static Data** ในแถบเมนู",
+//       "ในหน้านี้คุณจะเห็นข้อมูลที่ถูกบันทึกไว้ เช่น จำนวนข้อความที่ถูกส่งไปยังผู้ใช้งานในช่วงเวลาต่าง ๆ หรือสถานะการทำงานของบอท",
+//       "ข้อมูลเหล่านี้จะไม่เปลี่ยนแปลงและใช้สำหรับการตรวจสอบประสิทธิภาพการทำงานของบอท",
+//     ],
+//     tips: [
+//       "ใช้ข้อมูลจาก **Static Data** เพื่อประเมินประสิทธิภาพการทำงานของบอทและหาจุดที่สามารถปรับปรุงได้",
+//       "ข้อมูลสถิติจะช่วยให้คุณทราบว่าบอทมีการทำงานได้ดีแค่ไหนในช่วงเวลาต่าง ๆ",
+//     ],
+//   },
+//   {
+//     title: "การตั้งเวลาส่งข้อความ (Scheduled Messages)",
+//     content:
+//       "การตั้งเวลาส่งข้อความช่วยให้คุณกำหนดเวลาที่ข้อความจะถูกส่งไปยังผู้ใช้งานหรือแชทบอทในเวลาที่เหมาะสม ซึ่งช่วยให้การส่งข้อความอัตโนมัติมีความยืดหยุ่นมากขึ้น",
+//     steps: [
+//       "ไปที่เมนู **ส่งข้อความ**",
+//       "เลือกประเภทข้อความที่ต้องการส่ง เช่น **ข้อความทั่วไป**, **Broadcast**, หรือ **Narrowcast**",
+//       "กรอกเนื้อหาข้อความที่ต้องการส่ง",
+//       "ตั้งเวลาสำหรับการส่งข้อความ โดยระบุวันที่และเวลา",
+//       "กดปุ่ม **ตั้งเวลา** หรือ **ส่ง** ข้อความที่ตั้งเวลาไว้",
+//     ],
+//     tips: [
+//       "ตรวจสอบเวลาให้ถูกต้องก่อนกดส่งเพื่อหลีกเลี่ยงข้อผิดพลาด",
+//       "การตั้งเวลาส่งข้อความมีประโยชน์ในกรณีที่ต้องการส่งข้อความในเวลาที่ผู้ใช้งานสะดวก หรือส่งข้อความแจ้งเตือน",
+//     ],
+//   },
+// ];
