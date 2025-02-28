@@ -20,6 +20,7 @@ export default function ChannelAction({ listTitle, channelId }) {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [state, setState] = useState("actions");
   const [selectedActionId, setSelectedActionId] = useState();
+  const [alertMessage, setAlertMessage] = useState("");
   const getAllActions = async () => {
     try {
       setIsLoading(true);
@@ -47,8 +48,9 @@ export default function ChannelAction({ listTitle, channelId }) {
       if (res.status === 200) {
         getAllActions();
         setAnchorEl(null);
-        console.log("Action deleted successfully.");
+        // console.log("Action deleted successfully.");
         setIsOpenSnackbar(true);
+        setAlertMessage("Action deleted successfully.");
       }
     } catch (error) {
       console.error("Error delete Action failed:", error);
@@ -58,6 +60,7 @@ export default function ChannelAction({ listTitle, channelId }) {
   const handleEditApi = (item) => {
     setSelectedActionId(item._id);
     setState("edit");
+    setAlertMessage("Action edit successfully.");
   };
 
   return (
@@ -121,6 +124,7 @@ export default function ChannelAction({ listTitle, channelId }) {
             setPage={setPage}
             rowsPerPage={rowsPerPage}
             setRowsPerPage={setRowsPerPage}
+            alertMessage={alertMessage}
           />
         </>
       )}

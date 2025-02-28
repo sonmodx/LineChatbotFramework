@@ -24,6 +24,7 @@ import axios from "axios";
 import { getAllApis, getApiById } from "@/actions";
 import SwitchInputComponent from "./SwitchInputComponent";
 import Loading from "./Loading";
+import Notification from "./Notification";
 
 export default function DefaultAction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false); // State for checkbox (Use API)
@@ -45,12 +46,42 @@ export default function DefaultAction({ data, setState, state }) {
   const [isActive, setIsActive] = useState(data?.isActivated ?? true);
   const [loading, setLoading] = useState(true);
   const [useAI, setUseAI] = useState(data?.useAI || false);
+  const [hasSubmit, setHasSubmit] = useState(false);
+  const [errorAlert, setErrorAlert] = useState({
+    open: false,
+    message: "",
+  });
 
   const channelId = searchParams.get("id");
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
     setSelectedApi(null);
+  };
+
+  const checkFieldsIsEmpty = () => {
+    const messageFields = {
+      text: ["text"],
+      image: ["previewImageUrl", "originalContentUrl"],
+      sticker: ["packageId", "stickerId"],
+      video: ["originalContentUrl", "previewImageUrl", "trackingId"],
+      audio: ["originalContentUrl", "duration"],
+      location: ["title", "address", "latitude", "longitude"],
+      flex: ["flex"],
+      template: ["template"],
+      imagemap: ["imagemap"],
+    };
+    // Check if any field is empty
+    const isAnyFieldEmpty = messages.some((message) => {
+      const fields = messageFields[message.type];
+      console.log(message);
+      console.log(fields);
+      return fields.some((field) => {
+        return !message[field]?.trim(); // Check if any field is empty
+      });
+    });
+
+    return isAnyFieldEmpty;
   };
 
   const handleApiChange = (event, newValue) => {
@@ -93,7 +124,16 @@ export default function DefaultAction({ data, setState, state }) {
   };
 
   const handleSave = async () => {
+    setHasSubmit(true);
     try {
+      if (!name) {
+        setErrorAlert({ open: true, message: "name is required" });
+        return;
+      }
+      if (checkFieldsIsEmpty()) {
+        setErrorAlert({ open: true, message: "Some field is empty!" });
+        return;
+      }
       const newMessages = messages.map((msg) => {
         if (msg.type === "template" && isValidJSON(msg.template)) {
           return JSON.parse(msg.template);
@@ -308,7 +348,7 @@ export default function DefaultAction({ data, setState, state }) {
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={6}>
             <Typography variant="h6" gutterBottom>
-              Name
+              Name*
             </Typography>
             <TextField
               fullWidth
@@ -316,6 +356,9 @@ export default function DefaultAction({ data, setState, state }) {
               variant="outlined"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              required
+              error={!name && hasSubmit}
+              helperText={!name && hasSubmit ? "Name is required" : ""}
             />
           </Grid>
 
@@ -408,6 +451,12 @@ export default function DefaultAction({ data, setState, state }) {
           Save
         </Button>
       </Box>
+      <Notification
+        openNotification={errorAlert.open}
+        setOpenNotification={setErrorAlert}
+        message={errorAlert.message}
+        statusMessage="error"
+      />
     </Box>
   );
 }

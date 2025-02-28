@@ -24,6 +24,7 @@ import axios from "axios";
 import { getAllApis, getApiById } from "@/actions";
 import SwitchInputComponent from "./SwitchInputComponent";
 import Loading from "./Loading";
+import Notification from "./Notification";
 
 export default function Greetingaction({ data, setState, state }) {
   const [useApi, setUseApi] = useState(false);
@@ -43,10 +44,44 @@ export default function Greetingaction({ data, setState, state }) {
   const channelId = searchParams.get("id");
   const maximumMessage = 5;
   const [loading, setLoading] = useState(true);
+  const [hasSubmit, setHasSubmit] = useState(false);
+  const [isSuccessAlert, setIsSuccessAlert] = useState({
+    open: false,
+    message: "",
+  });
+  const [errorAlert, setErrorAlert] = useState({
+    open: false,
+    message: "",
+  });
 
   const handleCheckboxChange = (event) => {
     setUseApi(event.target.checked);
     setSelectedApi(null);
+  };
+
+  const checkFieldsIsEmpty = () => {
+    const messageFields = {
+      text: ["text"],
+      image: ["previewImageUrl", "originalContentUrl"],
+      sticker: ["packageId", "stickerId"],
+      video: ["originalContentUrl", "previewImageUrl", "trackingId"],
+      audio: ["originalContentUrl", "duration"],
+      location: ["title", "address", "latitude", "longitude"],
+      flex: ["flex"],
+      template: ["template"],
+      imagemap: ["imagemap"],
+    };
+    // Check if any field is empty
+    const isAnyFieldEmpty = messages.some((message) => {
+      const fields = messageFields[message.type];
+      console.log(message);
+      console.log(fields);
+      return fields.some((field) => {
+        return !message[field]?.trim(); // Check if any field is empty
+      });
+    });
+
+    return isAnyFieldEmpty;
   };
 
   const handleApiChange = (event, newValue) => {
@@ -88,7 +123,17 @@ export default function Greetingaction({ data, setState, state }) {
     }
   };
   const handleSave = async () => {
+    setHasSubmit(true);
     try {
+      if (!name) {
+        setErrorAlert({ open: true, message: "name is required" });
+        return;
+      }
+      if (checkFieldsIsEmpty()) {
+        setErrorAlert({ open: true, message: "Some field is empty!" });
+        return;
+      }
+
       const newMessages = messages.map((msg) => {
         if (msg.type === "template" && isValidJSON(msg.template)) {
           return JSON.parse(msg.template);
@@ -102,6 +147,7 @@ export default function Greetingaction({ data, setState, state }) {
 
         return msg;
       });
+
       console.log("HI", newMessages);
       const body = {
         name: name,
@@ -124,6 +170,10 @@ export default function Greetingaction({ data, setState, state }) {
         );
         if (res.status === 201) {
           setState("actions");
+          setIsSuccessAlert({
+            open: true,
+            message: "Successfully created new action!",
+          });
           console.log("Successfully created new channel!");
         }
       } else if (state === "edit") {
@@ -132,6 +182,10 @@ export default function Greetingaction({ data, setState, state }) {
         });
         if (res.status === 200) {
           setState("actions");
+          setIsSuccessAlert({
+            open: true,
+            message: "Successfully edited action!",
+          });
           console.log("Successfully updated action!");
         }
       }
@@ -288,7 +342,7 @@ export default function Greetingaction({ data, setState, state }) {
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={6}>
             <Typography variant="h6" gutterBottom>
-              Name
+              Name*
             </Typography>
             <TextField
               fullWidth
@@ -296,6 +350,9 @@ export default function Greetingaction({ data, setState, state }) {
               variant="outlined"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              required
+              error={!name && hasSubmit}
+              helperText={!name && hasSubmit ? "Name is required" : ""}
             />
           </Grid>
 
@@ -386,6 +443,17 @@ export default function Greetingaction({ data, setState, state }) {
           Save
         </Button>
       </Box>
+      <Notification
+        openNotification={errorAlert.open}
+        setOpenNotification={setErrorAlert}
+        message={errorAlert.message}
+        statusMessage="error"
+      />
+      <Notification
+        openNotification={isSuccessAlert.open}
+        setOpenNotification={setIsSuccessAlert}
+        message={isSuccessAlert.message}
+      />
     </Box>
   );
 }

@@ -134,6 +134,7 @@ export default function ChannelLog({ listTitle, channelId }) {
         rowsPerPage={rowsPerPage}
         setRowsPerPage={setRowsPerPage}
         search={search}
+        alertMessage={""}
       />
     </Container>
   );
