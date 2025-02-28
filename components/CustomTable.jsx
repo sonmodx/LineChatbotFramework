@@ -51,6 +51,7 @@ export default function CustomTable({
   rowsPerPage,
   setRowsPerPage,
   search = null,
+  alertMessage,
 }) {
   const [selectId, setSelectId] = useState();
 
@@ -213,7 +214,7 @@ export default function CustomTable({
           variant="filled"
           sx={{ width: "100%" }}
         >
-          Success delete
+          {alertMessage}
         </Alert>
       </Snackbar>
     </>

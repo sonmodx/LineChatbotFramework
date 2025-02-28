@@ -59,7 +59,7 @@ export default function CustomTable({
   rowsPerPage,
   setRowsPerPage,
   search = null,
-  alertMessage,
+  alertMessage = "",
 }) {
   const [selectId, setSelectId] = useState();
   const [openDelete, setOpenDelete] = useState(false);

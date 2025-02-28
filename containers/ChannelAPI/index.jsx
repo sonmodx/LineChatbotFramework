@@ -17,6 +17,8 @@ export default function ChannelAPI({ listTitle, channelId }) {
   const { data: session } = useSession(authOptions);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [alertMessage, setAlertMessage] = useState("");
+
   const getAllApis = async () => {
     try {
       setIsLoading(true);
@@ -47,6 +49,7 @@ export default function ChannelAPI({ listTitle, channelId }) {
         setAnchorEl(null);
         console.log("API deleted successfully.");
         setIsOpenSnackbar(true);
+        setAlertMessage("API deleted successfully.");
       }
     } catch (error) {
       console.error("Error delete API failed:", error);
@@ -100,6 +103,7 @@ export default function ChannelAPI({ listTitle, channelId }) {
         setPage={setPage}
         rowsPerPage={rowsPerPage}
         setRowsPerPage={setRowsPerPage}
+        alertMessage={alertMessage}
       />
     </Container>
   );
