@@ -37,7 +37,7 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
   const [url, setUrl] = useState("");
   const [headers, setHeaders] = useState([{ key: "", value: "" }]);
   const [urlParams, setUrlParams] = useState([{ key: "", value: "" }]);
-  const [body, setBody] = useState("");
+  const [body, setBody] = useState("{}");
   const [errorBody, setErrorBody] = useState();
   const router = useRouter();
   const [responseData, setResponseData] = useState(null);
@@ -176,6 +176,14 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
     };
     const apiBody = transformApiBody(body);
     if (!apiBody) return;
+    if (!url?.trim()) {
+      setNotification({
+        open: true,
+        message: `Please enter API URL`,
+        statusMessage: "error",
+      });
+      return;
+    }
     const requestData = {
       name: name,
       description: "",
