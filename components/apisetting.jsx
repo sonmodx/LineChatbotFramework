@@ -198,6 +198,12 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
       setLoading(true);
       const responseUserAPI = await getResponseAPI();
       if (!responseUserAPI) {
+        setNotificationRequest({
+          open: true,
+          message: "Request failed!",
+          statusMessage: "error",
+        });
+
         return;
       }
       const responseUserApiData = responseUserAPI.data;
@@ -247,7 +253,11 @@ function ApiSetting({ mode = "create", id = null, channelId = null }) {
         });
         setResponseData(response);
       } else {
-        window.alert("Request Failed!!!");
+        setNotificationRequest({
+          open: true,
+          message: "Request failed!",
+          statusMessage: "error",
+        });
       }
     } catch (error) {
       console.error(
