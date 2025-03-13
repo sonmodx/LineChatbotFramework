@@ -36,6 +36,7 @@ export default function Replyaction({ data, setState, state }) {
   const [selectedApi, setSelectedApi] = useState(null); // State for selected API
   const [selectedApiParam, setSelectedApiParam] = useState(null);
   const [apiParamOptions, setApiParamOptions] = useState([]);
+
   const [apiParams, setApiParams] = useState([]);
   const [messageCount, setMessageCount] = useState(data?.message.length || 1); // Track number o
   const [keywords, setKeywords] = useState(data?.keyword.join(",") || []);
@@ -105,10 +106,12 @@ export default function Replyaction({ data, setState, state }) {
     setSelectedApiParam(null);
     setApiParams([]);
     setApiParamOptions(
-      newValue?.api_params.map((param, index) => ({
-        ...param,
-        index,
-      }))
+      newValue?.api_params
+        .filter((param) => param.key.trim() !== "" || param.value.trim() !== "") // Remove empty params
+        .map((param, index) => ({
+          ...param,
+          index,
+        }))
     );
   };
 
