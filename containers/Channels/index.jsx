@@ -17,6 +17,7 @@ export default function Channels() {
   const { data: session } = useSession(authOptions);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [alertMessage, setAlertMessage] = useState("");
   const getAllChannels = async () => {
     try {
       setIsLoading(true);
@@ -46,6 +47,7 @@ export default function Channels() {
         setAnchorEl(null);
         console.log("Channel deleted successfully.");
         setIsOpenSnackbar(true);
+        setAlertMessage("Channel deleted successfully.");
       }
     } catch (error) {
       console.error("Error delete channel failed:", error);
@@ -104,6 +106,7 @@ export default function Channels() {
         setPage={setPage}
         rowsPerPage={rowsPerPage}
         setRowsPerPage={setRowsPerPage}
+        alertMessage={alertMessage}
       />
     </Container>
   );
