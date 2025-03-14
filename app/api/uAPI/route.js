@@ -66,9 +66,10 @@ export async function GET(req) {
             { description: { $regex: search, $options: "i" } },
           ],
         }),
+        owner: "user", // Only select APIs where the owner is "user"
       };
 
-      const totalAPIs = await API.countDocuments(filter);
+      const totalAPIs = await API.countDocuments(filter); // Get total count where owner is "user"
 
       const apis = await API.find(filter)
         .sort({ [orderBy]: orderDirection })
@@ -83,7 +84,7 @@ export async function GET(req) {
 
       return formatResponse(200, {
         API: formattedapis,
-        Total: totalAPIs,
+        Total: totalAPIs, // Return the total count of APIs where owner is "user"
       });
     }
   } catch (error) {
