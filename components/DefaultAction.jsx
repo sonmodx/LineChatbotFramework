@@ -60,6 +60,7 @@ export default function DefaultAction({ data, setState, state }) {
   };
 
   const checkFieldsIsEmpty = () => {
+    if (useAI) return false;
     const messageFields = {
       text: ["text"],
       image: ["previewImageUrl", "originalContentUrl"],
@@ -336,6 +337,7 @@ export default function DefaultAction({ data, setState, state }) {
           checked={useAI}
           disabled={useApi}
           onChange={(event) => setUseAI(event.target.checked)}
+
         />
         <Typography variant="body1" display="inline">
           Use AI to respond to user messages that are not predefined in the
