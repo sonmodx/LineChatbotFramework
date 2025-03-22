@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: line-chatbot-web-image
+    image: sonmodx/line-oa-middleware
     ports:
       - "80:80"
     env_file:
