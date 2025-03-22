@@ -143,13 +143,9 @@ export default function RegisterForm() {
         <Grid item xs={12} md={6}>
           <ContentBox>
             <Box sx={{ textAlign: "center", mb: 5 }}>
-              <Image
-                src="/logo.png" // Ensure this path is correct
-                alt="logo"
-                width={185}
-                height={185}
-                layout="intrinsic" // Optional: Use layout for better image handling
-              />
+              <div style={{ display: "inline-block" }}>
+              <Image src="/logo.png" alt="logo" width={185} height={185} />
+              </div>
               <Typography variant="h4" sx={{ mt: 1, mb: 5, pb: 1 }}>
                 Join FRONTEND FRAMEWORK
               </Typography>
@@ -244,7 +240,7 @@ export default function RegisterForm() {
                 Welcome to our community!
               </Typography>
               <Typography variant="body2">
-              We are excited to have you here! Our platform is dedicated to line middleware, providing powerful solutions for seamless integration and communication. If you would like to join us, you’ll find a space where innovation meets collaboration, enabling you to enhance your projects and streamline your processes. Thank you for being a part of our community!
+              We specialize in Line middleware solutions, enabling seamless integration and communication. Join us in delivering innovative and efficient services tailored to your needs.
               </Typography>
             </Box>
           </GradientBox>

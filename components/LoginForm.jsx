@@ -85,12 +85,9 @@ export default function LoginForm() {
         <Grid item xs={12} md={6}>
           <ContentBox>
             <Box sx={{ textAlign: "center", mb: 5 }}>
-              <Image
-                src="/logo.png"
-                alt="logo"
-                width={185}
-                height={185}
-              />
+              <div style={{ display: "inline-block" }}>
+              <Image src="/logo.png" alt="logo" width={185} height={185} />
+              </div>
               <Typography variant="h4" sx={{ mt: 1, mb: 5, pb: 1 }}>
                 FRONTEND FRAMEWORK
               </Typography>
@@ -154,10 +151,10 @@ export default function LoginForm() {
           <GradientBox>
             <Box>
               <Typography variant="h4" sx={{ mb: 4 }}>
-                We are more than just a frontend.
+              We specialize in Line middleware solutions.
               </Typography>
               <Typography variant="body2">
-              Our expertise goes beyond traditional design; we specialize in line middleware solutions that empower seamless integration and communication. If you would like to join us, we are committed to delivering innovative services that enhance efficiency and streamline processes. Our team is dedicated to understanding your needs and providing robust solutions that drive success.
+              We go beyond basic functionality, specializing in Line middleware solutions for seamless integration and communication.
               </Typography>
             </Box>
           </GradientBox>
