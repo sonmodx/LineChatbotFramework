@@ -41,7 +41,7 @@ export default function ChannelAction({ listTitle, channelId }) {
     }
   };
 
-  const handleDeleteApi = async (selectId) => {
+  const handleDeleteAction = async (selectId) => {
     try {
       console.log(selectId);
       const res = await axios.delete(`/api/Action?id=${selectId._id}`);
@@ -57,7 +57,7 @@ export default function ChannelAction({ listTitle, channelId }) {
     }
   };
 
-  const handleEditApi = (item) => {
+  const handleEditActions = (item) => {
     setSelectedActionId(item._id);
     setState("edit");
     setAlertMessage("Action edit successfully.");
@@ -108,8 +108,8 @@ export default function ChannelAction({ listTitle, channelId }) {
             canSetting={true}
             statusState={[]}
             callbackGetData={getAllActions}
-            callbackEditData={handleEditApi}
-            callbackDeleteData={handleDeleteApi}
+            callbackEditData={handleEditActions}
+            callbackDeleteData={handleDeleteAction}
             isLoading={isLoading}
             total={total}
             data={actions}

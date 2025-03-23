@@ -4,7 +4,7 @@ import { connectMongoDB } from "@/lib/mongodb";
 import Channel from "@/models/channel";
 import LineUser from "@/models/LineUser";
 import mongoose from "mongoose";
-import { formatDate,formatResponse } from "@/lib/utils";
+import { formatDate, formatResponse } from "@/lib/utils";
 import Audience from "@/models/audience";
 import Log from "@/models/log";
 
@@ -42,9 +42,11 @@ export async function GET(req) {
     if (id) {
       const LineLog = await Log.findById(id).lean();
       if (!LineLog) {
-        return formatResponse(404, { message: "Audience not found." });
+        return formatResponse(404, { message: "Log not found." });
       }
-      const channel = await Channel.findById(LineLog.channel_id.toString()).lean();
+      const channel = await Channel.findById(
+        LineLog.channel_id.toString()
+      ).lean();
       if (!channel) {
         return formatResponse(404, { message: "Channel not found." });
       }
@@ -55,11 +57,13 @@ export async function GET(req) {
         return formatResponse(400, { message: "No access this Channel" });
       }
 
-      return formatResponse(200, { audience: { 
-        ...LineLog, 
-        createdAt: formatDate(new Date(LineLog.createdAt)),
-        updatedAt: formatDate(new Date(LineLog.updatedAt)),
-      }});
+      return formatResponse(200, {
+        audience: {
+          ...LineLog,
+          createdAt: formatDate(new Date(LineLog.createdAt)),
+          updatedAt: formatDate(new Date(LineLog.updatedAt)),
+        },
+      });
     } else {
       const channels = await Channel.findById(channel_id).lean();
       if (!channels) {
@@ -73,7 +77,9 @@ export async function GET(req) {
       }
 
       const filter = {
-        ...(channel_id && { channel_id: new mongoose.Types.ObjectId(channel_id) }),
+        ...(channel_id && {
+          channel_id: new mongoose.Types.ObjectId(channel_id),
+        }),
         ...(search && {
           $or: [
             { name: { $regex: search, $options: "i" } },
