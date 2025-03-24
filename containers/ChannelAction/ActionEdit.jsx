@@ -6,7 +6,6 @@ import PushMessage from "@/components/Pushaction";
 import MulticastMessage from "@/components/Multicastaction";
 import BroadcastMessage from "@/components/Boardcastaction";
 import Greetingaction from "@/components/Greetingaction";
-import FlexMessage from "@/components/Flexaction";
 import NarrowMessage from "@/components/Narrowaction";
 import RichMenuAction from "@/components/RichMenuAction";
 import axios from "axios";
